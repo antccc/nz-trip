@@ -104,7 +104,6 @@
             --c-dark-soft: 109 76 65;
             --c-accent: 255 179 0;
         }
-        /* html font-size will be set by JS */
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; background-color: rgb(var(--c-cream)); color: rgb(var(--c-dark)); transition: background-color 0.3s, color 0.3s; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -129,11 +128,11 @@
         <input type="file" ref="saveFileInput" @change="loadFromFile" accept=".json" class="hidden">
         
         <!-- Header -->
-        <header class="bg-cream/90 backdrop-blur-sm pt-safe-top px-6 pb-2 shrink-0 z-20 flex justify-between items-end transition-colors duration-300">
+        <header class="bg-cream/90 backdrop-blur-sm pt-safe-top px-6 pb-2 shrink-0 z-30 flex justify-between items-end transition-colors duration-300">
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-lg font-bold tracking-tight text-primary font-sans flex items-center gap-2">
                     <span class="bg-primary/20 p-1 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
-                    NZ Trip <span class="text-[10px] opacity-50">V25.43</span>
+                    NZ Trip <span class="text-[10px] opacity-50">V25.49</span>
                     <!-- Status Display -->
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
@@ -149,8 +148,8 @@
         <!-- Main -->
         <main class="flex-1 overflow-hidden relative">
             <div v-if="currentTab === 'itinerary'" class="h-full flex flex-col">
-                <!-- Date Selector (Compacted) -->
-                <div class="pt-1 pb-2 shrink-0 z-10">
+                <!-- Date Selector (Fixed at top) -->
+                <div class="pt-1 pb-2 shrink-0 z-20 bg-cream/95 backdrop-blur-sm relative border-b border-cream-darker/30 shadow-sm">
                     <div ref="dateContainer" class="flex overflow-x-auto no-scrollbar px-4 space-x-2 scroll-smooth py-1">
                         <button v-for="(date, index) in days" :key="index" @click="selectDate(index)"
                             class="flex-shrink-0 flex flex-col items-center justify-center w-[3.2rem] h-[3.8rem] rounded-2xl transition-all duration-300 border-2 active:scale-95"
@@ -162,110 +161,116 @@
                     </div>
                 </div>
 
-                <!-- Daily Summary Card (Compacted) -->
-                <div class="px-4 pb-1 shrink-0">
-                    <div class="bg-primary rounded-3xl p-4 shadow-lg shadow-primary/30 relative overflow-hidden group transition-all duration-300">
-                        <div class="absolute right-[-20px] top-[-20px] w-24 h-24 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-                        <div class="flex justify-between items-start relative z-10">
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="bg-white/20 text-white px-2 py-0.5 rounded-lg text-[10px] font-bold tracking-wider backdrop-blur-sm">D{{ selectedDayIndex }} · {{ getWeekDay(days[selectedDayIndex]) }}</span>
-                                    <div class="flex gap-2 overflow-x-auto no-scrollbar">
-                                        <!-- Weather Pills with Tooltip -->
-                                        <span v-for="(w, idx) in dailyWeatherList" :key="idx" 
-                                              class="text-[10px] font-bold flex items-center gap-1 text-white bg-white/10 px-2 py-0.5 rounded-full whitespace-nowrap backdrop-blur-sm cursor-help"
-                                              :title="`📍 地點: ${w.name} (${w.lat}, ${w.lng})`">
-                                            <i :class="w.icon"></i>
-                                            <span class="opacity-90 max-w-[60px] truncate">{{ w.name }}</span>
-                                            <span>{{ w.temp }}°</span>
-                                        </span>
-                                    </div>
-                                </div>
-                                <h2 class="text-lg font-bold text-white truncate pr-2 flex items-center gap-2 leading-tight">
-                                    {{ getDaySummary }}
-                                    <button @click.stop="openDaySettings" class="text-white/60 hover:text-white text-xs transition-colors active:scale-90"><i class="fa-solid fa-pen"></i></button>
-                                </h2>
-                            </div>
-                            <div @click="toggleGlobalFold" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center cursor-pointer hover:bg-white/30 transition-colors text-white mt-0.5 active:scale-90"><i class="fa-solid text-xs transition-transform duration-300" :class="isAllExpanded ? 'fa-compress' : 'fa-expand'"></i></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Timeline List (Compacted) -->
-                <div class="flex-1 overflow-y-auto px-4 pb-28 pt-2">
-                    <div v-if="filteredItinerary.length === 0" class="flex flex-col items-center justify-center h-32 text-gray-300 border-2 border-dashed border-cream-dark rounded-2xl m-2">
-                        <i class="fa-regular fa-calendar-plus text-2xl mb-1 text-primary/30"></i>
-                        <p class="font-bold text-[10px] text-primary/50">點擊右下角新增行程</p>
-                    </div>
-
-                    <div v-for="(item, index) in filteredItinerary" :key="item.id" class="group mb-2.5 relative pl-3">
-                        <div v-if="index !== filteredItinerary.length - 1" class="timeline-line"></div>
-                        
-                        <div class="relative bg-white rounded-2xl shadow-card border border-cream-dark flex flex-col transition-all duration-300 z-10 overflow-hidden hover:border-primary/30 active:scale-[0.995]">
-                            <!-- Main Row (Compacted Padding) -->
-                            <div class="p-3 flex gap-3 items-start" @click="toggleItem(item.id)">
-                                <div class="flex flex-col items-center min-w-[3rem] shrink-0 pt-0.5">
-                                    <span class="text-xs font-bold text-dark font-sans bg-cream-dark px-1.5 py-0.5 rounded-md">{{ item.time }}</span>
-                                    <div class="dot-marker mt-2"></div>
-                                </div>
-                                
-                                <div class="flex-1 min-w-0 pt-0">
-                                    <div class="flex justify-between items-start">
-                                        <h3 class="font-bold text-dark text-base leading-tight truncate pr-1 select-text">{{ item.title || item.location }}</h3>
-                                        <div class="flex items-center gap-2 shrink-0">
-                                            <button @click.stop="navigateTo(item.address || item.location)" class="w-6 h-6 rounded-full bg-cream-dark text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-location-arrow text-[10px]"></i></button>
-                                            <button @click.stop="toggleItem(item.id)" class="w-6 h-6 rounded-full bg-cream-dark text-gray-400 flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300" :class="{'rotate-180': expandedItems.has(item.id)}"></i></button>
+                <!-- Scrollable Content Area (Contains Summary Card + List) -->
+                <div class="flex-1 overflow-y-auto pb-32" id="itinerary-scroll-container">
+                    
+                    <!-- Daily Summary Card (Now Scrolls) -->
+                    <div class="px-4 pt-4 pb-1">
+                        <div class="bg-primary rounded-3xl p-4 shadow-lg shadow-primary/30 relative overflow-hidden group transition-all duration-300">
+                            <div class="absolute right-[-20px] top-[-20px] w-24 h-24 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                            <div class="flex justify-between items-start relative z-10">
+                                <div class="flex-1 min-w-0 mr-1">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="bg-white/20 text-white px-2 py-0.5 rounded-lg text-[10px] font-bold tracking-wider backdrop-blur-sm shrink-0">D{{ selectedDayIndex }} · {{ getWeekDay(days[selectedDayIndex]) }}</span>
+                                        <div class="flex gap-2 overflow-x-auto no-scrollbar">
+                                            <!-- Weather Pills -->
+                                            <span v-for="(w, idx) in dailyWeatherList" :key="idx" 
+                                                  class="text-[10px] font-bold flex items-center gap-1 text-white bg-white/10 px-2 py-0.5 rounded-full whitespace-nowrap backdrop-blur-sm cursor-help shrink-0"
+                                                  :title="`📍 地點: ${w.name} (${w.lat}, ${w.lng})`">
+                                                <i :class="w.icon"></i>
+                                                <span class="opacity-90 max-w-[80px] truncate">{{ w.name }}</span>
+                                                <span>{{ w.temp }}°</span>
+                                            </span>
                                         </div>
                                     </div>
-                                    
-                                    <div class="flex items-center gap-1.5 mt-1 flex-wrap">
-                                         <span class="text-[9px] px-2 py-0.5 rounded-full font-bold tracking-wide" :class="getTypeColorClass(item.type)">{{ item.type }}</span>
-                                         <span v-if="item.location && item.location !== item.title" class="text-[10px] text-gray-500 flex items-center gap-0.5">
-                                            <i class="fa-solid fa-location-dot text-primary/70 text-[8px]"></i> {{ item.location }}
-                                         </span>
-                                         <span v-if="item.lat" class="text-[9px] text-gray-300 font-mono hidden sm:inline-block">{{ item.lat.toFixed(3) }},{{ item.lng.toFixed(3) }}</span>
-                                    </div>
+                                    <!-- Title with auto-height and wrap (Fixed) -->
+                                    <h2 class="text-lg font-bold text-white flex items-start gap-2 leading-snug min-w-0">
+                                        <span class="flex-1 min-w-0 break-words">{{ getDaySummary }}</span>
+                                        <button @click.stop="openDaySettings" class="text-white/60 hover:text-white text-xs transition-colors active:scale-90 shrink-0 mt-1"><i class="fa-solid fa-pen"></i></button>
+                                    </h2>
                                 </div>
+                                <div @click="toggleGlobalFold" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center cursor-pointer hover:bg-white/30 transition-colors text-white mt-0.5 active:scale-90 shrink-0"><i class="fa-solid text-xs transition-transform duration-300" :class="isAllExpanded ? 'fa-compress' : 'fa-expand'"></i></div>
                             </div>
+                        </div>
+                    </div>
 
-                            <!-- Expanded Details -->
-                            <div v-show="expandedItems.has(item.id)" class="px-4 pb-4 pt-0 border-t border-dashed border-gray-100 bg-cream/30">
-                                <div class="mt-3 space-y-3">
-                                    <div v-if="item.notes" class="p-2.5 bg-white border border-cream-dark rounded-xl text-xs text-gray-600 leading-relaxed whitespace-pre-wrap relative select-text border-l-4 border-l-primary/30">
-                                        {{ item.notes }}
+                    <!-- Timeline List -->
+                    <div class="px-4 pt-2">
+                        <div v-if="filteredItinerary.length === 0" class="flex flex-col items-center justify-center h-32 text-gray-300 border-2 border-dashed border-cream-dark rounded-2xl m-2">
+                            <i class="fa-regular fa-calendar-plus text-2xl mb-1 text-primary/30"></i>
+                            <p class="font-bold text-[10px] text-primary/50">點擊右下角新增行程</p>
+                        </div>
+
+                        <div v-for="(item, index) in filteredItinerary" :key="item.id" class="group mb-2.5 relative pl-3">
+                            <div v-if="index !== filteredItinerary.length - 1" class="timeline-line"></div>
+                            
+                            <div class="relative bg-white rounded-2xl shadow-card border border-cream-dark flex flex-col transition-all duration-300 z-10 overflow-hidden hover:border-primary/30 active:scale-[0.995]">
+                                <!-- Main Row -->
+                                <div class="p-3 flex gap-3 items-start" @click="toggleItem(item.id)">
+                                    <div class="flex flex-col items-center min-w-[3rem] shrink-0 pt-0.5">
+                                        <span class="text-xs font-bold text-dark font-sans bg-cream-dark px-1.5 py-0.5 rounded-md">{{ item.time }}</span>
+                                        <div class="dot-marker mt-2"></div>
                                     </div>
                                     
-                                    <!-- Sub Items (With Coords Display) -->
-                                    <div v-if="item.subItems && item.subItems.length > 0">
-                                        <h4 class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 pl-1">子行程</h4>
-                                        <div class="space-y-1.5">
-                                            <div v-for="(sub, sIdx) in item.subItems" :key="sIdx" class="bg-white p-2 rounded-lg border border-cream-dark flex justify-between items-center">
-                                                <div class="flex items-center gap-2 overflow-hidden">
-                                                     <div class="w-1 h-1 rounded-full bg-gray-300 shrink-0"></div>
-                                                     <div class="min-w-0">
-                                                         <div class="text-xs font-bold text-dark truncate">{{ sub.location }}</div>
-                                                         <div v-if="sub.notes" class="text-[9px] text-gray-400 truncate">{{ sub.notes }}</div>
-                                                         <!-- NEW: Coordinate Display for Sub-items -->
-                                                         <div v-if="sub.lat" class="text-[8px] text-primary/60 font-mono mt-0.5 hidden sm:block"><i class="fa-solid fa-globe"></i> {{ sub.lat.toFixed(4) }}, {{ sub.lng.toFixed(4) }}</div>
-                                                     </div>
-                                                </div>
-                                                <button @click.stop="navigateTo(sub.location)" class="w-6 h-6 rounded-full bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-location-arrow text-[9px]"></i></button>
+                                    <div class="flex-1 min-w-0 pt-0">
+                                        <div class="flex justify-between items-start">
+                                            <h3 class="font-bold text-dark text-base leading-tight truncate pr-1 select-text">{{ item.title || item.location }}</h3>
+                                            <div class="flex items-center gap-2 shrink-0">
+                                                <button @click.stop="navigateTo(item.address || item.location)" class="w-6 h-6 rounded-full bg-cream-dark text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-location-arrow text-[10px]"></i></button>
+                                                <button @click.stop="toggleItem(item.id)" class="w-6 h-6 rounded-full bg-cream-dark text-gray-400 flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300" :class="{'rotate-180': expandedItems.has(item.id)}"></i></button>
                                             </div>
                                         </div>
+                                        
+                                        <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                                             <span class="text-[9px] px-2 py-0.5 rounded-full font-bold tracking-wide" :class="getTypeColorClass(item.type)">{{ item.type }}</span>
+                                             <span v-if="item.location && item.location !== item.title" class="text-[10px] text-gray-500 flex items-center gap-0.5">
+                                                <i class="fa-solid fa-location-dot text-primary/70 text-[8px]"></i> {{ item.location }}
+                                             </span>
+                                             <span v-if="item.lat" class="text-[9px] text-gray-300 font-mono hidden sm:inline-block">{{ item.lat.toFixed(3) }},{{ item.lng.toFixed(3) }}</span>
+                                        </div>
                                     </div>
+                                </div>
 
-                                    <div class="flex gap-2 mt-2 pt-2 border-t border-dashed border-gray-200 justify-end">
-                                        <button @click.stop="editItem(item)" class="w-8 h-8 bg-white border border-cream-dark text-gray-400 rounded-lg hover:text-dark hover:border-dark transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-solid fa-pen text-xs"></i></button>
-                                        <button @click.stop="copyItem(item)" class="w-8 h-8 bg-white border border-cream-dark text-gray-400 rounded-lg hover:text-primary hover:border-primary transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-regular fa-copy text-xs"></i></button>
-                                        <button @click.stop="deleteItem(item.id)" class="w-8 h-8 bg-white border border-cream-dark text-gray-400 rounded-lg hover:text-red-400 hover:border-red-400 transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-regular fa-trash-can text-xs"></i></button>
+                                <!-- Expanded Details -->
+                                <div v-show="expandedItems.has(item.id)" class="px-4 pb-4 pt-0 border-t border-dashed border-gray-100 bg-cream/30">
+                                    <div class="mt-3 space-y-3">
+                                        <div v-if="item.notes" class="p-2.5 bg-white border border-cream-dark rounded-xl text-xs text-gray-600 leading-relaxed whitespace-pre-wrap relative select-text border-l-4 border-l-primary/30">
+                                            {{ item.notes }}
+                                        </div>
+                                        
+                                        <!-- Sub Items (With Coords Display) -->
+                                        <div v-if="item.subItems && item.subItems.length > 0">
+                                            <h4 class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 pl-1">子行程</h4>
+                                            <div class="space-y-1.5">
+                                                <div v-for="(sub, sIdx) in item.subItems" :key="sIdx" class="bg-white p-2 rounded-lg border border-cream-dark flex justify-between items-center">
+                                                    <div class="flex items-center gap-2 overflow-hidden">
+                                                         <div class="w-1 h-1 rounded-full bg-gray-300 shrink-0"></div>
+                                                         <div class="min-w-0">
+                                                             <div class="text-xs font-bold text-dark truncate">{{ sub.location }}</div>
+                                                             <div v-if="sub.notes" class="text-[9px] text-gray-400 truncate">{{ sub.notes }}</div>
+                                                             <!-- NEW: Coordinate Display for Sub-items -->
+                                                             <div v-if="sub.lat" class="text-[8px] text-primary/60 font-mono mt-0.5 hidden sm:block"><i class="fa-solid fa-globe"></i> {{ sub.lat.toFixed(4) }}, {{ sub.lng.toFixed(4) }}</div>
+                                                         </div>
+                                                    </div>
+                                                    <button @click.stop="navigateTo(sub.location)" class="w-6 h-6 rounded-full bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-location-arrow text-[9px]"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex gap-2 mt-2 pt-2 border-t border-dashed border-gray-200 justify-end">
+                                            <button @click.stop="editItem(item)" class="w-8 h-8 bg-white border border-cream-dark text-gray-400 rounded-lg hover:text-dark hover:border-dark transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-solid fa-pen text-xs"></i></button>
+                                            <button @click.stop="copyItem(item)" class="w-8 h-8 bg-white border border-cream-dark text-gray-400 rounded-lg hover:text-primary hover:border-primary transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-regular fa-copy text-xs"></i></button>
+                                            <button @click.stop="deleteItem(item.id)" class="w-8 h-8 bg-white border border-cream-dark text-gray-400 rounded-lg hover:text-red-400 hover:border-red-400 transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-regular fa-trash-can text-xs"></i></button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <button @click="openModal('itinerary')" class="absolute bottom-28 right-5 w-12 h-12 bg-dark text-white rounded-full shadow-lg flex items-center justify-center text-lg hover:scale-105 transition-transform z-30 border-2 border-white active:scale-90">
+
+                <!-- ADD BUTTON MOVED TO BOTTOM-6 FIXED -->
+                <button @click="openModal('itinerary')" class="fixed bottom-6 right-5 w-12 h-12 bg-dark text-white rounded-full shadow-lg flex items-center justify-center text-lg hover:scale-105 transition-transform z-30 border-2 border-white active:scale-90">
                     <i class="fa-solid fa-plus"></i>
                 </button>
             </div>
@@ -333,7 +338,8 @@
                         </div>
                     </div>
                 </div>
-                <button @click="openModal('expense')" class="absolute bottom-28 right-5 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl z-30 border-2 border-white active:scale-90">
+                <!-- ADD BUTTON MOVED TO BOTTOM-6 FIXED -->
+                <button @click="openModal('expense')" class="fixed bottom-6 right-5 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl z-30 border-2 border-white active:scale-90">
                     <i class="fa-solid fa-pen"></i>
                 </button>
             </div>
@@ -879,7 +885,7 @@
                         if(item.subItems) {
                             item.subItems.forEach(sub => {
                                 if(sub.lat && sub.lng) {
-                                    const subIcon = L.divIcon({className:'custom-div-icon', html:`<div class='marker-pin-sub'></div>`, iconSize:[24,24], iconAnchor:[12,12]});
+                                    const subIcon = L.divIcon({className:'custom-div-icon', html:`<div class='marker-pin-sub'></div><span class='marker-text' style='bottom:-16px; left:-23px;'>${item.time}</span>`, iconSize:[24,24], iconAnchor:[12,12]});
                                     L.marker([sub.lat, sub.lng], {icon: subIcon}).addTo(map).bindPopup(`<b>${sub.location}</b><br>${sub.notes || ''}`);
                                     bounds.extend([sub.lat, sub.lng]); hasPoints=true;
                                 }
@@ -893,7 +899,7 @@
                 const openModal = (type) => {
                      if(type==='itinerary') { 
                         isEditing.value=false; 
-                        form.value={id:Date.now(), dayIndex:selectedDayIndex.value, time:'09:00', type:'景點', title:'', location:'', lat:null, lng:null, notes:'', subItems:[]}; 
+                        form.value={id:Date.now(), dayIndex:selectedDayIndex.value, time:'09:00', type:'景點', location:'', address: '', lat: null, lng: null, notes:'', subItems:[]}; 
                         showItineraryModal.value=true; 
                      }
                      else { const d=new Date(); const t=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; expenseForm.value={amount:'', item:'', category:'餐飲', payer:'Ant', currency:'NZD', date:t}; showExpenseModal.value=true; }
