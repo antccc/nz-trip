@@ -127,9 +127,10 @@
             <div class="h-12 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2">
                     <span class="bg-primary/20 p-1.5 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
-                    NZ Trip <span class="text-xs opacity-50">V25.16</span>
+                    NZ Trip <span class="text-xs opacity-50">V25.17</span>
+                    <!-- Status Display -->
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
-                    <!-- Updated: Clickable OFFLINE badge to retry sync -->
+                    <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> 連線中...</span>
                     <span v-else @click="initSync" class="text-[9px] bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-gray-300 active:scale-95 transition-all" title="點擊重新連線"><i class="fa-solid fa-cloud-slash"></i> OFFLINE (點擊重連)</span>
                 </h1>
             </div>
@@ -164,7 +165,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Updated padding-bottom for mobile safety -->
                 <div class="flex-1 overflow-y-auto px-6 pb-32 pt-2">
                     <div v-if="filteredItinerary.length === 0" class="flex flex-col items-center justify-center h-48 text-gray-300 border-2 border-dashed border-cream-dark rounded-3xl m-2"><i class="fa-regular fa-calendar-plus text-3xl mb-2 text-primary/30"></i><p class="font-bold text-xs text-primary/50">點擊右下角新增行程</p></div>
                     <div v-for="(item, index) in filteredItinerary" :key="item.id" class="group mb-4 relative pl-4">
@@ -198,7 +198,6 @@
                     <div class="flex flex-col mb-4"><div class="flex items-baseline gap-2"><span class="text-lg font-bold text-yellow-text">NZD</span><span class="text-4xl font-bold text-yellow-text font-sans">{{ grandTotalNZD.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span></div><div class="text-sm font-bold text-yellow-text/70 mt-1">≈ NT$ {{ Math.round(grandTotalTWD).toLocaleString() }}</div></div>
                     <div class="flex gap-3"><div class="flex-1 bg-white/40 px-3 py-2 rounded-xl text-yellow-text font-bold flex flex-col items-start"><span class="text-[10px] opacity-60 mb-0.5 uppercase">NZD 現金/刷卡</span><span class="text-lg font-sans">${{ totalNZD.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span></div><div class="flex-1 bg-white/40 px-3 py-2 rounded-xl text-yellow-text font-bold flex flex-col items-start"><span class="text-[10px] opacity-60 mb-0.5 uppercase">TWD 刷卡/已付</span><span class="text-lg font-sans">${{ totalTWD.toLocaleString() }}</span></div></div>
                 </div>
-                <!-- Updated padding-bottom for mobile safety -->
                 <div class="flex-1 overflow-y-auto px-6 pb-32">
                     <div v-for="(group, date) in groupedExpenses" :key="date" class="mb-6">
                         <div class="flex items-center justify-between mb-3 px-1"><span class="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-lg">{{ date }}</span><span class="text-xs font-bold text-dark">本排小計: NT$ {{ Math.round(group.total * exchangeRate).toLocaleString() }}</span></div>
@@ -504,11 +503,23 @@
                 const initSync = async () => {
                     const t = localStorage.getItem('nz_theme_pref'); if (t && THEMES[t]) applyTheme(t); else applyTheme('hojicha');
                     loadLocalData();
-                    let a = 0; while (!window.firestoreDB && a < 10) { await new Promise(r => setTimeout(r, 300)); a++; }
+                    let a = 0; while (!window.firestoreDB && a < 50) { await new Promise(r => setTimeout(r, 300)); a++; } // Wait up to 15s
+                    
                     if (window.firestoreDB && window.firebaseAuth) {
-                        try { if(!window.firebaseAuth.currentUser) await window.firestoreMethods.signInAnonymously(window.firebaseAuth); startSnapshotListener(); } 
-                        catch (e) { console.warn("Sync fail", e); connectionStatus.value = 'local'; }
-                    } else connectionStatus.value = 'local';
+                        try {
+                             // Try Auth
+                            if(!window.firebaseAuth.currentUser) {
+                                await window.firestoreMethods.signInAnonymously(window.firebaseAuth);
+                            }
+                            startSnapshotListener();
+                        } catch (e) {
+                             console.warn("Auth/Sync failed, staying in local mode.", e);
+                             connectionStatus.value = 'local'; 
+                        }
+                    } else {
+                        console.warn("Firebase Init Timeout");
+                        connectionStatus.value = 'local';
+                    }
                 };
                 
                 const startSnapshotListener = () => {
