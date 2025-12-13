@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NZ Trip V25</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWCdRmB3l8PDg6O_tzX2pT2-50ajpdXEw",
+            authDomain: "mynztrip-4955d.firebaseapp.com",
+            projectId: "mynztrip-4955d",
+            storageBucket: "mynztrip-4955d.firebasestorage.app",
+            messagingSenderId: "733993847062",
+            appId: "1:733993847062:web:15246edf39b8d5002b6837",
+            measurementId: "G-7HBWQ93Y43"
+        };
+
+        let db, auth;
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            window.firestoreDB = db;
+            window.firebaseAuth = auth;
+            window.firestoreMethods = { doc, onSnapshot, setDoc, signInAnonymously };
+            console.log("Firebase initialized");
+        } catch (e) {
+            console.warn("Firebase config missing. Running in local mode.");
+        }
+    </script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 
+                            DEFAULT: 'rgb(var(--c-primary) / <alpha-value>)', 
+                            dark: 'rgb(var(--c-primary-dark) / <alpha-value>)', 
+                            light: 'rgb(var(--c-primary-light) / <alpha-value>)' 
+                        },
+                        cream: { 
+                            DEFAULT: 'rgb(var(--c-cream) / <alpha-value>)', 
+                            dark: 'rgb(var(--c-cream-dark) / <alpha-value>)', 
+                            darker: 'rgb(var(--c-cream-darker) / <alpha-value>)' 
+                        },
+                        yellow: { 
+                            card: 'rgb(var(--c-card-bg) / <alpha-value>)', 
+                            text: 'rgb(var(--c-card-text) / <alpha-value>)' 
+                        },
+                        dark: { 
+                            DEFAULT: 'rgb(var(--c-dark) / <alpha-value>)', 
+                            soft: 'rgb(var(--c-dark-soft) / <alpha-value>)' 
+                        },
+                        accent: 'rgb(var(--c-accent) / <alpha-value>)',
+                        paper: '#FFFFFF'
+                    },
+                    fontFamily: { sans: ['Quicksand', 'Noto Sans TC', 'sans-serif'] },
+                    boxShadow: { 
+                        'soft': '0 4px 20px -5px rgba(var(--c-primary), 0.2)',
+                        'card': '0 2px 10px rgba(var(--c-dark), 0.05)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --c-primary: 78 52 46; 
+            --c-primary-dark: 62 39 35;
+            --c-primary-light: 141 110 99;
+            --c-cream: 255 248 209; /* Default fallback to new pudding cream */
+            --c-cream-dark: 255 240 179;
+            --c-cream-darker: 255 224 130;
+            --c-card-bg: 255 202 40; /* Updated default fallback */
+            --c-card-text: 62 39 35;
+            --c-dark: 78 52 46;
+            --c-dark-soft: 109 76 65;
+            --c-accent: 255 179 0;
+        }
+        body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; background-color: rgb(var(--c-cream)); color: rgb(var(--c-dark)); transition: background-color 0.3s, color 0.3s; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .slide-up-enter-active, .slide-up-leave-active { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .slide-up-enter-from, .slide-up-leave-to { transform: translateY(100%); }
+        .timeline-line { position: absolute; left: 23px; top: 3.5rem; bottom: -1rem; width: 2px; background-image: linear-gradient(to bottom, rgb(var(--c-primary-light)) 50%, transparent 50%); background-size: 2px 12px; background-repeat: repeat-y; z-index: 0; }
+        .dot-marker { width: 12px; height: 12px; border-radius: 50%; background: rgb(var(--c-cream)); border: 3px solid rgb(var(--c-primary)); position: relative; z-index: 1; }
+        .input-rounded { border-radius: 16px; border: 1px solid rgb(var(--c-cream-darker)); transition: all 0.2s; }
+        .input-rounded:focus { border-color: rgb(var(--c-primary)); box-shadow: 0 0 0 3px rgba(var(--c-primary), 0.15); }
+        .custom-div-icon { background: transparent; border: none; }
+        .marker-pin { width: 34px; height: 34px; border-radius: 50% 50% 50% 0; background: rgb(var(--c-primary)); position: absolute; transform: rotate(-45deg); left: 50%; top: 50%; margin: -15px 0 0 -15px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; }
+        .marker-pin::after { content: ''; width: 20px; height: 20px; margin: 0; background: #fff; position: absolute; border-radius: 50%; }
+        .marker-text { position: absolute; bottom: -8px; left: -25px; width: 70px; text-align: center; font-size: 10px; font-weight: 700; color: rgb(var(--c-dark)); background: rgba(255,255,255,0.95); border-radius: 8px; padding: 2px 4px; pointer-events: none; border: 1px solid rgb(var(--c-cream-darker)); }
+        .marker-pin-sub { width: 24px; height: 24px; border-radius: 50% 50% 50% 0; background: rgb(var(--c-dark-soft)); position: absolute; transform: rotate(-45deg); left: 50%; top: 50%; margin: -12px 0 0 -12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; }
+        .marker-pin-sub::after { content: ''; width: 10px; height: 10px; margin: 0; background: #fff; position: absolute; border-radius: 50%; }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
+</head>
+<body class="text-dark h-[100dvh] w-screen flex flex-col overflow-hidden selection:bg-primary-light selection:text-dark-soft">
+    <div id="app" class="h-full flex flex-col relative bg-cream">
+        <input type="file" ref="saveFileInput" @change="loadFromFile" accept=".json" class="hidden">
+        
+        <!-- Header -->
+        <header class="bg-cream/90 backdrop-blur-sm pt-safe-top px-6 pb-3 shrink-0 z-20 flex justify-between items-end transition-colors duration-300">
+            <div class="h-12 pb-1 flex flex-col justify-end">
+                <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2">
+                    <span class="bg-primary/20 p-1.5 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
+                    NZ Trip <span class="text-xs opacity-50">V25.14</span>
+                    <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
+                    <span v-else class="text-[9px] bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-bold"><i class="fa-solid fa-cloud-slash"></i> OFFLINE</span>
+                </h1>
+            </div>
+            <div class="flex gap-2">
+                <div v-if="hasPendingUploads" class="w-8 h-8 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center animate-bounce" title="有未上傳的變更"><i class="fa-solid fa-arrow-up-from-bracket text-xs"></i></div>
+                <button @click="showSettingsModal = true" class="w-10 h-10 rounded-full bg-white border border-cream-dark shadow-sm flex items-center justify-center text-gray-400 hover:text-primary transition-colors"><i class="fa-solid fa-sliders"></i></button>
+            </div>
+        </header>
+
+        <!-- Main -->
+        <main class="flex-1 overflow-hidden relative">
+            <div v-if="currentTab === 'itinerary'" class="h-full flex flex-col">
+                <div class="pt-2 pb-4 shrink-0 z-10">
+                    <div ref="dateContainer" class="flex overflow-x-auto no-scrollbar px-6 space-x-3 scroll-smooth py-2">
+                        <button v-for="(date, index) in days" :key="index" @click="selectDate(index)" class="flex-shrink-0 flex flex-col items-center justify-center w-[3.8rem] h-[4.8rem] rounded-[1.5rem] transition-all duration-300 border-2" :class="selectedDayIndex === index ? 'bg-primary text-white border-primary shadow-soft transform -translate-y-1' : 'bg-white text-gray-400 border-transparent hover:border-cream-dark'">
+                            <span class="text-[9px] uppercase font-bold tracking-wide opacity-70">Day</span><span class="text-lg font-bold font-sans">{{ index }}</span><span class="text-[9px] mt-0.5">{{ date.getMonth()+1 }}/{{ date.getDate() }} <span class="opacity-80">{{ getWeekDay(date) }}</span></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="px-6 pb-2 shrink-0">
+                    <div class="bg-primary rounded-[2.5rem] p-6 shadow-lg shadow-primary/30 relative overflow-hidden group transition-all duration-300">
+                        <div class="absolute right-[-20px] top-[-20px] w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                        <div class="flex justify-between items-start relative z-10">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-3">
+                                    <span class="bg-white/20 text-white px-3 py-1 rounded-xl text-[10px] font-bold tracking-wider backdrop-blur-sm">DAY {{ selectedDayIndex }} · {{ getWeekDay(days[selectedDayIndex]) }}</span>
+                                    <div class="flex gap-2 overflow-x-auto no-scrollbar"><span v-for="(w, idx) in dailyWeatherList" :key="idx" class="text-xs font-bold flex items-center gap-1 text-white bg-white/10 px-2.5 py-1 rounded-full whitespace-nowrap backdrop-blur-sm"><i :class="w.icon"></i><span class="text-[10px] opacity-90">{{ w.name }}</span><span>{{ w.temp }}°</span></span></div>
+                                </div>
+                                <h2 class="text-xl font-bold text-white truncate pr-2 flex items-center gap-2 leading-tight">{{ getDaySummary }}<button @click.stop="openDaySettings" class="text-white/60 hover:text-white text-sm transition-colors"><i class="fa-solid fa-pen"></i></button></h2>
+                            </div>
+                            <div @click="toggleGlobalFold" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center cursor-pointer hover:bg-white/30 transition-colors text-white mt-1"><i class="fa-solid text-sm transition-transform duration-300" :class="isAllExpanded ? 'fa-compress' : 'fa-expand'"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-1 overflow-y-auto px-6 pb-24 pt-2">
+                    <div v-if="filteredItinerary.length === 0" class="flex flex-col items-center justify-center h-48 text-gray-300 border-2 border-dashed border-cream-dark rounded-3xl m-2"><i class="fa-regular fa-calendar-plus text-3xl mb-2 text-primary/30"></i><p class="font-bold text-xs text-primary/50">點擊右下角新增行程</p></div>
+                    <div v-for="(item, index) in filteredItinerary" :key="item.id" class="group mb-4 relative pl-4">
+                        <div v-if="index !== filteredItinerary.length - 1" class="timeline-line"></div>
+                        <div class="relative bg-white rounded-[1.5rem] shadow-card border border-cream-dark flex flex-col transition-all duration-300 z-10 overflow-hidden hover:border-primary/30">
+                            <div class="p-4 flex gap-4 items-start" @click="toggleItem(item.id)">
+                                <div class="flex flex-col items-center min-w-[3.5rem] shrink-0 pt-1"><span class="text-sm font-bold text-dark font-sans bg-cream-dark px-2 py-0.5 rounded-lg">{{ item.time }}</span><div class="dot-marker mt-3"></div></div>
+                                <div class="flex-1 min-w-0 pt-0.5">
+                                    <div class="flex justify-between items-start"><h3 class="font-bold text-dark text-lg leading-tight truncate pr-2 select-text">{{ item.title || item.location }}</h3><div class="flex items-center gap-2 shrink-0"><button @click.stop="navigateTo(item.address || item.location)" class="w-8 h-8 rounded-full bg-cream-dark text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors"><i class="fa-solid fa-location-arrow text-xs"></i></button><button @click.stop="toggleItem(item.id)" class="w-8 h-8 rounded-full bg-cream-dark text-gray-400 flex items-center justify-center hover:bg-primary hover:text-white transition-colors"><i class="fa-solid fa-chevron-down text-xs transition-transform duration-300" :class="{'rotate-180': expandedItems.has(item.id)}"></i></button></div></div>
+                                    <div class="flex items-center gap-2 mt-1.5 flex-wrap"><span class="text-[10px] px-2.5 py-1 rounded-full font-bold tracking-wide" :class="getTypeColorClass(item.type)">{{ item.type }}</span><span v-if="item.location && item.location !== item.title" class="text-xs text-gray-500 flex items-center gap-1"><i class="fa-solid fa-location-dot text-primary/70"></i> {{ item.location }}</span></div>
+                                </div>
+                            </div>
+                            <div v-show="expandedItems.has(item.id)" class="px-5 pb-5 pt-0 border-t border-dashed border-gray-100 bg-cream/30">
+                                <div class="mt-4 space-y-4">
+                                    <div v-if="item.location" class="flex justify-between items-center bg-white p-3 rounded-xl border border-cream-dark shadow-sm"><div class="flex items-center gap-2 overflow-hidden"><div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary"><i class="fa-solid fa-map-pin"></i></div><div class="flex flex-col min-w-0"><span class="text-xs font-bold text-dark truncate">{{ item.location }}</span><span v-if="item.lat" class="text-[9px] text-gray-400 font-mono">{{ item.lat.toFixed(4) }}, {{ item.lng.toFixed(4) }}</span></div></div><button @click.stop="navigateTo(item.address || item.location)" class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-sm hover:scale-105 transition-transform"><i class="fa-solid fa-location-arrow text-xs"></i></button></div>
+                                    <div v-if="item.notes" class="p-3 bg-white border border-cream-dark rounded-xl text-sm text-gray-600 leading-relaxed whitespace-pre-wrap relative select-text border-l-4 border-l-primary/30">{{ item.notes }}</div>
+                                    <div v-if="item.subItems && item.subItems.length > 0"><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">子行程 / 備案</h4><div class="space-y-2"><div v-for="(sub, sIdx) in item.subItems" :key="sIdx" class="bg-white p-3 rounded-xl border border-cream-dark flex justify-between items-center"><div class="flex items-center gap-3 overflow-hidden"><div class="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0"></div><div class="min-w-0"><div class="text-xs font-bold text-dark truncate">{{ sub.location }}</div><div v-if="sub.notes" class="text-[10px] text-gray-400 truncate">{{ sub.notes }}</div></div></div><button v-if="sub.lat" @click.stop="navigateToLoc(sub.lat, sub.lng)" class="w-7 h-7 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-primary hover:text-white transition-colors"><i class="fa-solid fa-location-arrow text-[10px]"></i></button></div></div></div>
+                                    <div class="flex gap-2 mt-2 pt-2 border-t border-dashed border-gray-200 justify-end"><button @click.stop="editItem(item)" class="w-10 h-10 bg-white border border-cream-dark text-gray-400 rounded-xl hover:text-dark hover:border-dark transition-colors flex items-center justify-center shadow-sm" title="編輯"><i class="fa-solid fa-pen"></i></button><button @click.stop="copyItem(item)" class="w-10 h-10 bg-white border border-cream-dark text-gray-400 rounded-xl hover:text-primary hover:border-primary transition-colors flex items-center justify-center shadow-sm" title="複製"><i class="fa-regular fa-copy"></i></button><button @click.stop="deleteItem(item.id)" class="w-10 h-10 bg-white border border-cream-dark text-gray-400 rounded-xl hover:text-red-400 hover:border-red-400 transition-colors flex items-center justify-center shadow-sm" title="刪除"><i class="fa-regular fa-trash-can"></i></button></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button @click="openModal('itinerary')" class="absolute bottom-24 right-6 w-14 h-14 bg-dark text-white rounded-full shadow-lg flex items-center justify-center text-xl hover:scale-105 transition-transform z-30 border-4 border-white"><i class="fa-solid fa-plus"></i></button>
+            </div>
+
+            <div v-if="currentTab === 'expenses'" class="h-full flex flex-col bg-cream rounded-t-[2.5rem] mt-2 shadow-inner overflow-hidden border-t border-cream-dark transition-colors duration-300">
+                <div class="p-6 bg-yellow-card m-4 rounded-[2rem] shadow-sm relative overflow-hidden transition-colors duration-300">
+                    <div class="absolute right-[-10px] top-[-10px] w-24 h-24 bg-white/20 rounded-full blur-xl pointer-events-none"></div>
+                    <div class="flex justify-between items-start mb-2"><p class="text-xs font-bold text-yellow-text/70 uppercase tracking-widest">綜合總支出 (估算)</p><button @click="showStatsModal = true" class="bg-white/50 text-yellow-text hover:bg-white px-3 py-1 rounded-xl text-xs font-bold transition-colors flex items-center gap-1"><i class="fa-solid fa-chart-pie"></i> 查看統計</button></div>
+                    <div class="flex flex-col mb-4"><div class="flex items-baseline gap-2"><span class="text-lg font-bold text-yellow-text">NZD</span><span class="text-4xl font-bold text-yellow-text font-sans">{{ grandTotalNZD.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span></div><div class="text-sm font-bold text-yellow-text/70 mt-1">≈ NT$ {{ Math.round(grandTotalTWD).toLocaleString() }}</div></div>
+                    <div class="flex gap-3"><div class="flex-1 bg-white/40 px-3 py-2 rounded-xl text-yellow-text font-bold flex flex-col items-start"><span class="text-[10px] opacity-60 mb-0.5 uppercase">NZD 現金/刷卡</span><span class="text-lg font-sans">${{ totalNZD.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span></div><div class="flex-1 bg-white/40 px-3 py-2 rounded-xl text-yellow-text font-bold flex flex-col items-start"><span class="text-[10px] opacity-60 mb-0.5 uppercase">TWD 刷卡/已付</span><span class="text-lg font-sans">${{ totalTWD.toLocaleString() }}</span></div></div>
+                </div>
+                <div class="flex-1 overflow-y-auto px-6 pb-20">
+                    <div v-for="(group, date) in groupedExpenses" :key="date" class="mb-6">
+                        <div class="flex items-center justify-between mb-3 px-1"><span class="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-lg">{{ date }}</span><span class="text-xs font-bold text-dark">本排小計: NT$ {{ Math.round(group.total * exchangeRate).toLocaleString() }}</span></div>
+                        <div v-for="expense in group.items" :key="expense.id" class="bg-white rounded-2xl p-4 mb-3 border border-gray-100 hover:border-primary/30 transition-colors flex justify-between items-center group relative shadow-card">
+                            <div class="flex items-center gap-4 flex-1 min-w-0"><div class="w-11 h-11 rounded-full bg-cream flex items-center justify-center text-sm shrink-0 text-gray-400 border border-cream-dark transition-colors duration-300"><i :class="getCategoryIcon(expense.category)"></i></div><div class="min-w-0"><div class="flex items-center gap-2"><h4 class="font-bold text-dark text-sm truncate">{{ expense.item }}</h4></div><div class="flex gap-1.5 mt-1"><span class="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md">{{ expense.payer }}</span><span class="text-[9px] border border-gray-100 text-gray-400 px-1.5 py-0.5 rounded-md">{{ expense.category }}</span></div></div></div>
+                            <div class="text-right shrink-0"><div class="font-bold text-dark text-sm">{{ expense.currency }} {{ expense.originalAmount }}</div><div class="text-[10px] text-gray-400">≈ NT$ {{ Math.round(expense.baseAmount * exchangeRate) }}</div></div>
+                            <button @click="deleteExpense(expense.id)" class="absolute -right-2 -top-2 bg-white text-red-400 w-6 h-6 rounded-full shadow-sm border border-gray-100 items-center justify-center hidden group-hover:flex hover:bg-red-50"><i class="fa-solid fa-xmark text-xs"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <button @click="openModal('expense')" class="absolute bottom-24 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl z-30 hover:scale-105 transition-transform border-4 border-white"><i class="fa-solid fa-pen"></i></button>
+            </div>
+
+            <div v-if="currentTab === 'map'" class="h-full w-full relative">
+                <div id="map-container" class="h-full w-full bg-gray-100"></div>
+                <div class="absolute top-4 left-4 right-4 z-[400] flex justify-between pointer-events-none"><div class="bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-sm pointer-events-auto border border-white"><p class="text-xs font-bold text-gray-600">Day {{ selectedDayIndex }}</p></div><button @click="locateUser" class="bg-white/90 backdrop-blur w-10 h-10 rounded-full shadow-sm flex items-center justify-center text-primary pointer-events-auto border border-white active:scale-95 transition-transform"><i class="fa-solid fa-crosshairs"></i></button></div>
+            </div>
+        </main>
+
+        <!-- Navigation (Fixed & Centered) -->
+        <nav class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[calc(100%-3rem)] max-w-sm h-16 bg-white/95 backdrop-blur-md rounded-full shadow-soft border border-white/50 flex justify-around items-center px-2 z-[1000] transition-colors duration-300">
+            <button @click="currentTab = 'itinerary'" class="w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300" :class="currentTab === 'itinerary' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-list-ul text-lg"></i></button>
+            <button @click="currentTab = 'expenses'" class="w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300" :class="currentTab === 'expenses' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-wallet text-lg"></i></button>
+            <button @click="currentTab = 'map'" class="w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300" :class="currentTab === 'map' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-600'"><i class="fa-regular fa-map text-lg"></i></button>
+        </nav>
+
+        <!-- Itinerary Modal -->
+        <transition name="slide-up">
+            <div v-if="showItineraryModal" class="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+                <div class="absolute inset-0 bg-dark/20 backdrop-blur-[2px]" @click="closeModal"></div>
+                <div class="bg-cream w-full sm:w-96 rounded-t-[2.5rem] p-8 shadow-2xl relative z-10 max-h-[95vh] overflow-y-auto">
+                    <h3 class="text-xl font-bold text-dark mb-6 text-center">{{ isEditing ? '編輯行程' : '新增行程' }}</h3>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-5 gap-3"><div class="col-span-2"><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">DAY</label><select v-model="form.dayIndex" class="w-full bg-white input-rounded p-3 text-sm font-bold text-center appearance-none outline-none"><option v-for="(d, i) in days" :value="i">Day {{ i }} - {{ formatDate(d) }}</option></select></div><div class="col-span-3"><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">TIME</label><div class="flex gap-2"><select v-model="formHour" class="flex-1 bg-white input-rounded p-3 text-sm font-bold text-center appearance-none outline-none"><option v-for="h in 24" :value="(h-1).toString().padStart(2,'0')">{{ (h-1).toString().padStart(2,'0') }}</option></select><span class="self-center font-bold text-gray-300">:</span><select v-model="formMinute" class="flex-1 bg-white input-rounded p-3 text-sm font-bold text-center appearance-none outline-none"><option v-for="m in 60" :value="(m-1).toString().padStart(2,'0')">{{ (m-1).toString().padStart(2,'0') }}</option></select></div></div></div>
+                        <div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">TITLE</label><input type="text" v-model="form.title" placeholder="例如：前往餐廳吃晚餐" class="w-full bg-white input-rounded p-4 text-sm font-bold outline-none"></div>
+                        <div class="bg-white p-3 rounded-2xl border border-dashed border-gray-200"><div class="flex justify-between items-center mb-1.5 px-1"><label class="text-[10px] font-bold text-gray-400">LOCATION</label><span v-if="form.lat" class="text-[9px] text-green-500 font-mono"><i class="fa-solid fa-check"></i> {{ form.lat.toFixed(3) }},{{ form.lng.toFixed(3) }}</span></div><div class="flex gap-2"><input type="text" v-model="form.location" placeholder="地點名稱" class="flex-1 bg-gray-50 rounded-xl p-2.5 text-sm font-bold outline-none"><button @click="searchCoord(form)" :disabled="isSearchingCoord" class="w-10 h-10 rounded-xl bg-gray-100 text-gray-400 hover:bg-primary hover:text-white transition-colors flex items-center justify-center shrink-0"><i class="fa-solid" :class="isSearchingCoord ? 'fa-circle-notch fa-spin' : 'fa-magnifying-glass'"></i></button></div></div>
+                        <div><div class="flex justify-between items-center mb-2 px-1"><label class="text-[10px] font-bold text-gray-400">SUB-ITEMS</label><button @click="addSubItem" class="text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-lg font-bold hover:bg-primary hover:text-white transition-colors"><i class="fa-solid fa-plus mr-1"></i>新增</button></div><div class="space-y-2"><div v-for="(sub, idx) in form.subItems" :key="idx" class="bg-white p-3 rounded-xl border border-cream-dark relative"><button @click="removeSubItem(idx)" class="absolute top-2 right-2 text-gray-300 hover:text-red-400"><i class="fa-solid fa-xmark"></i></button><div class="flex gap-2 mb-2 pr-6"><input type="text" v-model="sub.location" placeholder="子地點" class="flex-1 text-xs font-bold outline-none bg-transparent border-b border-gray-100 focus:border-primary pb-1"><button @click="searchCoord(sub)" :disabled="isSearchingCoord" class="text-gray-300 hover:text-primary"><i class="fa-solid fa-magnifying-glass text-xs"></i></button></div><input type="text" v-model="sub.notes" placeholder="備註..." class="w-full text-xs text-gray-500 bg-transparent outline-none"></div></div></div>
+                        <div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">CATEGORY</label><div class="flex flex-wrap gap-2"><button v-for="t in ['景點','美食','住宿','交通','購物','其他']" @click="form.type = t" class="px-4 py-2 rounded-2xl text-xs font-bold border transition-all" :class="form.type === t ? 'bg-dark text-white border-dark' : 'bg-white text-gray-400 border-gray-100 hover:border-gray-300'">{{ t }}</button></div></div>
+                        <div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">MEMO</label><textarea v-model="form.notes" rows="3" class="w-full bg-white input-rounded p-4 text-sm outline-none resize-none"></textarea></div>
+                    </div>
+                    <button @click="saveItinerary" class="w-full py-4 bg-primary text-white rounded-2xl font-bold mt-8 shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform">儲存行程</button>
+                </div>
+            </div>
+        </transition>
+
+        <transition name="slide-up">
+            <div v-if="showExpenseModal" class="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+                <div class="absolute inset-0 bg-dark/30 backdrop-blur-sm" @click="closeModal"></div>
+                <div class="bg-[#FDFBF7] w-full sm:w-[400px] rounded-t-[2.5rem] sm:rounded-[2.5rem] p-8 shadow-2xl relative z-10">
+                    <button @click="closeModal" class="absolute top-6 right-6 w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-400 hover:bg-gray-200"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 class="text-xl font-bold text-dark mb-8 pl-1">新增支出</h3>
+                    <div class="space-y-6">
+                        <div><label class="text-[11px] font-bold text-gray-400 mb-1.5 block pl-3">項目名稱</label><input type="text" v-model="expenseForm.item" placeholder="例如：午餐" class="w-full bg-white h-14 rounded-[1.2rem] px-5 text-sm font-bold text-dark shadow-sm border border-transparent focus:border-primary outline-none"></div>
+                        <div class="bg-white p-2 rounded-[1.5rem] shadow-sm border border-gray-50"><div class="flex bg-gray-50 rounded-[1rem] p-1 mb-3"><button @click="expenseForm.currency = 'NZD'" class="flex-1 py-2 rounded-[0.8rem] text-xs font-bold transition-all" :class="expenseForm.currency === 'NZD' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'">NZD $</button><button @click="expenseForm.currency = 'TWD'" class="flex-1 py-2 rounded-[0.8rem] text-xs font-bold transition-all" :class="expenseForm.currency === 'TWD' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'">TWD $</button></div><div class="px-3 pb-1 relative"><input type="number" v-model.number="expenseForm.amount" placeholder="0" class="w-full text-3xl font-bold text-dark bg-transparent outline-none placeholder-gray-200 pl-1"></div></div>
+                        <div class="grid grid-cols-2 gap-4"><div><label class="text-[11px] font-bold text-gray-400 mb-1.5 block pl-3"><i class="fa-solid fa-tag mr-1"></i>分類</label><div class="relative"><select v-model="expenseForm.category" class="w-full bg-white h-12 rounded-[1rem] pl-4 pr-8 text-sm font-bold text-dark appearance-none shadow-sm border border-transparent outline-none"><option v-for="c in expenseCategories" :value="c">{{ c }}</option></select><i class="fa-solid fa-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-300"></i></div></div><div><label class="text-[11px] font-bold text-gray-400 mb-1.5 block pl-3"><i class="fa-solid fa-user mr-1"></i>付款人</label><div class="relative"><select v-model="expenseForm.payer" class="w-full bg-white h-12 rounded-[1rem] pl-4 pr-8 text-sm font-bold text-dark appearance-none shadow-sm border border-transparent outline-none"><option v-for="p in payers" :value="p">{{ p }}</option></select><i class="fa-solid fa-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-300"></i></div></div></div>
+                        <div><label class="text-[11px] font-bold text-gray-400 mb-1.5 block pl-3">日期</label><div class="relative"><input type="date" v-model="expenseForm.date" class="w-full bg-white h-12 rounded-[1rem] px-4 text-sm font-bold text-gray-600 appearance-none shadow-sm border border-transparent outline-none"><i class="fa-regular fa-calendar absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none"></i></div></div>
+                    </div>
+                    <button @click="saveExpense" class="w-full py-4 bg-dark text-white rounded-[1.2rem] font-bold mt-8 shadow-lg shadow-dark/20 active:scale-[0.98] transition-transform">儲存紀錄</button>
+                </div>
+            </div>
+        </transition>
+
+        <div v-if="showStatsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-dark/30 backdrop-blur-sm p-4">
+            <div class="bg-cream w-full sm:w-[400px] rounded-[2rem] p-8 shadow-2xl relative max-h-[85vh] overflow-y-auto">
+                <button @click="showStatsModal=false" class="absolute top-6 right-6 text-gray-400 hover:text-dark transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <h3 class="text-xl font-bold text-dark mb-6 flex items-center gap-2"><span class="bg-yellow-card p-1.5 rounded-lg text-yellow-text"><i class="fa-solid fa-chart-pie"></i></span>消費統計</h3>
+                <div class="mb-6"><h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 pl-1">依付款人 (By Payer)</h4><div class="space-y-3"><div v-for="payer in payers" :key="payer" class="bg-white p-4 rounded-2xl shadow-card border border-cream-dark flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">{{ payer.charAt(0) }}</div><span class="font-bold text-dark text-sm">{{ payer }}</span></div><div class="text-right flex flex-col gap-0.5"><span v-if="expenseStats.payers[payer].NZD > 0" class="text-xs font-bold text-dark bg-gray-50 px-1.5 py-0.5 rounded">NZD {{ expenseStats.payers[payer].NZD.toLocaleString() }}</span><span v-if="expenseStats.payers[payer].TWD > 0" class="text-xs font-bold text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded">TWD {{ expenseStats.payers[payer].TWD.toLocaleString() }}</span><span v-if="expenseStats.payers[payer].NZD === 0 && expenseStats.payers[payer].TWD === 0" class="text-[10px] text-gray-300">-</span></div></div></div></div>
+                <div><h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 pl-1">依分類 (By Category)</h4><div class="space-y-2"><div v-for="cat in expenseCategories" :key="cat" class="flex justify-between items-center py-2 px-2 border-b border-dashed border-gray-200 last:border-0"><div class="flex items-center gap-2"><i :class="getCategoryIcon(cat)" class="text-gray-300 text-xs w-4 text-center"></i><span class="text-xs font-bold text-gray-600">{{ cat }}</span></div><div class="flex gap-2 text-right"><span v-if="expenseStats.categories[cat].NZD > 0" class="text-xs font-bold text-dark">NZD {{ expenseStats.categories[cat].NZD.toLocaleString() }}</span><span v-if="expenseStats.categories[cat].TWD > 0" class="text-xs font-bold text-gray-400">TWD {{ expenseStats.categories[cat].TWD.toLocaleString() }}</span><span v-if="expenseStats.categories[cat].NZD === 0 && expenseStats.categories[cat].TWD === 0" class="text-[10px] text-gray-300">-</span></div></div></div></div>
+                <button @click="showStatsModal=false" class="w-full mt-6 py-3 bg-primary text-white rounded-xl font-bold shadow-soft hover:bg-primary-dark transition-colors">關閉</button>
+            </div>
+        </div>
+
+        <div v-if="showSettingsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
+            <div class="bg-white p-6 rounded-[2rem] w-80 shadow-2xl text-center relative max-h-[90vh] overflow-y-auto">
+                <button @click="showSettingsModal=false" class="absolute top-4 right-4 text-gray-300 hover:text-gray-500"><i class="fa-solid fa-xmark"></i></button>
+                <h3 class="font-bold text-dark mb-6">設定</h3>
+                <div class="mb-6 bg-cream p-4 rounded-2xl border border-cream-darker">
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 text-left">雲端同步 ID</label>
+                    <div class="flex gap-2"><input type="text" v-model="newTripId" placeholder="輸入專屬 ID" class="flex-1 bg-white input-rounded p-2 text-sm font-bold text-dark outline-none border border-cream-darker"><button @click="changeTripId" class="bg-dark text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-gray-800 transition-colors whitespace-nowrap">切換頻道</button></div>
+                    <p class="text-[9px] text-gray-400 mt-2 text-left leading-relaxed">目前頻道: <span class="font-bold text-primary">{{ tripId }}</span></p>
+                </div>
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-3"><span class="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">主題風格</span><span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-bold">{{ THEMES[currentTheme].name }}</span></div>
+                    <div class="grid grid-cols-3 gap-2"><button v-for="(t, key) in THEMES" :key="key" @click="applyTheme(key)" class="relative p-2 rounded-xl border transition-all duration-200 flex flex-col items-center gap-1 group" :class="currentTheme === key ? 'border-primary bg-primary/5' : 'border-gray-100 hover:border-gray-200'"><div class="w-6 h-6 rounded-full shadow-sm border border-white/50" :style="{backgroundColor: t.colors.primary}"></div><span class="text-[10px] font-bold text-gray-500 group-hover:text-dark">{{ t.name }}</span><div v-if="currentTheme === key" class="absolute top-2 right-2 w-1.5 h-1.5 bg-primary rounded-full"></div></button></div>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-gray-50 p-4 rounded-2xl">
+                        <div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-gray-400">匯率 (NZD:TWD)</span><button @click="fetchRate" :disabled="isFetchingRate" class="text-[10px] bg-white border border-gray-200 px-2 py-1 rounded-full text-primary font-bold"><i class="fa-solid fa-rotate" :class="{'fa-spin': isFetchingRate}"></i> 更新</button></div>
+                        <input type="number" v-model.number="exchangeRate" class="w-full bg-transparent text-center text-xl font-bold text-dark outline-none border-b border-gray-200 focus:border-primary pb-1">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3"><button @click="saveToFile" class="py-3 bg-blue-50 text-blue-500 rounded-xl text-xs font-bold hover:bg-blue-100">備份檔案</button><button @click="$refs.saveFileInput.click()" class="py-3 bg-orange-50 text-orange-500 rounded-xl text-xs font-bold hover:bg-orange-100">讀取檔案</button></div>
+                    <button @click="exportExpensesCSV" class="w-full py-3 bg-green-50 text-green-600 rounded-xl text-xs font-bold hover:bg-green-100 transition-colors flex items-center justify-center gap-2"><i class="fa-solid fa-file-csv"></i> 匯出記帳明細 (CSV)</button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showDaySettingsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
+             <div class="bg-white p-6 rounded-[2rem] w-80 shadow-2xl relative">
+                <button @click="showDaySettingsModal=false" class="absolute top-4 right-4 text-gray-300 hover:text-gray-500"><i class="fa-solid fa-xmark"></i></button>
+                <h3 class="font-bold text-dark mb-4 pl-2">Day {{ selectedDayIndex }} 設定</h3>
+                <div class="space-y-4"><div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">標題</label><input type="text" v-model="tempDaySettings.title" class="w-full bg-gray-50 input-rounded p-3 text-sm"></div><div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">天氣地點</label><div class="space-y-2"><div v-for="(slot, idx) in 3" :key="idx" class="relative"><input type="text" v-model="tempWeatherLocs[idx].name" :placeholder="`地點 ${idx + 1}`" class="w-full bg-gray-50 input-rounded p-3 text-sm pr-8"><span v-if="tempWeatherLocs[idx].lat" class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 text-xs"><i class="fa-solid fa-check"></i></span></div></div></div></div>
+                <button @click="saveDaySettings" class="w-full bg-primary text-white py-3 rounded-xl font-bold mt-6 shadow-lg shadow-primary/20 flex items-center justify-center gap-2"><span v-if="isSavingSettings"><i class="fa-solid fa-circle-notch fa-spin"></i> 處理中...</span><span v-else>儲存並更新天氣</span></button>
+             </div>
+        </div>
+
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
+
+        const hexToRgb = (hex) => { const r = parseInt(hex.slice(1, 3), 16); const g = parseInt(hex.slice(3, 5), 16); const b = parseInt(hex.slice(5, 7), 16); return `${r} ${g} ${b}`; };
+        const THEMES = { 
+            hojicha: { name: '焙茶拿鐵', colors: { primary: '#C89F81', primaryDark: '#A47E64', primaryLight: '#E6D2C3', cream: '#FFFCF5', creamDark: '#F5F0E6', creamDarker: '#EBE0D0', cardBg: '#F3E0C0', cardText: '#785A46', dark: '#54433A', darkSoft: '#8D7B72', accent: '#D4A373' } },
+            matcha: { name: '宇治抹茶', colors: { primary: '#84A98C', primaryDark: '#52796F', primaryLight: '#CAD2C5', cream: '#FDFBF7', creamDark: '#F2EFE9', creamDarker: '#E6E2D8', cardBg: '#E9EDC9', cardText: '#3A4D39', dark: '#2F3E46', darkSoft: '#4A5759', accent: '#F4A261' } },
+            tekapo: { name: '蒂卡波藍', colors: { primary: '#38BDF8', primaryDark: '#0284C7', primaryLight: '#BAE6FD', cream: '#F0F9FF', creamDark: '#E0F2FE', creamDarker: '#BAE6FD', cardBg: '#BAE6FD', cardText: '#0C4A6E', dark: '#0F172A', darkSoft: '#334155', accent: '#F472B6' } },
+            lavender: { name: '瓦納卡紫', colors: { primary: '#A78BFA', primaryDark: '#8B5CF6', primaryLight: '#C4B5FD', cream: '#FAF5FF', creamDark: '#F3E8FF', creamDarker: '#E9D5FF', cardBg: '#DDD6FE', cardText: '#4C1D95', dark: '#4C1D95', darkSoft: '#5B21B6', accent: '#FBBF24' } },
+            tussock: { name: '奧塔哥金', colors: { primary: '#D97706', primaryDark: '#B45309', primaryLight: '#FCD34D', cream: '#FFFBEB', creamDark: '#FEF3C7', creamDarker: '#FDE68A', cardBg: '#FDE68A', cardText: '#78350F', dark: '#451A03', darkSoft: '#78350F', accent: '#65A30D' } },
+            sakura: { name: '基督城櫻', colors: { primary: '#FB7185', primaryDark: '#E11D48', primaryLight: '#FECDD3', cream: '#FFF1F2', creamDark: '#FFE4E6', creamDarker: '#FECDD3', cardBg: '#FECDD3', cardText: '#881337', dark: '#881337', darkSoft: '#9F1239', accent: '#F472B6' } },
+            pudding: { name: '布丁狗', colors: { primary: '#784421', primaryDark: '#5D3518', primaryLight: '#A16A46', cream: '#FFF8D1', creamDark: '#FFF3B0', creamDarker: '#FFE082', cardBg: '#FFCA28', cardText: '#3E2723', dark: '#4E342E', darkSoft: '#6D4C41', accent: '#FFCA28' } }
+        };
+        const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const IMPORTED_DATA = [];
+
+        createApp({
+            setup() {
+                const currentTab = ref('itinerary');
+                const selectedDayIndex = ref(0);
+                const showItineraryModal = ref(false);
+                const showExpenseModal = ref(false);
+                const showSettingsModal = ref(false);
+                const showStatsModal = ref(false); 
+                const showDaySettingsModal = ref(false); 
+                const isEditing = ref(false);
+                const exchangeRate = ref(19.5);
+                const connectionStatus = ref('connecting'); 
+                const isFetchingRate = ref(false);
+                const isSearchingCoord = ref(false);
+                const saveFileInput = ref(null);
+                const dateContainer = ref(null);
+                const isAllExpanded = ref(false); 
+                const currentTheme = ref('hojicha'); 
+                const isSavingSettings = ref(false);
+                
+                let storedId = localStorage.getItem('nz_trip_id');
+                if (!storedId) { storedId = 'nz_' + Math.random().toString(36).substr(2, 6); localStorage.setItem('nz_trip_id', storedId); }
+                const tripId = ref(storedId);
+                const newTripId = ref('');
+                let unsubscribeSnapshot = null;
+                const hasPendingUploads = ref(false);
+
+                const expandedItems = ref(new Set());
+                const dailyWeatherList = ref([]);
+                const dailyMetadata = ref({}); 
+                const tempDaySettings = ref({ title: '' });
+                const tempWeatherLocs = ref([{ name: '', lat: null, lng: null }, { name: '', lat: null, lng: null }, { name: '', lat: null, lng: null }]);
+                
+                const days = ref([]);
+                const startDate = new Date('2026-01-17');
+                for(let i=0; i<=15; i++) { const d = new Date(startDate); d.setDate(startDate.getDate() + i); days.value.push(d); }
+                const getWeekDay = (d) => weekDays[d.getDay()];
+
+                const itinerary = ref([]);
+                const expenses = ref([]);
+                
+                // --- Computed Properties ---
+                const filteredItinerary = computed(() => itinerary.value.filter(i => i.day === selectedDayIndex.value).sort((a,b) => a.time.localeCompare(b.time)));
+                const currentDayItems = computed(() => filteredItinerary.value); 
+                const hasCoordinatesForDay = computed(() => filteredItinerary.value.some(i => i.lat && i.lng));
+                
+                const getDaySummary = computed(() => {
+                    const meta = dailyMetadata.value[selectedDayIndex.value];
+                    if (meta && meta.title) return meta.title;
+                    const items = filteredItinerary.value;
+                    if (items.length === 0) return '自由活動';
+                    const main = items.find(i => i.type !== '交通') || items[0];
+                    return main.location;
+                });
+
+                const totalNZD = computed(() => expenses.value.filter(e => e.currency === 'NZD').reduce((s, i) => s + i.amount, 0));
+                const totalTWD = computed(() => expenses.value.filter(e => e.currency === 'TWD').reduce((s, i) => s + i.amount, 0));
+                const grandTotalNZD = computed(() => totalNZD.value + (totalTWD.value / exchangeRate.value));
+                const grandTotalTWD = computed(() => (totalNZD.value * exchangeRate.value) + totalTWD.value);
+                const totalExpenses = computed(() => expenses.value.reduce((s, i) => s + (i.baseAmount || i.amount), 0));
+                
+                const groupedExpenses = computed(() => {
+                    const groups = {};
+                    const sorted = [...expenses.value].sort((a, b) => new Date(b.date) - new Date(a.date));
+                    sorted.forEach(item => {
+                        const d = item.date;
+                        if (!groups[d]) {
+                            groups[d] = { items: [], total: 0 };
+                        }
+                        groups[d].items.push(item);
+                        groups[d].total += (item.baseAmount || item.amount);
+                    });
+                    return groups;
+                });
+                
+                const expenseStats = computed(() => {
+                    const pStats = {};
+                    const cStats = {};
+                    payers.value.forEach(p => pStats[p] = { NZD: 0, TWD: 0 });
+                    expenseCategories.forEach(c => cStats[c] = { NZD: 0, TWD: 0 });
+                    expenses.value.forEach(e => {
+                        const amt = Number(e.amount) || 0;
+                        const curr = e.currency;
+                        const payer = e.payer;
+                        const cat = e.category;
+                        if (pStats[payer]) pStats[payer][curr] += amt;
+                        if (cStats[cat]) cStats[cat][curr] += amt;
+                    });
+                    return { payers: pStats, categories: cStats };
+                });
+
+                // 3. Form & Logic
+                const form = ref({ id: null, dayIndex: 0, time: '09:00', type: '景點', title: '', location: '', address: '', lat: null, lng: null, notes: '', subItems: [] });
+                const expenseForm = ref({ amount: '', item: '', category: '餐飲', payer: 'Ant', currency: 'NZD', date: new Date().toISOString().split('T')[0] });
+                const payers = ref(['Ant', 'Fish', '公費']);
+                const expenseCategories = ['餐飲', '交通', '住宿', '購物', '活動', '其他'];
+                
+                let map = null;
+                const formHour = computed({ get: () => form.value.time ? form.value.time.split(':')[0] : '09', set: (v) => { const m = form.value.time ? form.value.time.split(':')[1] : '00'; form.value.time = `${v}:${m}`; } });
+                const formMinute = computed({ get: () => form.value.time ? form.value.time.split(':')[1] : '00', set: (v) => { const h = form.value.time ? form.value.time.split(':')[0] : '09'; form.value.time = `${h}:${v}`; } });
+
+                const applyTheme = (key) => {
+                    const theme = THEMES[key]; if (!theme) return; currentTheme.value = key;
+                    const r = document.documentElement; const c = theme.colors;
+                    r.style.setProperty('--c-primary', hexToRgb(c.primary)); r.style.setProperty('--c-primary-dark', hexToRgb(c.primaryDark)); r.style.setProperty('--c-primary-light', hexToRgb(c.primaryLight));
+                    r.style.setProperty('--c-cream', hexToRgb(c.cream)); r.style.setProperty('--c-cream-dark', hexToRgb(c.creamDark)); r.style.setProperty('--c-cream-darker', hexToRgb(c.creamDarker));
+                    r.style.setProperty('--c-card-bg', hexToRgb(c.cardBg)); r.style.setProperty('--c-card-text', hexToRgb(c.cardText));
+                    r.style.setProperty('--c-dark', hexToRgb(c.dark)); r.style.setProperty('--c-dark-soft', hexToRgb(c.darkSoft)); r.style.setProperty('--c-accent', hexToRgb(c.accent));
+                    localStorage.setItem('nz_theme_pref', key);
+                };
+                
+                const formatDate = (dateObj) => (dateObj.getMonth()+1) + '/' + dateObj.getDate();
+                const selectDate = (index) => selectedDayIndex.value = index;
+
+                const getCategoryIcon = (c) => {
+                    const map = {
+                        '餐飲': 'fa-solid fa-utensils',
+                        '交通': 'fa-solid fa-car',
+                        '住宿': 'fa-solid fa-bed',
+                        '購物': 'fa-solid fa-bag-shopping',
+                        '活動': 'fa-solid fa-ticket',
+                        '其他': 'fa-solid fa-ellipsis'
+                    };
+                    return map[c] || 'fa-solid fa-circle-question';
+                };
+
+                const getTypeColorClass = (type) => {
+                     const map = {
+                         '景點': 'bg-teal-50 text-teal-600 border border-teal-100',
+                         '美食': 'bg-orange-50 text-orange-500 border border-orange-100',
+                         '住宿': 'bg-indigo-50 text-indigo-500 border border-indigo-100',
+                         '交通': 'bg-gray-100 text-gray-500 border border-gray-200',
+                         '購物': 'bg-pink-50 text-pink-500 border border-pink-100',
+                         '其他': 'bg-gray-50 text-gray-500'
+                     };
+                     return map[type] || 'bg-gray-50 text-gray-500';
+                };
+
+                const updateDailyWeather = async () => {
+                    dailyWeatherList.value = [];
+                    const dayMeta = dailyMetadata.value[selectedDayIndex.value] || {};
+                    let targetLocs = dayMeta.weatherLocs || [];
+                    if (targetLocs.length === 0 && dayMeta.weatherItemIds) {
+                         const legacyItems = dayMeta.weatherItemIds.map(id => itinerary.value.find(i => i.id === id)).filter(item => item && item.lat);
+                         targetLocs = legacyItems.map(item => ({ name: item.location, lat: item.lat, lng: item.lng }));
+                    }
+                    if (targetLocs.length === 0) {
+                         const dayItems = itinerary.value.filter(i => i.day === selectedDayIndex.value);
+                         if (dayItems.length > 0 && dayItems[0].lat) targetLocs = [{ name: dayItems[0].location, lat: dayItems[0].lat, lng: dayItems[0].lng }];
+                    }
+                    const promises = targetLocs.filter(loc => loc.lat && loc.lng).map(async (loc) => {
+                        try {
+                            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lng}&current=temperature_2m,weather_code`);
+                            const data = await res.json();
+                            const code = data.current.weather_code;
+                            let icon = 'fa-cloud'; 
+                            if(code===0) icon='fa-sun'; else if(code>0 && code<4) icon='fa-cloud-sun'; else if(code>=51) icon='fa-cloud-rain';
+                            return { temp: Math.round(data.current.temperature_2m), icon: 'fa-solid ' + icon, name: loc.name };
+                        } catch (e) { return null; }
+                    });
+                    const results = await Promise.all(promises);
+                    dailyWeatherList.value = results.filter(w => w !== null);
+                }
+
+                const loadLocalData = () => {
+                    const s = localStorage.getItem('nz_data_v4');
+                    if (s) { const d = JSON.parse(s); itinerary.value = d.itinerary||[]; expenses.value = d.expenses||[]; exchangeRate.value = d.exchangeRate||19.5; dailyMetadata.value = d.dailyMetadata||{}; }
+                    updateDailyWeather();
+                };
+
+                const saveToLocal = () => {
+                    const d = { itinerary: itinerary.value, expenses: expenses.value, exchangeRate: exchangeRate.value, dailyMetadata: dailyMetadata.value, lastUpdated: Date.now() };
+                    localStorage.setItem('nz_data_v4', JSON.stringify(d));
+                    if (connectionStatus.value === 'cloud') {
+                        const { doc, setDoc } = window.firestoreMethods;
+                        setDoc(doc(window.firestoreDB, "trips", tripId.value), d, { merge: true }).catch(e => { hasPendingUploads.value = true; });
+                    } else hasPendingUploads.value = true;
+                };
+
+                const initSync = async () => {
+                    const t = localStorage.getItem('nz_theme_pref'); if (t && THEMES[t]) applyTheme(t); else applyTheme('hojicha');
+                    loadLocalData();
+                    let a = 0; while (!window.firestoreDB && a < 10) { await new Promise(r => setTimeout(r, 300)); a++; }
+                    if (window.firestoreDB && window.firebaseAuth) {
+                        try { if(!window.firebaseAuth.currentUser) await window.firestoreMethods.signInAnonymously(window.firebaseAuth); startSnapshotListener(); } 
+                        catch (e) { console.warn("Sync fail", e); connectionStatus.value = 'local'; }
+                    } else connectionStatus.value = 'local';
+                };
+                
+                const startSnapshotListener = () => {
+                    connectionStatus.value = 'cloud'; const { doc, onSnapshot, setDoc } = window.firestoreMethods;
+                    if(unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+                    const ref = doc(window.firestoreDB, "trips", tripId.value);
+                    unsubscribeSnapshot = onSnapshot(ref, (snap) => {
+                        if (snap.exists()) {
+                            const cData = snap.data();
+                            const lString = localStorage.getItem('nz_data_v4');
+                            let lData = lString ? JSON.parse(lString) : {};
+                            if ((lData.lastUpdated || 0) > (cData.lastUpdated || 0)) { setDoc(ref, lData, { merge: true }); return; }
+                            if (cData.itinerary) itinerary.value = cData.itinerary;
+                            const cEx = cData.expenses || []; const lEx = expenses.value; const m = new Map();
+                            cEx.forEach(e => m.set(e.id, e)); lEx.forEach(e => { if(!m.has(e.id)) m.set(e.id, e); });
+                            expenses.value = Array.from(m.values());
+                            if (cData.dailyMetadata) dailyMetadata.value = cData.dailyMetadata;
+                            if (cData.exchangeRate) exchangeRate.value = cData.exchangeRate;
+                            localStorage.setItem('nz_data_v4', JSON.stringify({ itinerary: itinerary.value, expenses: expenses.value, dailyMetadata: dailyMetadata.value, exchangeRate: exchangeRate.value, lastUpdated: cData.lastUpdated || 0 }));
+                            updateDailyWeather();
+                        } else {
+                             const l = localStorage.getItem('nz_data_v4');
+                             if(l) setDoc(ref, JSON.parse(l));
+                             else { const init = { itinerary: [], expenses: [], exchangeRate: 19.5, dailyMetadata: {}, lastUpdated: Date.now() }; setDoc(ref, init); localStorage.setItem('nz_data_v4', JSON.stringify(init)); loadLocalData(); }
+                        }
+                    }, (e) => { console.error("Snap err", e); connectionStatus.value = 'local'; });
+                };
+
+                const changeTripId = () => { if(newTripId.value && confirm(`Switch to "${newTripId.value}"?`)) { tripId.value = newTripId.value; localStorage.setItem('nz_trip_id', tripId.value); newTripId.value=''; startSnapshotListener(); }};
+                const toggleGlobalFold = () => { isAllExpanded.value = !isAllExpanded.value; if (isAllExpanded.value) { const allIds = new Set(); filteredItinerary.value.forEach(i => allIds.add(i.id)); expandedItems.value = allIds; } else { expandedItems.value = new Set(); } };
+                const toggleItem = (id) => { expandedItems.value.has(id) ? expandedItems.value.delete(id) : expandedItems.value.add(id); };
+                const addSubItem = () => { if(!form.value.subItems) form.value.subItems = []; form.value.subItems.push({ location: '', lat: null, lng: null, notes: '' }); };
+                const removeSubItem = (idx) => { form.value.subItems.splice(idx, 1); };
+
+                const searchCoord = async (target) => {
+                    if (!target.location) { alert('請輸入地點'); return; }
+                    isSearchingCoord.value = true;
+                    try {
+                        const q = target.location.toLowerCase().includes('new zealand') ? target.location : `${target.location}, New Zealand`;
+                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`);
+                        const d = await res.json();
+                        if (d && d.length > 0) { target.lat = parseFloat(d[0].lat); target.lng = parseFloat(d[0].lon); } else alert('找不到地點');
+                    } catch (e) { console.error(e); alert('搜尋失敗'); } finally { isSearchingCoord.value = false; }
+                };
+
+                const initMap = () => {
+                    if(map) { map.remove(); map=null; }
+                    if(!document.getElementById('map-container')) return;
+                    map = L.map('map-container', {zoomControl:false}).setView([-43.532, 172.636], 6);
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {attribution:'&copy; OpenStreetMap'}).addTo(map);
+                    const bounds = L.latLngBounds();
+                    let hasPoints = false;
+                    filteredItinerary.value.forEach(item => {
+                        if(item.lat && item.lng) {
+                            const icon = L.divIcon({className:'custom-div-icon', html:`<div class='marker-pin'></div><span class='marker-text'>${item.time}</span>`, iconSize:[30,42], iconAnchor:[15,42]});
+                            L.marker([item.lat, item.lng], {icon}).addTo(map).bindPopup(`<b>${item.title || item.location}</b><br>${item.location}`);
+                            bounds.extend([item.lat, item.lng]); hasPoints=true;
+                        }
+                        if(item.subItems) {
+                            item.subItems.forEach(sub => {
+                                if(sub.lat && sub.lng) {
+                                    const subIcon = L.divIcon({className:'custom-div-icon', html:`<div class='marker-pin-sub'></div>`, iconSize:[24,24], iconAnchor:[12,12]});
+                                    L.marker([sub.lat, sub.lng], {icon: subIcon}).addTo(map).bindPopup(`<b>${sub.location}</b><br>${sub.notes || ''}`);
+                                    bounds.extend([sub.lat, sub.lng]); hasPoints=true;
+                                }
+                            });
+                        }
+                    });
+                    locateUser();
+                    if(hasPoints) { map.fitBounds(bounds, {padding:[50,50]}); }
+                };
+
+                const openModal = (type) => {
+                     if(type==='itinerary') { isEditing.value=false; form.value={id:Date.now(), dayIndex:selectedDayIndex.value, time:'09:00', type:'景點', title:'', location:'', lat:null, lng:null, notes:'', subItems:[]}; showItineraryModal.value=true; }
+                     else { const d=new Date(); const t=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; expenseForm.value={amount:'', item:'', category:'餐飲', payer:'Ant', currency:'NZD', date:t}; showExpenseModal.value=true; }
+                };
+                const copyItem = (item) => { isEditing.value=false; form.value = JSON.parse(JSON.stringify(item)); form.value.id = Date.now(); showItineraryModal.value=true; };
+                const editItem = (item) => { isEditing.value=true; form.value = JSON.parse(JSON.stringify(item)); form.value.dayIndex = item.day; showItineraryModal.value=true; }; 
+                const saveItinerary = () => {
+                     let newItem = { ...form.value, day: form.value.dayIndex };
+                     if(newItem.lat) newItem.lat = parseFloat(newItem.lat); if(newItem.lng) newItem.lng = parseFloat(newItem.lng);
+                     if(newItem.subItems) newItem.subItems.forEach(s => { if(s.lat) s.lat=parseFloat(s.lat); if(s.lng) s.lng=parseFloat(s.lng); });
+                     
+                     if(isEditing.value) { const idx=itinerary.value.findIndex(i=>i.id===newItem.id); if(idx!==-1) itinerary.value[idx]=newItem; }
+                     else itinerary.value.push(newItem);
+                     saveToLocal(); closeModal(); updateDailyWeather();
+                };
+
+                const closeModal = () => { showItineraryModal.value=false; showExpenseModal.value=false; };
+                const deleteItem = (id) => { if(confirm('Delete?')) { itinerary.value = itinerary.value.filter(i=>i.id!==id); saveToLocal(); }};
+                const saveExpense = () => { if(!expenseForm.value.amount) return; const b = expenseForm.value.currency==='TWD'?expenseForm.value.amount/exchangeRate.value:expenseForm.value.amount; expenses.value.push({id:Date.now(), ...expenseForm.value, baseAmount:b, originalAmount:expenseForm.value.amount}); saveToLocal(); closeModal(); };
+                const deleteExpense = (id) => { if(confirm('Delete?')) { expenses.value = expenses.value.filter(e=>e.id!==id); saveToLocal(); }};
+                const saveSettings = () => { saveToLocal(); showSettingsModal.value=false; };
+                const navigateTo = (loc) => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc + ', New Zealand')}`, '_blank');
+                const navigateToLoc = (lat, lng) => window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank');
+                const locateUser = () => { if(navigator.geolocation && map) navigator.geolocation.getCurrentPosition(p=>{ map.setView([p.coords.latitude, p.coords.longitude], 14); if(window.userMarker) window.userMarker.setLatLng([p.coords.latitude, p.coords.longitude]); else window.userMarker = L.marker([p.coords.latitude, p.coords.longitude], {icon: L.divIcon({className:'custom-div-icon', html:`<div style="width:16px;height:16px;background:#3B82F6;border:3px solid white;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,0.3);"></div>`})}).addTo(map); }); };
+
+                const openDaySettings = () => {
+                    const currentMeta = dailyMetadata.value[selectedDayIndex.value] || {};
+                    tempDaySettings.value = { title: currentMeta.title || '' };
+                    const existingLocs = currentMeta.weatherLocs || [];
+                    tempWeatherLocs.value = [{ ...existingLocs[0] || { name: '', lat: null, lng: null } }, { ...existingLocs[1] || { name: '', lat: null, lng: null } }, { ...existingLocs[2] || { name: '', lat: null, lng: null } }];
+                    showDaySettingsModal.value = true;
+                }
+
+                const saveDaySettings = async () => {
+                    isSavingSettings.value = true;
+                    for (let i = 0; i < 3; i++) {
+                        const loc = tempWeatherLocs.value[i];
+                        if (loc.name && !loc.lat) {
+                            try {
+                                const q = loc.name.toLowerCase().includes('new zealand') ? loc.name : `${loc.name}, New Zealand`;
+                                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`);
+                                const data = await res.json();
+                                if (data && data.length > 0) { loc.lat = parseFloat(data[0].lat); loc.lng = parseFloat(data[0].lon); }
+                            } catch (e) {}
+                        }
+                    }
+                    if (!dailyMetadata.value[selectedDayIndex.value]) dailyMetadata.value[selectedDayIndex.value] = {};
+                    dailyMetadata.value[selectedDayIndex.value].title = tempDaySettings.value.title;
+                    dailyMetadata.value[selectedDayIndex.value].weatherLocs = tempWeatherLocs.value.filter(l => l.name);
+                    saveToLocal(); await updateDailyWeather(); isSavingSettings.value = false; showDaySettingsModal.value = false;
+                }
+
+                const centerActiveDate = () => {
+                    if (dateContainer.value && dateContainer.value.children[selectedDayIndex.value]) {
+                        const activeBtn = dateContainer.value.children[selectedDayIndex.value];
+                        dateContainer.value.scrollTo({ left: activeBtn.offsetLeft - (dateContainer.value.clientWidth / 2) + (activeBtn.clientWidth / 2), behavior: 'smooth' });
+                    }
+                }
+                
+                const fetchRate = async () => {
+                    isFetchingRate.value = true;
+                    try { const res = await fetch('https://api.exchangerate-api.com/v4/latest/NZD'); const data = await res.json(); if (data?.rates?.TWD) { exchangeRate.value = parseFloat(data.rates.TWD.toFixed(2)); alert(`匯率更新: ${exchangeRate.value}`); } } catch (e) { alert('更新失敗'); } finally { isFetchingRate.value = false; }
+                };
+                const saveToFile = () => {
+                    const data = { itinerary: itinerary.value, expenses: expenses.value, exchangeRate: exchangeRate.value, dailyMetadata: dailyMetadata.value, savedAt: new Date().toLocaleString() };
+                    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+                    const a = document.createElement('a'); a.href = url; a.download = `nz_trip_save_${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                };
+                const exportExpensesCSV = () => {
+                    if (expenses.value.length === 0) { alert('目前沒有記帳資料可以匯出喔！'); return; }
+                    const BOM = '\uFEFF'; let csvContent = BOM + "日期,項目,分類,付款人,幣別,金額,換算紐幣(NZD)\n";
+                    const sorted = [...expenses.value].sort((a, b) => new Date(b.date) - new Date(a.date));
+                    sorted.forEach(e => {
+                        const row = [e.date, `"${e.item.replace(/"/g, '""')}"`, e.category, e.payer, e.currency, e.amount, e.baseAmount.toFixed(2)].join(",");
+                        csvContent += row + "\n";
+                    });
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `nz_expenses_export_${new Date().toISOString().slice(0,10)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                };
+                
+                const loadFromFile = (event) => {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            if (confirm(`讀取存檔？\n時間: ${data.savedAt || '未知'}`)) {
+                                itinerary.value = data.itinerary || []; expenses.value = data.expenses || []; exchangeRate.value = data.exchangeRate || 19.5; dailyMetadata.value = data.dailyMetadata || {};
+                                saveToLocal(); alert('讀檔成功！'); showSettingsModal.value = false; updateDailyWeather();
+                            }
+                        } catch (err) { alert('檔案格式錯誤'); }
+                    };
+                    reader.readAsText(file);
+                    event.target.value = ''; 
+                };
+
+                watch(currentTab, (v) => { if(v==='map') nextTick(initMap); });
+                watch(selectedDayIndex, () => { centerActiveDate(); updateDailyWeather(); if(currentTab.value==='map') initMap(); });
+                onMounted(() => { initSync(); setTimeout(() => centerActiveDate(), 800); });
+
+                return {
+                    currentTab, selectedDayIndex, days, itinerary, expenses, filteredItinerary, totalExpenses, groupedExpenses, connectionStatus,
+                    showItineraryModal, showExpenseModal, showSettingsModal, showDaySettingsModal, showStatsModal, isEditing, form, expenseForm, exchangeRate, isFetchingRate, saveFileInput, dateContainer,
+                    dailyWeatherList, expandedItems, getDaySummary, toggleGlobalFold, toggleItem, isAllExpanded,
+                    openModal, closeModal, saveItinerary, deleteItem, editItem, deleteExpense, saveExpense, saveSettings, fetchRate, saveToFile, loadFromFile, selectDate,
+                    formatDate, getCategoryIcon, navigateTo, navigateToLoc, locateUser, formHour, formMinute, 
+                    openDaySettings, tempDaySettings, saveDaySettings, currentDayItems, tempWeatherLocs, isSavingSettings,
+                    searchCoord, isSearchingCoord, hasCoordinatesForDay, copyItem, addSubItem, removeSubItem,
+                    payers, expenseCategories, getTypeColorClass,
+                    totalNZD, totalTWD, grandTotalNZD, grandTotalTWD, expenseStats, exportExpensesCSV,
+                    THEMES, currentTheme, applyTheme, getWeekDay,
+                    tripId, newTripId, changeTripId, hasPendingUploads
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
