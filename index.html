@@ -42,7 +42,7 @@
             db = getFirestore(app);
             auth = getAuth(app);
             
-            // Disable persistence to ensure stable connection on mobile first
+            // Disable persistence to ensure stable connection
             // enableIndexedDbPersistence(db).catch(() => {});
 
             window.firestoreDB = db;
@@ -104,6 +104,7 @@
             --c-dark-soft: 109 76 65;
             --c-accent: 255 179 0;
         }
+        /* html font-size will be set by JS */
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; background-color: rgb(var(--c-cream)); color: rgb(var(--c-dark)); transition: background-color 0.3s, color 0.3s; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -132,7 +133,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-lg font-bold tracking-tight text-primary font-sans flex items-center gap-2">
                     <span class="bg-primary/20 p-1 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
-                    NZ Trip <span class="text-[10px] opacity-50">V25.43</span>
+                    NZ Trip <span class="text-[10px] opacity-50">V25.42</span>
                     <!-- Status Display -->
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
@@ -304,7 +305,7 @@
                     <div v-for="(group, date) in groupedExpenses" :key="date" class="mb-5">
                         <div class="flex items-center justify-between mb-2 px-1">
                             <span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-md">{{ date }}</span>
-                            <span class="text-[10px] font-bold text-dark">小計: NT$ {{ Math.round(group.total * exchangeRate).toLocaleString() }}</span>
+                            <span class="text-[10px] font-bold text-dark">小計: NZD {{ group.total.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span>
                         </div>
                         
                         <div v-for="expense in group.items" :key="expense.id" class="bg-white rounded-xl p-3 mb-2 border border-gray-100 hover:border-primary/30 transition-colors flex justify-between items-center group relative shadow-card active:scale-[0.995]">
@@ -440,12 +441,29 @@
             <div class="bg-white p-6 rounded-3xl w-72 shadow-2xl text-center relative max-h-[90vh] overflow-y-auto modal-scroll">
                 <button @click="showSettingsModal=false" class="absolute top-4 right-4 text-gray-300 hover:text-gray-500 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
                 <h3 class="font-bold text-dark mb-4">設定</h3>
+                
+                <!-- Font Size Control (Added) -->
+                <div class="mb-4 bg-gray-50 p-3 rounded-xl border border-cream-darker">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">字體大小</span>
+                        <span class="text-[10px] font-bold text-dark">{{ currentFontSize }}px</span>
+                    </div>
+                    <div class="flex gap-2 justify-center">
+                         <button @click="changeFontSize(-1)" class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-primary active:scale-90"><i class="fa-solid fa-minus text-xs"></i></button>
+                         <button @click="changeFontSize(0)" class="px-3 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-[10px] text-gray-500 font-bold hover:text-primary active:scale-95">預設</button>
+                         <button @click="changeFontSize(1)" class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-primary active:scale-90"><i class="fa-solid fa-plus text-xs"></i></button>
+                    </div>
+                </div>
+
                 <div class="mb-4 bg-cream p-3 rounded-xl border border-cream-darker">
                     <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1 text-left">雲端同步 ID</label>
                     <div class="flex gap-2"><input type="text" v-model="newTripId" placeholder="ID" class="flex-1 bg-white input-rounded p-1.5 text-xs font-bold text-dark outline-none border border-cream-darker"><button @click="changeTripId" class="bg-dark text-white px-2 py-1.5 rounded-lg text-[10px] font-bold hover:bg-gray-800 transition-colors whitespace-nowrap active:scale-95">切換</button></div>
                     <p class="text-[9px] text-gray-400 mt-1 text-left leading-relaxed">頻道: <span class="font-bold text-primary">{{ tripId }}</span></p>
                 </div>
-                <!-- ... Theme & Rate & Backup kept same, just compacted ... -->
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2"><span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">主題風格</span><span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-bold">{{ THEMES[currentTheme].name }}</span></div>
+                    <div class="grid grid-cols-3 gap-2"><button v-for="(t, key) in THEMES" :key="key" @click="applyTheme(key)" class="relative p-2 rounded-xl border transition-all duration-200 flex flex-col items-center gap-1 group active:scale-95" :class="currentTheme === key ? 'border-primary bg-primary/5' : 'border-gray-100 hover:border-gray-200'"><div class="w-6 h-6 rounded-full shadow-sm border border-white/50" :style="{backgroundColor: t.colors.primary}"></div><span class="text-[10px] font-bold text-gray-500 group-hover:text-dark">{{ t.name }}</span><div v-if="currentTheme === key" class="absolute top-2 right-2 w-1.5 h-1.5 bg-primary rounded-full"></div></button></div>
+                </div>
                 <div class="space-y-3">
                     <div class="bg-gray-50 p-3 rounded-xl">
                         <div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold text-gray-400">匯率 (NZD:TWD)</span><button @click="fetchRate" :disabled="isFetchingRate" class="text-[9px] bg-white border border-gray-200 px-2 py-0.5 rounded-full text-primary font-bold active:scale-90"><i class="fa-solid fa-rotate" :class="{'fa-spin': isFetchingRate}"></i></button></div>
@@ -505,7 +523,8 @@
                 const isAllExpanded = ref(false); 
                 const currentTheme = ref('hojicha'); 
                 const isSavingSettings = ref(false);
-                
+                const currentFontSize = ref(16);
+
                 let storedId = localStorage.getItem('nz_trip_id');
                 if (!storedId) { storedId = 'nz_' + Math.random().toString(36).substr(2, 6); localStorage.setItem('nz_trip_id', storedId); }
                 const tripId = ref(storedId);
@@ -624,6 +643,14 @@
                      return map[type] || 'bg-gray-50 text-gray-500';
                 };
 
+                // Font Size Logic
+                const changeFontSize = (delta) => {
+                    if (delta === 0) currentFontSize.value = 16;
+                    else currentFontSize.value = Math.max(12, Math.min(24, currentFontSize.value + delta));
+                    document.documentElement.style.fontSize = currentFontSize.value + 'px';
+                    localStorage.setItem('nz_font_size', currentFontSize.value);
+                };
+
                 const updateDailyWeather = async () => {
                     dailyWeatherList.value = [];
                     const dayMeta = dailyMetadata.value[selectedDayIndex.value] || {};
@@ -643,7 +670,7 @@
                             const code = data.current.weather_code;
                             let icon = 'fa-cloud'; 
                             if(code===0) icon='fa-sun'; else if(code>0 && code<4) icon='fa-cloud-sun'; else if(code>=51) icon='fa-cloud-rain';
-                            return { temp: Math.round(data.current.temperature_2m), icon: 'fa-solid ' + icon, name: loc.name };
+                            return { temp: Math.round(data.current.temperature_2m), icon: 'fa-solid ' + icon, name: loc.name, lat: loc.lat, lng: loc.lng };
                         } catch (e) { return null; }
                     });
                     const results = await Promise.all(promises);
@@ -667,6 +694,18 @@
 
                 const initSync = async () => {
                     const t = localStorage.getItem('nz_theme_pref'); if (t && THEMES[t]) applyTheme(t); else applyTheme('hojicha');
+                    
+                    // Load Font Size
+                    const savedFont = localStorage.getItem('nz_font_size');
+                    if(savedFont) {
+                        currentFontSize.value = parseInt(savedFont);
+                    } else {
+                        // Device Detection logic
+                        const isDesktop = window.matchMedia("(pointer:fine)").matches;
+                        currentFontSize.value = isDesktop ? 17 : 16;
+                    }
+                    document.documentElement.style.fontSize = currentFontSize.value + 'px';
+
                     loadLocalData();
                     let a = 0; while (!window.firestoreDB && a < 50) { await new Promise(r => setTimeout(r, 300)); a++; } // Wait up to 15s
                     
@@ -840,7 +879,7 @@
                         if(item.subItems) {
                             item.subItems.forEach(sub => {
                                 if(sub.lat && sub.lng) {
-                                    const subIcon = L.divIcon({className:'custom-div-icon', html:`<div class='marker-pin-sub'></div><span class='marker-text' style='bottom:-16px; left:-23px;'>${item.time}</span>`, iconSize:[24,24], iconAnchor:[12,12]});
+                                    const subIcon = L.divIcon({className:'custom-div-icon', html:`<div class='marker-pin-sub'></div>`, iconSize:[24,24], iconAnchor:[12,12]});
                                     L.marker([sub.lat, sub.lng], {icon: subIcon}).addTo(map).bindPopup(`<b>${sub.location}</b><br>${sub.notes || ''}`);
                                     bounds.extend([sub.lat, sub.lng]); hasPoints=true;
                                 }
@@ -854,7 +893,7 @@
                 const openModal = (type) => {
                      if(type==='itinerary') { 
                         isEditing.value=false; 
-                        form.value={id:Date.now(), dayIndex:selectedDayIndex.value, time:'09:00', type:'景點', title:'', location:'', lat:null, lng:null, notes:'', subItems:[]}; 
+                        form.value={id:Date.now(), dayIndex:selectedDayIndex.value, time:'09:00', type:'景點', location:'', address: '', lat: null, lng: null, notes:'', subItems:[]}; 
                         showItineraryModal.value=true; 
                      }
                      else { const d=new Date(); const t=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; expenseForm.value={amount:'', item:'', category:'餐飲', payer:'Ant', currency:'NZD', date:t}; showExpenseModal.value=true; }
@@ -974,7 +1013,7 @@
                     totalNZD, totalTWD, grandTotalNZD, grandTotalTWD, expenseStats, exportExpensesCSV,
                     THEMES, currentTheme, applyTheme, getWeekDay,
                     tripId, newTripId, changeTripId, hasPendingUploads, initSync, manualRetry, showErrorDetail,
-                    clearLocalData, deleteCloudData
+                    clearLocalData, deleteCloudData, currentFontSize, changeFontSize
                 };
             }
         }).mount('#app');
