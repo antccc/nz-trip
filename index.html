@@ -132,7 +132,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-lg font-bold tracking-tight text-primary font-sans flex items-center gap-2">
                     <span class="bg-primary/20 p-1 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
-                    NZ Trip <span class="text-[10px] opacity-50">V25.40</span>
+                    NZ Trip <span class="text-[10px] opacity-50">V25.41</span>
                     <!-- Status Display -->
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
@@ -353,11 +353,11 @@
             <button @click="currentTab = 'map'" class="w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'map' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-600'"><i class="fa-regular fa-map text-lg"></i></button>
         </nav>
 
-        <!-- Itinerary Modal (Updated for Sub-item Coords) -->
+        <!-- Itinerary Modal (Updated Z-Index) -->
         <transition name="slide-up">
-            <div v-if="showItineraryModal" class="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+            <div v-if="showItineraryModal" class="fixed inset-0 z-[10000] flex items-end justify-center sm:items-center">
                 <div class="absolute inset-0 bg-dark/20 backdrop-blur-[2px]" @click="closeModal"></div>
-                <div class="bg-cream w-full sm:w-96 rounded-t-3xl p-6 shadow-2xl relative z-10 max-h-[95vh] overflow-y-auto modal-scroll">
+                <div class="bg-cream w-full sm:w-96 rounded-t-3xl p-6 shadow-2xl relative z-10 max-h-[90vh] overflow-y-auto modal-scroll pb-10">
                     <h3 class="text-xl font-bold text-dark mb-6 text-center">{{ isEditing ? '編輯行程' : '新增行程' }}</h3>
                     <div class="space-y-3">
                         <div class="grid grid-cols-5 gap-3">
@@ -403,9 +403,9 @@
             </div>
         </transition>
 
-        <!-- Expense Modal, Stats, Settings, DaySettings (Compacted) -->
+        <!-- Expense Modal (Updated Z-Index) -->
         <transition name="slide-up">
-            <div v-if="showExpenseModal" class="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+            <div v-if="showExpenseModal" class="fixed inset-0 z-[10000] flex items-end justify-center sm:items-center">
                 <div class="absolute inset-0 bg-dark/30 backdrop-blur-sm" @click="closeModal"></div>
                 <div class="bg-[#FDFBF7] w-full sm:w-[400px] rounded-t-3xl p-6 shadow-2xl relative z-10">
                     <button @click="closeModal" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-400 hover:bg-gray-200 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
@@ -421,7 +421,7 @@
             </div>
         </transition>
 
-        <div v-if="showStatsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-dark/30 backdrop-blur-sm p-4">
+        <div v-if="showStatsModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-dark/30 backdrop-blur-sm p-4">
             <div class="bg-cream w-full sm:w-[400px] rounded-3xl p-6 shadow-2xl relative max-h-[85vh] overflow-y-auto modal-scroll">
                 <button @click="showStatsModal=false" class="absolute top-4 right-4 text-gray-400 hover:text-dark transition-colors active:scale-90"><i class="fa-solid fa-xmark"></i></button>
                 <h3 class="text-lg font-bold text-dark mb-4 flex items-center gap-2"><span class="bg-yellow-card p-1 rounded-lg text-yellow-text"><i class="fa-solid fa-chart-pie"></i></span>消費統計</h3>
@@ -431,7 +431,7 @@
             </div>
         </div>
 
-        <div v-if="showSettingsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
+        <div v-if="showSettingsModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
             <div class="bg-white p-6 rounded-3xl w-72 shadow-2xl text-center relative max-h-[90vh] overflow-y-auto modal-scroll">
                 <button @click="showSettingsModal=false" class="absolute top-4 right-4 text-gray-300 hover:text-gray-500 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
                 <h3 class="font-bold text-dark mb-4">設定</h3>
@@ -452,7 +452,7 @@
             </div>
         </div>
 
-        <div v-if="showDaySettingsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
+        <div v-if="showDaySettingsModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
              <div class="bg-white p-6 rounded-3xl w-72 shadow-2xl relative">
                 <button @click="showDaySettingsModal=false" class="absolute top-4 right-4 text-gray-300 hover:text-gray-500 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
                 <h3 class="font-bold text-dark mb-4 pl-1 text-sm">Day {{ selectedDayIndex }} 設定</h3>
