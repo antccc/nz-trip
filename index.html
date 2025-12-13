@@ -42,7 +42,7 @@
             db = getFirestore(app);
             auth = getAuth(app);
             
-            // Disable persistence to ensure stable connection
+            // Disable persistence to ensure stable connection on mobile first
             // enableIndexedDbPersistence(db).catch(() => {});
 
             window.firestoreDB = db;
@@ -132,7 +132,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-lg font-bold tracking-tight text-primary font-sans flex items-center gap-2">
                     <span class="bg-primary/20 p-1 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
-                    NZ Trip <span class="text-[10px] opacity-50">V25.41</span>
+                    NZ Trip <span class="text-[10px] opacity-50">V25.43</span>
                     <!-- Status Display -->
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
@@ -141,7 +141,7 @@
             </div>
             <div class="flex gap-2">
                 <div v-if="hasPendingUploads" class="w-8 h-8 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center animate-bounce" title="有未上傳的變更"><i class="fa-solid fa-arrow-up-from-bracket text-xs"></i></div>
-                <button @click="showSettingsModal = true" class="w-8 h-8 rounded-full bg-white border border-cream-dark shadow-sm flex items-center justify-center text-gray-400 hover:text-primary transition-colors active:scale-90"><i class="fa-solid fa-sliders text-xs"></i></button>
+                <button @click="showSettingsModal = true" class="w-10 h-10 rounded-full bg-white border border-cream-dark shadow-sm flex items-center justify-center text-gray-400 hover:text-primary transition-colors active:scale-90"><i class="fa-solid fa-sliders text-xs"></i></button>
             </div>
         </header>
 
@@ -170,8 +170,13 @@
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="bg-white/20 text-white px-2 py-0.5 rounded-lg text-[10px] font-bold tracking-wider backdrop-blur-sm">D{{ selectedDayIndex }} · {{ getWeekDay(days[selectedDayIndex]) }}</span>
                                     <div class="flex gap-2 overflow-x-auto no-scrollbar">
-                                        <span v-for="(w, idx) in dailyWeatherList" :key="idx" class="text-[10px] font-bold flex items-center gap-1 text-white bg-white/10 px-2 py-0.5 rounded-full whitespace-nowrap backdrop-blur-sm cursor-help" :title="`📍 地點: ${w.name} (${w.lat}, ${w.lng})`">
-                                            <i :class="w.icon"></i><span>{{ w.temp }}°</span>
+                                        <!-- Weather Pills with Tooltip -->
+                                        <span v-for="(w, idx) in dailyWeatherList" :key="idx" 
+                                              class="text-[10px] font-bold flex items-center gap-1 text-white bg-white/10 px-2 py-0.5 rounded-full whitespace-nowrap backdrop-blur-sm cursor-help"
+                                              :title="`📍 地點: ${w.name} (${w.lat}, ${w.lng})`">
+                                            <i :class="w.icon"></i>
+                                            <span class="opacity-90 max-w-[60px] truncate">{{ w.name }}</span>
+                                            <span>{{ w.temp }}°</span>
                                         </span>
                                     </div>
                                 </div>
@@ -353,7 +358,7 @@
             <button @click="currentTab = 'map'" class="w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'map' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-600'"><i class="fa-regular fa-map text-lg"></i></button>
         </nav>
 
-        <!-- Itinerary Modal (Updated Z-Index) -->
+        <!-- Itinerary Modal (Updated for Sub-item Coords) -->
         <transition name="slide-up">
             <div v-if="showItineraryModal" class="fixed inset-0 z-[10000] flex items-end justify-center sm:items-center">
                 <div class="absolute inset-0 bg-dark/20 backdrop-blur-[2px]" @click="closeModal"></div>
@@ -423,10 +428,10 @@
 
         <div v-if="showStatsModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-dark/30 backdrop-blur-sm p-4">
             <div class="bg-cream w-full sm:w-[400px] rounded-3xl p-6 shadow-2xl relative max-h-[85vh] overflow-y-auto modal-scroll">
-                <button @click="showStatsModal=false" class="absolute top-4 right-4 text-gray-400 hover:text-dark transition-colors active:scale-90"><i class="fa-solid fa-xmark"></i></button>
+                <button @click="showStatsModal=false" class="absolute top-4 right-4 text-gray-400 hover:text-dark transition-colors active:scale-90"><i class="fa-solid fa-xmark text-lg"></i></button>
                 <h3 class="text-lg font-bold text-dark mb-4 flex items-center gap-2"><span class="bg-yellow-card p-1 rounded-lg text-yellow-text"><i class="fa-solid fa-chart-pie"></i></span>消費統計</h3>
-                <div class="mb-4"><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">依付款人 (By Payer)</h4><div class="space-y-2"><div v-for="payer in payers" :key="payer" class="bg-white p-3 rounded-xl shadow-card border border-cream-dark flex justify-between items-center"><div class="flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">{{ payer.charAt(0) }}</div><span class="font-bold text-dark text-xs">{{ payer }}</span></div><div class="text-right flex flex-col gap-0.5"><span v-if="expenseStats.payers[payer].NZD > 0" class="text-[10px] font-bold text-dark bg-gray-50 px-1.5 py-0.5 rounded">NZD {{ expenseStats.payers[payer].NZD.toLocaleString() }}</span><span v-if="expenseStats.payers[payer].TWD > 0" class="text-[10px] font-bold text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded">TWD {{ expenseStats.payers[payer].TWD.toLocaleString() }}</span><span v-if="expenseStats.payers[payer].NZD === 0 && expenseStats.payers[payer].TWD === 0" class="text-[9px] text-gray-300">-</span></div></div></div></div>
-                <div><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">依分類 (By Category)</h4><div class="space-y-1"><div v-for="cat in expenseCategories" :key="cat" class="flex justify-between items-center py-1.5 px-2 border-b border-dashed border-gray-200 last:border-0"><div class="flex items-center gap-2"><i :class="getCategoryIcon(cat)" class="text-gray-300 text-[10px] w-4 text-center"></i><span class="text-[10px] font-bold text-gray-600">{{ cat }}</span></div><div class="flex gap-2 text-right"><span v-if="expenseStats.categories[cat].NZD > 0" class="text-[10px] font-bold text-dark">NZD {{ expenseStats.categories[cat].NZD.toLocaleString() }}</span><span v-if="expenseStats.categories[cat].TWD > 0" class="text-[10px] font-bold text-gray-400">TWD {{ expenseStats.categories[cat].TWD.toLocaleString() }}</span><span v-if="expenseStats.categories[cat].NZD === 0 && expenseStats.categories[cat].TWD === 0" class="text-[9px] text-gray-300">-</span></div></div></div></div>
+                <div class="mb-4"><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">依付款人 (By Payer)</h4><div class="space-y-2"><div v-for="payer in payers" :key="payer" class="bg-white p-3 rounded-xl shadow-card border border-cream-dark flex justify-between items-center"><div class="flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">{{ payer.charAt(0) }}</div><span class="font-bold text-dark text-xs">{{ payer }}</span></div><div class="text-right flex flex-col gap-0.5"><span v-if="expenseStats.payers[payer].NZD > 0" class="text-[10px] font-bold text-dark bg-gray-50 px-1.5 py-0.5 rounded">NZD {{ expenseStats.payers[payer].NZD.toLocaleString() }}</span><span v-if="expenseStats.payers[payer].TWD > 0" class="text-[10px] font-bold text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded">TWD {{ expenseStats.payers[payer].TWD.toLocaleString() }}</span><span v-if="expenseStats.payers[payer].NZD === 0 && expenseStats.payers[payer].TWD === 0" class="text-[10px] text-gray-300">-</span></div></div></div></div>
+                <div><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">依分類 (By Category)</h4><div class="space-y-1"><div v-for="cat in expenseCategories" :key="cat" class="flex justify-between items-center py-1.5 px-2 border-b border-dashed border-gray-200 last:border-0"><div class="flex items-center gap-2"><i :class="getCategoryIcon(cat)" class="text-gray-300 text-[10px] w-4 text-center"></i><span class="text-[10px] font-bold text-gray-600">{{ cat }}</span></div><div class="flex gap-2 text-right"><span v-if="expenseStats.categories[cat].NZD > 0" class="text-[10px] font-bold text-dark">NZD {{ expenseStats.categories[cat].NZD.toLocaleString() }}</span><span v-if="expenseStats.categories[cat].TWD > 0" class="text-[10px] font-bold text-gray-400">TWD {{ expenseStats.categories[cat].TWD.toLocaleString() }}</span><span v-if="expenseStats.categories[cat].NZD === 0 && expenseStats.categories[cat].TWD === 0" class="text-[10px] text-gray-300">-</span></div></div></div></div>
                 <button @click="showStatsModal=false" class="w-full mt-4 py-3 bg-primary text-white rounded-xl font-bold shadow-soft hover:bg-primary-dark transition-colors active:scale-95">關閉</button>
             </div>
         </div>
@@ -835,7 +840,7 @@
                         if(item.subItems) {
                             item.subItems.forEach(sub => {
                                 if(sub.lat && sub.lng) {
-                                    const subIcon = L.divIcon({className:'custom-div-icon', html:`<div class='marker-pin-sub'></div>`, iconSize:[24,24], iconAnchor:[12,12]});
+                                    const subIcon = L.divIcon({className:'custom-div-icon', html:`<div class='marker-pin-sub'></div><span class='marker-text' style='bottom:-16px; left:-23px;'>${item.time}</span>`, iconSize:[24,24], iconAnchor:[12,12]});
                                     L.marker([sub.lat, sub.lng], {icon: subIcon}).addTo(map).bindPopup(`<b>${sub.location}</b><br>${sub.notes || ''}`);
                                     bounds.extend([sub.lat, sub.lng]); hasPoints=true;
                                 }
@@ -847,7 +852,11 @@
                 };
 
                 const openModal = (type) => {
-                     if(type==='itinerary') { isEditing.value=false; form.value={id:Date.now(), dayIndex:selectedDayIndex.value, time:'09:00', type:'景點', title:'', location:'', lat:null, lng:null, notes:'', subItems:[]}; showItineraryModal.value=true; }
+                     if(type==='itinerary') { 
+                        isEditing.value=false; 
+                        form.value={id:Date.now(), dayIndex:selectedDayIndex.value, time:'09:00', type:'景點', title:'', location:'', lat:null, lng:null, notes:'', subItems:[]}; 
+                        showItineraryModal.value=true; 
+                     }
                      else { const d=new Date(); const t=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; expenseForm.value={amount:'', item:'', category:'餐飲', payer:'Ant', currency:'NZD', date:t}; showExpenseModal.value=true; }
                 };
                 const copyItem = (item) => { isEditing.value=false; form.value = JSON.parse(JSON.stringify(item)); form.value.id = Date.now(); showItineraryModal.value=true; };
