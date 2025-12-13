@@ -22,9 +22,10 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // Your Personal Config (Hardcoded for stability)
         const firebaseConfig = {
             apiKey: "AIzaSyBWCdRmB3l8PDg6O_tzX2pT2-50ajpdXEw",
             authDomain: "mynztrip-4955d.firebaseapp.com",
@@ -40,6 +41,10 @@
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
+            
+            // Disable persistence to ensure stable connection on mobile first
+            // enableIndexedDbPersistence(db).catch(() => {});
+
             window.firestoreDB = db;
             window.firebaseAuth = auth;
             window.firestoreMethods = { doc, onSnapshot, setDoc, signInAnonymously, onAuthStateChanged };
@@ -127,11 +132,11 @@
             <div class="h-12 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2">
                     <span class="bg-primary/20 p-1.5 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
-                    NZ Trip <span class="text-xs opacity-50">V25.19</span>
+                    NZ Trip <span class="text-xs opacity-50">V25.30</span>
                     <!-- Status Display -->
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
-                    <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> 連線中...</span>
-                    <span v-else @click="manualRetry" class="text-[9px] bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-gray-300 active:scale-95 transition-all" title="點擊重新連線"><i class="fa-solid fa-cloud-slash"></i> OFFLINE (點擊重連)</span>
+                    <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
+                    <span v-else @click="manualRetry" class="text-[9px] bg-red-100 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all" title="點擊查看錯誤"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE (點擊重連)</span>
                 </h1>
             </div>
             <div class="flex gap-2">
@@ -199,7 +204,6 @@
                     <div class="flex flex-col mb-4"><div class="flex items-baseline gap-2"><span class="text-lg font-bold text-yellow-text">NZD</span><span class="text-4xl font-bold text-yellow-text font-sans">{{ grandTotalNZD.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span></div><div class="text-sm font-bold text-yellow-text/70 mt-1">≈ NT$ {{ Math.round(grandTotalTWD).toLocaleString() }}</div></div>
                     <div class="flex gap-3"><div class="flex-1 bg-white/40 px-3 py-2 rounded-xl text-yellow-text font-bold flex flex-col items-start"><span class="text-[10px] opacity-60 mb-0.5 uppercase">NZD 現金/刷卡</span><span class="text-lg font-sans">${{ totalNZD.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span></div><div class="flex-1 bg-white/40 px-3 py-2 rounded-xl text-yellow-text font-bold flex flex-col items-start"><span class="text-[10px] opacity-60 mb-0.5 uppercase">TWD 刷卡/已付</span><span class="text-lg font-sans">${{ totalTWD.toLocaleString() }}</span></div></div>
                 </div>
-                <!-- Updated padding-bottom for mobile safety -->
                 <div class="flex-1 overflow-y-auto px-6 pb-32">
                     <div v-for="(group, date) in groupedExpenses" :key="date" class="mb-6">
                         <div class="flex items-center justify-between mb-3 px-1"><span class="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-lg">{{ date }}</span><span class="text-xs font-bold text-dark">本排小計: NT$ {{ Math.round(group.total * exchangeRate).toLocaleString() }}</span></div>
@@ -218,13 +222,6 @@
                 <div class="absolute top-4 left-4 right-4 z-[400] flex justify-between pointer-events-none"><div class="bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-sm pointer-events-auto border border-white"><p class="text-xs font-bold text-gray-600">Day {{ selectedDayIndex }}</p></div><button @click="locateUser" class="bg-white/90 backdrop-blur w-10 h-10 rounded-full shadow-sm flex items-center justify-center text-primary pointer-events-auto border border-white active:scale-95 transition-transform"><i class="fa-solid fa-crosshairs"></i></button></div>
             </div>
         </main>
-
-        <!-- Navigation (Fixed & Centered) with Active Feedback -->
-        <nav class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[calc(100%-3rem)] max-w-sm h-16 bg-white/95 backdrop-blur-md rounded-full shadow-soft border border-white/50 flex justify-around items-center px-2 z-[1000] transition-colors duration-300">
-            <button @click="currentTab = 'itinerary'" class="w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'itinerary' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-list-ul text-lg"></i></button>
-            <button @click="currentTab = 'expenses'" class="w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'expenses' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-wallet text-lg"></i></button>
-            <button @click="currentTab = 'map'" class="w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'map' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-600'"><i class="fa-regular fa-map text-lg"></i></button>
-        </nav>
 
         <!-- Itinerary Modal -->
         <transition name="slide-up">
@@ -318,7 +315,7 @@
             lavender: { name: '瓦納卡紫', colors: { primary: '#A78BFA', primaryDark: '#8B5CF6', primaryLight: '#C4B5FD', cream: '#FAF5FF', creamDark: '#F3E8FF', creamDarker: '#E9D5FF', cardBg: '#DDD6FE', cardText: '#4C1D95', dark: '#4C1D95', darkSoft: '#5B21B6', accent: '#FBBF24' } },
             tussock: { name: '奧塔哥金', colors: { primary: '#D97706', primaryDark: '#B45309', primaryLight: '#FCD34D', cream: '#FFFBEB', creamDark: '#FEF3C7', creamDarker: '#FDE68A', cardBg: '#FDE68A', cardText: '#78350F', dark: '#451A03', darkSoft: '#78350F', accent: '#65A30D' } },
             sakura: { name: '基督城櫻', colors: { primary: '#FB7185', primaryDark: '#E11D48', primaryLight: '#FECDD3', cream: '#FFF1F2', creamDark: '#FFE4E6', creamDarker: '#FECDD3', cardBg: '#FECDD3', cardText: '#881337', dark: '#881337', darkSoft: '#9F1239', accent: '#F472B6' } },
-            pudding: { name: '布丁狗', colors: { primary: '#784421', primaryDark: '#5D3518', primaryLight: '#A16A46', cream: '#FFF8D1', creamDark: '#FFF3B0', creamDarker: '#FFE082', cardBg: '#FFE082', cardText: '#3E2723', dark: '#4E342E', darkSoft: '#6D4C41', accent: '#FFCA28' } }
+            pudding: { name: '布丁狗', colors: { primary: '#784421', primaryDark: '#5D3518', primaryLight: '#A16A46', cream: '#FFF8D1', creamDark: '#FFF3B0', creamDarker: '#FFE082', cardBg: '#FFCA28', cardText: '#3E2723', dark: '#4E342E', darkSoft: '#6D4C41', accent: '#FFCA28' } }
         };
         const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const IMPORTED_DATA = [];
@@ -335,6 +332,8 @@
                 const isEditing = ref(false);
                 const exchangeRate = ref(19.5);
                 const connectionStatus = ref('connecting'); 
+                const loadingMessage = ref('連線中...');
+                const errorMessage = ref(''); // Error message state
                 const isFetchingRate = ref(false);
                 const isSearchingCoord = ref(false);
                 const saveFileInput = ref(null);
@@ -509,45 +508,101 @@
                     
                     if (window.firestoreDB && window.firebaseAuth) {
                         try {
-                             // Try Auth
-                            if(!window.firebaseAuth.currentUser) {
-                                await window.firestoreMethods.signInAnonymously(window.firebaseAuth);
-                            }
-                            // Add observer immediately
-                            window.firestoreMethods.onAuthStateChanged(window.firebaseAuth, (user) => {
-                                if (user) {
-                                    startSnapshotListener();
-                                }
-                            });
+                             // Force check ID
+                             const savedId = localStorage.getItem('nz_trip_id');
+                             if(savedId && savedId !== tripId.value) tripId.value = savedId;
+                             
+                             loadingMessage.value = '登入中...';
+                             
+                             // 1. Try to sign in anonymously first (Active approach)
+                             if(!window.firebaseAuth.currentUser) {
+                                 await window.firestoreMethods.signInAnonymously(window.firebaseAuth);
+                             }
+                             
+                             // 2. Connect immediately after auth
+                             loadingMessage.value = '同步中...';
+                             startSnapshotListener(); 
+
                         } catch (e) {
-                             console.warn("Auth/Sync failed, staying in local mode.", e);
-                             connectionStatus.value = 'local'; 
+                             console.warn("Auth failed", e);
+                             connectionStatus.value = 'error'; 
+                             // DETECT SPECIFIC FIREBASE CONFIG ERROR
+                             if(e.code === 'auth/configuration-not-found' || e.code === 'auth/admin-restricted-operation') {
+                                 errorMessage.value = "auth_config_error"; // Special flag
+                                 alert('您的 Firebase 專案未啟用『匿名登入』功能。\n\n請至 Firebase Console > Authentication > Sign-in method 將「匿名 (Anonymous)」開啟。');
+                             } else {
+                                 errorMessage.value = e.message;
+                             }
                         }
                     } else {
-                        console.warn("Firebase Init Timeout");
                         connectionStatus.value = 'local';
                     }
+                    
+                    // Network Status Listeners
+                    window.addEventListener('online', manualRetry);
                 };
                 
-                // Manual Retry Function
+                const showErrorDetail = () => {
+                    if(errorMessage.value === 'auth_config_error') {
+                        alert('您的 Firebase 專案未啟用『匿名登入』功能。\n\n請至 Firebase Console > Authentication > Sign-in method 將「匿名 (Anonymous)」開啟。');
+                    } else if(errorMessage.value) {
+                        alert(`連線錯誤：${errorMessage.value}\n請嘗試重新整理或檢查網路。`);
+                    } else {
+                        manualRetry();
+                    }
+                }
+
                 const manualRetry = () => {
                      connectionStatus.value = 'connecting';
+                     loadingMessage.value = '重連中...';
                      initSync();
                 };
 
-                // Auto Retry Logic
+                // Clear functions for Danger Zone
+                const clearLocalData = () => {
+                    if(confirm('確定要清除本機所有資料嗎？這將會重置所有行程與記帳紀錄。')) {
+                        localStorage.removeItem('nz_data_v4');
+                        location.reload();
+                    }
+                };
+                const deleteCloudData = async () => {
+                    if(connectionStatus.value !== 'cloud') { alert('請先連線到雲端才能刪除！'); return; }
+                    if(confirm(`警告：確定要永久刪除雲端頻道 "${tripId.value}" 的所有資料嗎？此動作無法復原！`)) {
+                        try {
+                            const { doc, deleteDoc } = window.firestoreMethods;
+                            await deleteDoc(doc(window.firestoreDB, "trips", tripId.value));
+                            alert('雲端資料已刪除。');
+                            connectionStatus.value = 'local';
+                            if(unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+                        } catch(e) {
+                            alert('刪除失敗，請檢查網路連線。');
+                            console.error(e);
+                        }
+                    }
+                };
+
                 let retryCount = 0;
+                let heartbeatInterval = null;
                 const startSnapshotListener = () => {
-                    connectionStatus.value = 'cloud'; const { doc, onSnapshot, setDoc } = window.firestoreMethods;
+                    connectionStatus.value = 'cloud'; 
+                    const { doc, onSnapshot, setDoc } = window.firestoreMethods;
+                    
                     if(unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
                     const ref = doc(window.firestoreDB, "trips", tripId.value);
+                    
                     unsubscribeSnapshot = onSnapshot(ref, (snap) => {
-                        retryCount = 0; // Reset retry count on success
+                        retryCount = 0; 
                         if (snap.exists()) {
                             const cData = snap.data();
                             const lString = localStorage.getItem('nz_data_v4');
                             let lData = lString ? JSON.parse(lString) : {};
-                            if ((lData.lastUpdated || 0) > (cData.lastUpdated || 0)) { setDoc(ref, lData, { merge: true }); return; }
+                            
+                            // Simple timestamp check - if local is newer (by 5s buffer), push local
+                            if ((lData.lastUpdated || 0) > (cData.lastUpdated || 0) + 5000) { 
+                                setDoc(ref, lData, { merge: true }); 
+                                return; 
+                            }
+                            
                             if (cData.itinerary) itinerary.value = cData.itinerary;
                             const cEx = cData.expenses || []; const lEx = expenses.value; const m = new Map();
                             cEx.forEach(e => m.set(e.id, e)); lEx.forEach(e => { if(!m.has(e.id)) m.set(e.id, e); });
@@ -563,17 +618,32 @@
                         }
                     }, (e) => { 
                         console.error("Snap err", e); 
-                        connectionStatus.value = 'local';
-                        // Auto retry logic
-                        if (retryCount < 3) {
-                            retryCount++;
-                            console.log(`Retrying connection (${retryCount}/3)...`);
-                            setTimeout(startSnapshotListener, 3000);
-                        }
+                        connectionStatus.value = 'error';
+                        errorMessage.value = e.message;
+                        if (retryCount < 5) { retryCount++; setTimeout(startSnapshotListener, 3000); }
                     });
+
+                    if(!heartbeatInterval) {
+                        heartbeatInterval = setInterval(() => {
+                            if(connectionStatus.value !== 'cloud' && navigator.onLine) manualRetry();
+                        }, 5000);
+                    }
                 };
 
-                const changeTripId = () => { if(newTripId.value && confirm(`Switch to "${newTripId.value}"?`)) { tripId.value = newTripId.value; localStorage.setItem('nz_trip_id', tripId.value); newTripId.value=''; startSnapshotListener(); }};
+                const changeTripId = () => { 
+                    if(newTripId.value && confirm(`確定切換頻道至 "${newTripId.value}"？\n注意：這將會清空目前的畫面資料，並載入新頻道的內容。`)) { 
+                        // CLEAR LOCAL STATE TO PREVENT LEAK
+                        itinerary.value = [];
+                        expenses.value = [];
+                        dailyMetadata.value = {};
+                        localStorage.removeItem('nz_data_v4'); 
+
+                        tripId.value = newTripId.value; 
+                        localStorage.setItem('nz_trip_id', tripId.value); 
+                        newTripId.value=''; 
+                        startSnapshotListener(); 
+                    }
+                };
                 const toggleGlobalFold = () => { isAllExpanded.value = !isAllExpanded.value; if (isAllExpanded.value) { const allIds = new Set(); filteredItinerary.value.forEach(i => allIds.add(i.id)); expandedItems.value = allIds; } else { expandedItems.value = new Set(); } };
                 const toggleItem = (id) => { expandedItems.value.has(id) ? expandedItems.value.delete(id) : expandedItems.value.add(id); };
                 const addSubItem = () => { if(!form.value.subItems) form.value.subItems = []; form.value.subItems.push({ location: '', lat: null, lng: null, notes: '' }); };
@@ -717,10 +787,15 @@
 
                 watch(currentTab, (v) => { if(v==='map') nextTick(initMap); });
                 watch(selectedDayIndex, () => { centerActiveDate(); updateDailyWeather(); if(currentTab.value==='map') initMap(); });
-                onMounted(() => { initSync(); setTimeout(() => centerActiveDate(), 800); });
+                onMounted(() => { 
+                    const savedId = localStorage.getItem('nz_trip_id');
+                    if(savedId) tripId.value = savedId;
+                    initSync(); 
+                    setTimeout(() => centerActiveDate(), 800); 
+                });
 
                 return {
-                    currentTab, selectedDayIndex, days, itinerary, expenses, filteredItinerary, totalExpenses, groupedExpenses, connectionStatus,
+                    currentTab, selectedDayIndex, days, itinerary, expenses, filteredItinerary, totalExpenses, groupedExpenses, connectionStatus, loadingMessage, errorMessage,
                     showItineraryModal, showExpenseModal, showSettingsModal, showDaySettingsModal, showStatsModal, isEditing, form, expenseForm, exchangeRate, isFetchingRate, saveFileInput, dateContainer,
                     dailyWeatherList, expandedItems, getDaySummary, toggleGlobalFold, toggleItem, isAllExpanded,
                     openModal, closeModal, saveItinerary, deleteItem, editItem, deleteExpense, saveExpense, saveSettings, fetchRate, saveToFile, loadFromFile, selectDate,
@@ -730,7 +805,8 @@
                     payers, expenseCategories, getTypeColorClass,
                     totalNZD, totalTWD, grandTotalNZD, grandTotalTWD, expenseStats, exportExpensesCSV,
                     THEMES, currentTheme, applyTheme, getWeekDay,
-                    tripId, newTripId, changeTripId, hasPendingUploads, initSync, manualRetry
+                    tripId, newTripId, changeTripId, hasPendingUploads, initSync, manualRetry, showErrorDetail,
+                    clearLocalData, deleteCloudData
                 };
             }
         }).mount('#app');
