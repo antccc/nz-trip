@@ -22,10 +22,10 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, setDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc, enableIndexedDbPersistence, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // Your Personal Config (Hardcoded for stability)
+        // Your Personal Config
         const firebaseConfig = {
             apiKey: "AIzaSyBWCdRmB3l8PDg6O_tzX2pT2-50ajpdXEw",
             authDomain: "mynztrip-4955d.firebaseapp.com",
@@ -42,7 +42,7 @@
             db = getFirestore(app);
             auth = getAuth(app);
             
-            // Disable persistence to ensure stable connection on mobile first
+            // Disable persistence to ensure stable connection
             // enableIndexedDbPersistence(db).catch(() => {});
 
             window.firestoreDB = db;
@@ -132,11 +132,11 @@
             <div class="h-12 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2">
                     <span class="bg-primary/20 p-1.5 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
-                    NZ Trip <span class="text-xs opacity-50">V25.30</span>
+                    NZ Trip <span class="text-xs opacity-50">V25.34</span>
                     <!-- Status Display -->
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
-                    <span v-else @click="manualRetry" class="text-[9px] bg-red-100 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all" title="點擊查看錯誤"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE (點擊重連)</span>
+                    <span v-else @click="showErrorDetail" class="text-[9px] bg-red-100 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all" title="點擊查看錯誤"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE (點擊重連)</span>
                 </h1>
             </div>
             <div class="flex gap-2">
@@ -187,7 +187,26 @@
                                 <div class="mt-4 space-y-4">
                                     <div v-if="item.location" class="flex justify-between items-center bg-white p-3 rounded-xl border border-cream-dark shadow-sm"><div class="flex items-center gap-2 overflow-hidden"><div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary"><i class="fa-solid fa-map-pin"></i></div><div class="flex flex-col min-w-0"><span class="text-xs font-bold text-dark truncate">{{ item.location }}</span><span v-if="item.lat" class="text-[9px] text-gray-400 font-mono">{{ item.lat.toFixed(4) }}, {{ item.lng.toFixed(4) }}</span></div></div><button @click.stop="navigateTo(item.address || item.location)" class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-sm hover:scale-105 transition-transform active:scale-90"><i class="fa-solid fa-location-arrow text-xs"></i></button></div>
                                     <div v-if="item.notes" class="p-3 bg-white border border-cream-dark rounded-xl text-sm text-gray-600 leading-relaxed whitespace-pre-wrap relative select-text border-l-4 border-l-primary/30">{{ item.notes }}</div>
-                                    <div v-if="item.subItems && item.subItems.length > 0"><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">子行程 / 備案</h4><div class="space-y-2"><div v-for="(sub, sIdx) in item.subItems" :key="sIdx" class="bg-white p-3 rounded-xl border border-cream-dark flex justify-between items-center"><div class="flex items-center gap-3 overflow-hidden"><div class="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0"></div><div class="min-w-0"><div class="text-xs font-bold text-dark truncate">{{ sub.location }}</div><div v-if="sub.notes" class="text-[10px] text-gray-400 truncate">{{ sub.notes }}</div></div></div><button v-if="sub.lat" @click.stop="navigateToLoc(sub.lat, sub.lng)" class="w-7 h-7 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-location-arrow text-[10px]"></i></button></div></div></div>
+                                    
+                                    <!-- Sub Items (With Coords Display) -->
+                                    <div v-if="item.subItems && item.subItems.length > 0">
+                                        <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">子行程 / 備案</h4>
+                                        <div class="space-y-2">
+                                            <div v-for="(sub, sIdx) in item.subItems" :key="sIdx" class="bg-white p-3 rounded-xl border border-cream-dark flex justify-between items-center">
+                                                <div class="flex items-center gap-3 overflow-hidden">
+                                                     <div class="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0"></div>
+                                                     <div class="min-w-0">
+                                                         <div class="text-xs font-bold text-dark truncate">{{ sub.location }}</div>
+                                                         <div v-if="sub.notes" class="text-[10px] text-gray-400 truncate">{{ sub.notes }}</div>
+                                                         <!-- NEW: Coordinate Display for Sub-items -->
+                                                         <div v-if="sub.lat" class="text-[9px] text-primary/60 font-mono mt-0.5"><i class="fa-solid fa-globe"></i> {{ sub.lat.toFixed(4) }}, {{ sub.lng.toFixed(4) }}</div>
+                                                     </div>
+                                                </div>
+                                                <button v-if="sub.lat" @click.stop="navigateToLoc(sub.lat, sub.lng)" class="w-7 h-7 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-location-arrow text-[10px]"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div class="flex gap-2 mt-2 pt-2 border-t border-dashed border-gray-200 justify-end"><button @click.stop="editItem(item)" class="w-10 h-10 bg-white border border-cream-dark text-gray-400 rounded-xl hover:text-dark hover:border-dark transition-colors flex items-center justify-center shadow-sm active:scale-90" title="編輯"><i class="fa-solid fa-pen"></i></button><button @click.stop="copyItem(item)" class="w-10 h-10 bg-white border border-cream-dark text-gray-400 rounded-xl hover:text-primary hover:border-primary transition-colors flex items-center justify-center shadow-sm active:scale-90" title="複製"><i class="fa-regular fa-copy"></i></button><button @click.stop="deleteItem(item.id)" class="w-10 h-10 bg-white border border-cream-dark text-gray-400 rounded-xl hover:text-red-400 hover:border-red-400 transition-colors flex items-center justify-center shadow-sm active:scale-90" title="刪除"><i class="fa-regular fa-trash-can"></i></button></div>
                                 </div>
                             </div>
@@ -223,7 +242,14 @@
             </div>
         </main>
 
-        <!-- Itinerary Modal -->
+        <!-- Navigation (Fixed & Centered) with Active Feedback -->
+        <nav class="fixed bottom-8 left-1/2 transform -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm h-16 bg-white/95 backdrop-blur-md rounded-full shadow-2xl border-2 border-primary/10 flex justify-around items-center px-2 z-[9999] transition-all duration-300">
+            <button @click="currentTab = 'itinerary'" class="w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'itinerary' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-list-ul text-lg"></i></button>
+            <button @click="currentTab = 'expenses'" class="w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'expenses' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-wallet text-lg"></i></button>
+            <button @click="currentTab = 'map'" class="w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'map' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-600'"><i class="fa-regular fa-map text-lg"></i></button>
+        </nav>
+
+        <!-- Itinerary Modal (Updated for Sub-item Coords) -->
         <transition name="slide-up">
             <div v-if="showItineraryModal" class="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
                 <div class="absolute inset-0 bg-dark/20 backdrop-blur-[2px]" @click="closeModal"></div>
@@ -233,7 +259,27 @@
                         <div class="grid grid-cols-5 gap-3"><div class="col-span-2"><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">DAY</label><select v-model="form.dayIndex" class="w-full bg-white input-rounded p-3 text-base font-bold text-center appearance-none outline-none"><option v-for="(d, i) in days" :value="i">Day {{ i }} - {{ formatDate(d) }}</option></select></div><div class="col-span-3"><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">TIME</label><div class="flex gap-2"><select v-model="formHour" class="flex-1 bg-white input-rounded p-3 text-base font-bold text-center appearance-none outline-none"><option v-for="h in 24" :value="(h-1).toString().padStart(2,'0')">{{ (h-1).toString().padStart(2,'0') }}</option></select><span class="self-center font-bold text-gray-300">:</span><select v-model="formMinute" class="flex-1 bg-white input-rounded p-3 text-base font-bold text-center appearance-none outline-none"><option v-for="m in 60" :value="(m-1).toString().padStart(2,'0')">{{ (m-1).toString().padStart(2,'0') }}</option></select></div></div></div>
                         <div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">TITLE</label><input type="text" v-model="form.title" placeholder="例如：前往餐廳吃晚餐" class="w-full bg-white input-rounded p-4 text-base font-bold outline-none"></div>
                         <div class="bg-white p-3 rounded-2xl border border-dashed border-gray-200"><div class="flex justify-between items-center mb-1.5 px-1"><label class="text-[10px] font-bold text-gray-400">LOCATION</label><span v-if="form.lat" class="text-[9px] text-green-500 font-mono"><i class="fa-solid fa-check"></i> {{ form.lat.toFixed(3) }},{{ form.lng.toFixed(3) }}</span></div><div class="flex gap-2"><input type="text" v-model="form.location" placeholder="地點名稱" class="flex-1 bg-gray-50 rounded-xl p-2.5 text-base font-bold outline-none"><button @click="searchCoord(form)" :disabled="isSearchingCoord" class="w-10 h-10 rounded-xl bg-gray-100 text-gray-400 hover:bg-primary hover:text-white transition-colors flex items-center justify-center shrink-0 active:scale-90"><i class="fa-solid" :class="isSearchingCoord ? 'fa-circle-notch fa-spin' : 'fa-magnifying-glass'"></i></button></div></div>
-                        <div><div class="flex justify-between items-center mb-2 px-1"><label class="text-[10px] font-bold text-gray-400">SUB-ITEMS</label><button @click="addSubItem" class="text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-lg font-bold hover:bg-primary hover:text-white transition-colors active:scale-95"><i class="fa-solid fa-plus mr-1"></i>新增</button></div><div class="space-y-2"><div v-for="(sub, idx) in form.subItems" :key="idx" class="bg-white p-3 rounded-xl border border-cream-dark relative"><button @click="removeSubItem(idx)" class="absolute top-2 right-2 text-gray-300 hover:text-red-400 active:scale-90"><i class="fa-solid fa-xmark"></i></button><div class="flex gap-2 mb-2 pr-6"><input type="text" v-model="sub.location" placeholder="子地點" class="flex-1 text-xs font-bold outline-none bg-transparent border-b border-gray-100 focus:border-primary pb-1"><button @click="searchCoord(sub)" :disabled="isSearchingCoord" class="text-gray-300 hover:text-primary active:scale-90"><i class="fa-solid fa-magnifying-glass text-xs"></i></button></div><input type="text" v-model="sub.notes" placeholder="備註..." class="w-full text-xs text-gray-500 bg-transparent outline-none"></div></div></div>
+                        
+                        <!-- Sub Items Section (Updated with Coords Input) -->
+                        <div>
+                            <div class="flex justify-between items-center mb-2 px-1"><label class="text-[10px] font-bold text-gray-400">SUB-ITEMS</label><button @click="addSubItem" class="text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-lg font-bold hover:bg-primary hover:text-white transition-colors active:scale-95"><i class="fa-solid fa-plus mr-1"></i>新增</button></div>
+                            <div class="space-y-2">
+                                <div v-for="(sub, idx) in form.subItems" :key="idx" class="bg-white p-3 rounded-xl border border-cream-dark relative">
+                                    <button @click="removeSubItem(idx)" class="absolute top-2 right-2 text-gray-300 hover:text-red-400 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
+                                    <div class="flex gap-2 mb-2 pr-6">
+                                        <input type="text" v-model="sub.location" placeholder="子地點" class="flex-1 text-xs font-bold outline-none bg-transparent border-b border-gray-100 focus:border-primary pb-1">
+                                        <button @click="searchCoord(sub)" :disabled="isSearchingCoord" class="text-gray-300 hover:text-primary active:scale-90"><i class="fa-solid fa-magnifying-glass text-xs"></i></button>
+                                    </div>
+                                    <!-- NEW: Coords Input for Sub Items -->
+                                    <div class="flex gap-2 mb-2">
+                                        <input type="number" step="any" v-model.number="sub.lat" placeholder="緯度 Lat" class="w-1/2 bg-gray-50 rounded-lg p-2 text-[10px] text-center outline-none border border-transparent focus:border-primary">
+                                        <input type="number" step="any" v-model.number="sub.lng" placeholder="經度 Lng" class="w-1/2 bg-gray-50 rounded-lg p-2 text-[10px] text-center outline-none border border-transparent focus:border-primary">
+                                    </div>
+                                    <input type="text" v-model="sub.notes" placeholder="備註..." class="w-full text-xs text-gray-500 bg-transparent outline-none">
+                                </div>
+                            </div>
+                        </div>
+
                         <div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">CATEGORY</label><div class="flex flex-wrap gap-2"><button v-for="t in ['景點','美食','住宿','交通','購物','其他']" @click="form.type = t" class="px-4 py-2 rounded-2xl text-xs font-bold border transition-all active:scale-95" :class="form.type === t ? 'bg-dark text-white border-dark' : 'bg-white text-gray-400 border-gray-100 hover:border-gray-300'">{{ t }}</button></div></div>
                         <div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">MEMO</label><textarea v-model="form.notes" rows="3" class="w-full bg-white input-rounded p-4 text-base outline-none resize-none"></textarea></div>
                     </div>
@@ -242,6 +288,9 @@
             </div>
         </transition>
 
+        <!-- Other Modals (Expense, Stats, Settings, DaySettings) - Kept same as V25.31 -->
+        <!-- Omitted for brevity, assume present in actual file structure if generating full file -->
+        <!-- Just re-pasting Expense Modal for completeness if generating full file -->
         <transition name="slide-up">
             <div v-if="showExpenseModal" class="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
                 <div class="absolute inset-0 bg-dark/30 backdrop-blur-sm" @click="closeModal"></div>
@@ -289,6 +338,14 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3"><button @click="saveToFile" class="py-3 bg-blue-50 text-blue-500 rounded-xl text-xs font-bold hover:bg-blue-100 active:scale-95">備份檔案</button><button @click="$refs.saveFileInput.click()" class="py-3 bg-orange-50 text-orange-500 rounded-xl text-xs font-bold hover:bg-orange-100 active:scale-95">讀取檔案</button></div>
                     <button @click="exportExpensesCSV" class="w-full py-3 bg-green-50 text-green-600 rounded-xl text-xs font-bold hover:bg-green-100 transition-colors flex items-center justify-center gap-2 active:scale-95"><i class="fa-solid fa-file-csv"></i> 匯出記帳明細 (CSV)</button>
+                    <!-- Danger Zone -->
+                    <div class="pt-4 border-t border-dashed border-gray-200 mt-4">
+                        <h4 class="text-xs font-bold text-red-400 uppercase tracking-widest mb-3 text-left pl-1">危險區域</h4>
+                        <div class="flex gap-2">
+                             <button @click="clearLocalData" class="flex-1 py-3 bg-gray-100 text-gray-500 rounded-xl text-xs font-bold hover:bg-gray-200 active:scale-95 transition-colors">清除本機暫存</button>
+                             <button @click="deleteCloudData" class="flex-1 py-3 bg-red-50 text-red-500 rounded-xl text-xs font-bold hover:bg-red-100 active:scale-95 transition-colors">刪除雲端存檔</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -312,7 +369,7 @@
             hojicha: { name: '焙茶拿鐵', colors: { primary: '#C89F81', primaryDark: '#A47E64', primaryLight: '#E6D2C3', cream: '#FFFCF5', creamDark: '#F5F0E6', creamDarker: '#EBE0D0', cardBg: '#F3E0C0', cardText: '#785A46', dark: '#54433A', darkSoft: '#8D7B72', accent: '#D4A373' } },
             matcha: { name: '宇治抹茶', colors: { primary: '#84A98C', primaryDark: '#52796F', primaryLight: '#CAD2C5', cream: '#FDFBF7', creamDark: '#F2EFE9', creamDarker: '#E6E2D8', cardBg: '#E9EDC9', cardText: '#3A4D39', dark: '#2F3E46', darkSoft: '#4A5759', accent: '#F4A261' } },
             tekapo: { name: '蒂卡波藍', colors: { primary: '#38BDF8', primaryDark: '#0284C7', primaryLight: '#BAE6FD', cream: '#F0F9FF', creamDark: '#E0F2FE', creamDarker: '#BAE6FD', cardBg: '#BAE6FD', cardText: '#0C4A6E', dark: '#0F172A', darkSoft: '#334155', accent: '#F472B6' } },
-            lavender: { name: '瓦納卡紫', colors: { primary: '#A78BFA', primaryDark: '#8B5CF6', primaryLight: '#C4B5FD', cream: '#FAF5FF', creamDark: '#F3E8FF', creamDarker: '#E9D5FF', cardBg: '#DDD6FE', cardText: '#4C1D95', dark: '#4C1D95', darkSoft: '#5B21B6', accent: '#FBBF24' } },
+            lavender: { name: '瓦納卡紫', colors: { primary: '#A78BFA', primaryDark: '#8B5CF6', primaryLight: '#C4B5FD', cream: '#FAF5FF', creamDark: '#F3E8FF', creamDarker: '#E9D5FF', cardBg: '#DDD6FE', cardText: '#4C1D95', dark: '#4C1D95', darkSoft: '#5B21B6', accent: '#F472B6' } },
             tussock: { name: '奧塔哥金', colors: { primary: '#D97706', primaryDark: '#B45309', primaryLight: '#FCD34D', cream: '#FFFBEB', creamDark: '#FEF3C7', creamDarker: '#FDE68A', cardBg: '#FDE68A', cardText: '#78350F', dark: '#451A03', darkSoft: '#78350F', accent: '#65A30D' } },
             sakura: { name: '基督城櫻', colors: { primary: '#FB7185', primaryDark: '#E11D48', primaryLight: '#FECDD3', cream: '#FFF1F2', creamDark: '#FFE4E6', creamDarker: '#FECDD3', cardBg: '#FECDD3', cardText: '#881337', dark: '#881337', darkSoft: '#9F1239', accent: '#F472B6' } },
             pudding: { name: '布丁狗', colors: { primary: '#784421', primaryDark: '#5D3518', primaryLight: '#A16A46', cream: '#FFF8D1', creamDark: '#FFF3B0', creamDarker: '#FFE082', cardBg: '#FFCA28', cardText: '#3E2723', dark: '#4E342E', darkSoft: '#6D4C41', accent: '#FFCA28' } }
@@ -333,7 +390,7 @@
                 const exchangeRate = ref(19.5);
                 const connectionStatus = ref('connecting'); 
                 const loadingMessage = ref('連線中...');
-                const errorMessage = ref(''); // Error message state
+                const errorMessage = ref(''); 
                 const isFetchingRate = ref(false);
                 const isSearchingCoord = ref(false);
                 const saveFileInput = ref(null);
