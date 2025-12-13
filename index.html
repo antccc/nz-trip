@@ -23,7 +23,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBWCdRmB3l8PDg6O_tzX2pT2-50ajpdXEw",
@@ -42,7 +42,7 @@
             auth = getAuth(app);
             window.firestoreDB = db;
             window.firebaseAuth = auth;
-            window.firestoreMethods = { doc, onSnapshot, setDoc, signInAnonymously };
+            window.firestoreMethods = { doc, onSnapshot, setDoc, signInAnonymously, onAuthStateChanged };
             console.log("Firebase initialized");
         } catch (e) {
             console.warn("Firebase config missing. Running in local mode.");
@@ -127,11 +127,11 @@
             <div class="h-12 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2">
                     <span class="bg-primary/20 p-1.5 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
-                    NZ Trip <span class="text-xs opacity-50">V25.17</span>
+                    NZ Trip <span class="text-xs opacity-50">V25.19</span>
                     <!-- Status Display -->
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> 連線中...</span>
-                    <span v-else @click="initSync" class="text-[9px] bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-gray-300 active:scale-95 transition-all" title="點擊重新連線"><i class="fa-solid fa-cloud-slash"></i> OFFLINE (點擊重連)</span>
+                    <span v-else @click="manualRetry" class="text-[9px] bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-gray-300 active:scale-95 transition-all" title="點擊重新連線"><i class="fa-solid fa-cloud-slash"></i> OFFLINE (點擊重連)</span>
                 </h1>
             </div>
             <div class="flex gap-2">
@@ -165,6 +165,7 @@
                         </div>
                     </div>
                 </div>
+                <!-- Updated padding-bottom for mobile safety -->
                 <div class="flex-1 overflow-y-auto px-6 pb-32 pt-2">
                     <div v-if="filteredItinerary.length === 0" class="flex flex-col items-center justify-center h-48 text-gray-300 border-2 border-dashed border-cream-dark rounded-3xl m-2"><i class="fa-regular fa-calendar-plus text-3xl mb-2 text-primary/30"></i><p class="font-bold text-xs text-primary/50">點擊右下角新增行程</p></div>
                     <div v-for="(item, index) in filteredItinerary" :key="item.id" class="group mb-4 relative pl-4">
@@ -198,6 +199,7 @@
                     <div class="flex flex-col mb-4"><div class="flex items-baseline gap-2"><span class="text-lg font-bold text-yellow-text">NZD</span><span class="text-4xl font-bold text-yellow-text font-sans">{{ grandTotalNZD.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span></div><div class="text-sm font-bold text-yellow-text/70 mt-1">≈ NT$ {{ Math.round(grandTotalTWD).toLocaleString() }}</div></div>
                     <div class="flex gap-3"><div class="flex-1 bg-white/40 px-3 py-2 rounded-xl text-yellow-text font-bold flex flex-col items-start"><span class="text-[10px] opacity-60 mb-0.5 uppercase">NZD 現金/刷卡</span><span class="text-lg font-sans">${{ totalNZD.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span></div><div class="flex-1 bg-white/40 px-3 py-2 rounded-xl text-yellow-text font-bold flex flex-col items-start"><span class="text-[10px] opacity-60 mb-0.5 uppercase">TWD 刷卡/已付</span><span class="text-lg font-sans">${{ totalTWD.toLocaleString() }}</span></div></div>
                 </div>
+                <!-- Updated padding-bottom for mobile safety -->
                 <div class="flex-1 overflow-y-auto px-6 pb-32">
                     <div v-for="(group, date) in groupedExpenses" :key="date" class="mb-6">
                         <div class="flex items-center justify-between mb-3 px-1"><span class="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-lg">{{ date }}</span><span class="text-xs font-bold text-dark">本排小計: NT$ {{ Math.round(group.total * exchangeRate).toLocaleString() }}</span></div>
@@ -316,7 +318,7 @@
             lavender: { name: '瓦納卡紫', colors: { primary: '#A78BFA', primaryDark: '#8B5CF6', primaryLight: '#C4B5FD', cream: '#FAF5FF', creamDark: '#F3E8FF', creamDarker: '#E9D5FF', cardBg: '#DDD6FE', cardText: '#4C1D95', dark: '#4C1D95', darkSoft: '#5B21B6', accent: '#FBBF24' } },
             tussock: { name: '奧塔哥金', colors: { primary: '#D97706', primaryDark: '#B45309', primaryLight: '#FCD34D', cream: '#FFFBEB', creamDark: '#FEF3C7', creamDarker: '#FDE68A', cardBg: '#FDE68A', cardText: '#78350F', dark: '#451A03', darkSoft: '#78350F', accent: '#65A30D' } },
             sakura: { name: '基督城櫻', colors: { primary: '#FB7185', primaryDark: '#E11D48', primaryLight: '#FECDD3', cream: '#FFF1F2', creamDark: '#FFE4E6', creamDarker: '#FECDD3', cardBg: '#FECDD3', cardText: '#881337', dark: '#881337', darkSoft: '#9F1239', accent: '#F472B6' } },
-            pudding: { name: '布丁狗', colors: { primary: '#784421', primaryDark: '#5D3518', primaryLight: '#A16A46', cream: '#FFF8D1', creamDark: '#FFF3B0', creamDarker: '#FFE082', cardBg: '#FFCA28', cardText: '#3E2723', dark: '#4E342E', darkSoft: '#6D4C41', accent: '#FFCA28' } }
+            pudding: { name: '布丁狗', colors: { primary: '#784421', primaryDark: '#5D3518', primaryLight: '#A16A46', cream: '#FFF8D1', creamDark: '#FFF3B0', creamDarker: '#FFE082', cardBg: '#FFE082', cardText: '#3E2723', dark: '#4E342E', darkSoft: '#6D4C41', accent: '#FFCA28' } }
         };
         const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const IMPORTED_DATA = [];
@@ -511,7 +513,12 @@
                             if(!window.firebaseAuth.currentUser) {
                                 await window.firestoreMethods.signInAnonymously(window.firebaseAuth);
                             }
-                            startSnapshotListener();
+                            // Add observer immediately
+                            window.firestoreMethods.onAuthStateChanged(window.firebaseAuth, (user) => {
+                                if (user) {
+                                    startSnapshotListener();
+                                }
+                            });
                         } catch (e) {
                              console.warn("Auth/Sync failed, staying in local mode.", e);
                              connectionStatus.value = 'local'; 
@@ -522,11 +529,20 @@
                     }
                 };
                 
+                // Manual Retry Function
+                const manualRetry = () => {
+                     connectionStatus.value = 'connecting';
+                     initSync();
+                };
+
+                // Auto Retry Logic
+                let retryCount = 0;
                 const startSnapshotListener = () => {
                     connectionStatus.value = 'cloud'; const { doc, onSnapshot, setDoc } = window.firestoreMethods;
                     if(unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
                     const ref = doc(window.firestoreDB, "trips", tripId.value);
                     unsubscribeSnapshot = onSnapshot(ref, (snap) => {
+                        retryCount = 0; // Reset retry count on success
                         if (snap.exists()) {
                             const cData = snap.data();
                             const lString = localStorage.getItem('nz_data_v4');
@@ -545,7 +561,16 @@
                              if(l) setDoc(ref, JSON.parse(l));
                              else { const init = { itinerary: [], expenses: [], exchangeRate: 19.5, dailyMetadata: {}, lastUpdated: Date.now() }; setDoc(ref, init); localStorage.setItem('nz_data_v4', JSON.stringify(init)); loadLocalData(); }
                         }
-                    }, (e) => { console.error("Snap err", e); connectionStatus.value = 'local'; });
+                    }, (e) => { 
+                        console.error("Snap err", e); 
+                        connectionStatus.value = 'local';
+                        // Auto retry logic
+                        if (retryCount < 3) {
+                            retryCount++;
+                            console.log(`Retrying connection (${retryCount}/3)...`);
+                            setTimeout(startSnapshotListener, 3000);
+                        }
+                    });
                 };
 
                 const changeTripId = () => { if(newTripId.value && confirm(`Switch to "${newTripId.value}"?`)) { tripId.value = newTripId.value; localStorage.setItem('nz_trip_id', tripId.value); newTripId.value=''; startSnapshotListener(); }};
@@ -705,7 +730,7 @@
                     payers, expenseCategories, getTypeColorClass,
                     totalNZD, totalTWD, grandTotalNZD, grandTotalTWD, expenseStats, exportExpensesCSV,
                     THEMES, currentTheme, applyTheme, getWeekDay,
-                    tripId, newTripId, changeTripId, hasPendingUploads, initSync
+                    tripId, newTripId, changeTripId, hasPendingUploads, initSync, manualRetry
                 };
             }
         }).mount('#app');
