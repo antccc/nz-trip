@@ -115,8 +115,6 @@
         .marker-pin-sub { width: 24px; height: 24px; border-radius: 50% 50% 50% 0; background: rgb(var(--c-dark-soft)); position: absolute; transform: rotate(-45deg); left: 50%; top: 50%; margin: -12px 0 0 -12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; }
         .marker-pin-sub::after { content: ''; width: 10px; height: 10px; margin: 0; background: #fff; position: absolute; border-radius: 50%; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-        
-        /* Modal Scroll Fix */
         .modal-scroll { overscroll-behavior: contain; }
     </style>
 </head>
@@ -129,9 +127,10 @@
             <div class="h-12 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2">
                     <span class="bg-primary/20 p-1.5 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
-                    NZ Trip <span class="text-xs opacity-50">V25.15</span>
+                    NZ Trip <span class="text-xs opacity-50">V25.16</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
-                    <span v-else class="text-[9px] bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-bold"><i class="fa-solid fa-cloud-slash"></i> OFFLINE</span>
+                    <!-- Updated: Clickable OFFLINE badge to retry sync -->
+                    <span v-else @click="initSync" class="text-[9px] bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-gray-300 active:scale-95 transition-all" title="點擊重新連線"><i class="fa-solid fa-cloud-slash"></i> OFFLINE (點擊重連)</span>
                 </h1>
             </div>
             <div class="flex gap-2">
@@ -695,7 +694,7 @@
                     payers, expenseCategories, getTypeColorClass,
                     totalNZD, totalTWD, grandTotalNZD, grandTotalTWD, expenseStats, exportExpensesCSV,
                     THEMES, currentTheme, applyTheme, getWeekDay,
-                    tripId, newTripId, changeTripId, hasPendingUploads
+                    tripId, newTripId, changeTripId, hasPendingUploads, initSync
                 };
             }
         }).mount('#app');
