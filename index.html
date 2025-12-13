@@ -47,7 +47,7 @@
 
             window.firestoreDB = db;
             window.firebaseAuth = auth;
-            window.firestoreMethods = { doc, onSnapshot, setDoc, signInAnonymously, onAuthStateChanged };
+            window.firestoreMethods = { doc, onSnapshot, setDoc, deleteDoc, signInAnonymously, onAuthStateChanged };
             console.log("Firebase initialized");
         } catch (e) {
             console.warn("Firebase config missing. Running in local mode.");
@@ -132,7 +132,7 @@
             <div class="h-12 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2">
                     <span class="bg-primary/20 p-1.5 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
-                    NZ Trip <span class="text-xs opacity-50">V25.34</span>
+                    NZ Trip <span class="text-xs opacity-50">V25.35</span>
                     <!-- Status Display -->
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
@@ -162,7 +162,16 @@
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-2 mb-3">
                                     <span class="bg-white/20 text-white px-3 py-1 rounded-xl text-[10px] font-bold tracking-wider backdrop-blur-sm">DAY {{ selectedDayIndex }} · {{ getWeekDay(days[selectedDayIndex]) }}</span>
-                                    <div class="flex gap-2 overflow-x-auto no-scrollbar"><span v-for="(w, idx) in dailyWeatherList" :key="idx" class="text-xs font-bold flex items-center gap-1 text-white bg-white/10 px-2.5 py-1 rounded-full whitespace-nowrap backdrop-blur-sm"><i :class="w.icon"></i><span class="text-[10px] opacity-90">{{ w.name }}</span><span>{{ w.temp }}°</span></span></div>
+                                    <div class="flex gap-2 overflow-x-auto no-scrollbar">
+                                        <!-- Weather Pills with Tooltip -->
+                                        <span v-for="(w, idx) in dailyWeatherList" :key="idx" 
+                                              class="text-xs font-bold flex items-center gap-1 text-white bg-white/10 px-2.5 py-1 rounded-full whitespace-nowrap backdrop-blur-sm cursor-help"
+                                              :title="`📍 地點: ${w.name} (${w.lat}, ${w.lng})`">
+                                            <i :class="w.icon"></i>
+                                            <span class="text-[10px] opacity-90">{{ w.name }}</span>
+                                            <span>{{ w.temp }}°</span>
+                                        </span>
+                                    </div>
                                 </div>
                                 <h2 class="text-xl font-bold text-white truncate pr-2 flex items-center gap-2 leading-tight">{{ getDaySummary }}<button @click.stop="openDaySettings" class="text-white/60 hover:text-white text-sm transition-colors active:scale-90"><i class="fa-solid fa-pen"></i></button></h2>
                             </div>
@@ -187,26 +196,7 @@
                                 <div class="mt-4 space-y-4">
                                     <div v-if="item.location" class="flex justify-between items-center bg-white p-3 rounded-xl border border-cream-dark shadow-sm"><div class="flex items-center gap-2 overflow-hidden"><div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary"><i class="fa-solid fa-map-pin"></i></div><div class="flex flex-col min-w-0"><span class="text-xs font-bold text-dark truncate">{{ item.location }}</span><span v-if="item.lat" class="text-[9px] text-gray-400 font-mono">{{ item.lat.toFixed(4) }}, {{ item.lng.toFixed(4) }}</span></div></div><button @click.stop="navigateTo(item.address || item.location)" class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-sm hover:scale-105 transition-transform active:scale-90"><i class="fa-solid fa-location-arrow text-xs"></i></button></div>
                                     <div v-if="item.notes" class="p-3 bg-white border border-cream-dark rounded-xl text-sm text-gray-600 leading-relaxed whitespace-pre-wrap relative select-text border-l-4 border-l-primary/30">{{ item.notes }}</div>
-                                    
-                                    <!-- Sub Items (With Coords Display) -->
-                                    <div v-if="item.subItems && item.subItems.length > 0">
-                                        <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">子行程 / 備案</h4>
-                                        <div class="space-y-2">
-                                            <div v-for="(sub, sIdx) in item.subItems" :key="sIdx" class="bg-white p-3 rounded-xl border border-cream-dark flex justify-between items-center">
-                                                <div class="flex items-center gap-3 overflow-hidden">
-                                                     <div class="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0"></div>
-                                                     <div class="min-w-0">
-                                                         <div class="text-xs font-bold text-dark truncate">{{ sub.location }}</div>
-                                                         <div v-if="sub.notes" class="text-[10px] text-gray-400 truncate">{{ sub.notes }}</div>
-                                                         <!-- NEW: Coordinate Display for Sub-items -->
-                                                         <div v-if="sub.lat" class="text-[9px] text-primary/60 font-mono mt-0.5"><i class="fa-solid fa-globe"></i> {{ sub.lat.toFixed(4) }}, {{ sub.lng.toFixed(4) }}</div>
-                                                     </div>
-                                                </div>
-                                                <button v-if="sub.lat" @click.stop="navigateToLoc(sub.lat, sub.lng)" class="w-7 h-7 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-location-arrow text-[10px]"></i></button>
-                                            </div>
-                                        </div>
-                                    </div>
-
+                                    <div v-if="item.subItems && item.subItems.length > 0"><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">子行程 / 備案</h4><div class="space-y-2"><div v-for="(sub, sIdx) in item.subItems" :key="sIdx" class="bg-white p-3 rounded-xl border border-cream-dark flex justify-between items-center"><div class="flex items-center gap-3 overflow-hidden"><div class="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0"></div><div class="min-w-0"><div class="text-xs font-bold text-dark truncate">{{ sub.location }}</div><div v-if="sub.notes" class="text-[10px] text-gray-400 truncate">{{ sub.notes }}</div><div v-if="sub.lat" class="text-[9px] text-primary/60 font-mono mt-0.5"><i class="fa-solid fa-globe"></i> {{ sub.lat.toFixed(4) }}, {{ sub.lng.toFixed(4) }}</div></div></div><button v-if="sub.lat" @click.stop="navigateToLoc(sub.lat, sub.lng)" class="w-7 h-7 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-location-arrow text-[10px]"></i></button></div></div></div>
                                     <div class="flex gap-2 mt-2 pt-2 border-t border-dashed border-gray-200 justify-end"><button @click.stop="editItem(item)" class="w-10 h-10 bg-white border border-cream-dark text-gray-400 rounded-xl hover:text-dark hover:border-dark transition-colors flex items-center justify-center shadow-sm active:scale-90" title="編輯"><i class="fa-solid fa-pen"></i></button><button @click.stop="copyItem(item)" class="w-10 h-10 bg-white border border-cream-dark text-gray-400 rounded-xl hover:text-primary hover:border-primary transition-colors flex items-center justify-center shadow-sm active:scale-90" title="複製"><i class="fa-regular fa-copy"></i></button><button @click.stop="deleteItem(item.id)" class="w-10 h-10 bg-white border border-cream-dark text-gray-400 rounded-xl hover:text-red-400 hover:border-red-400 transition-colors flex items-center justify-center shadow-sm active:scale-90" title="刪除"><i class="fa-regular fa-trash-can"></i></button></div>
                                 </div>
                             </div>
@@ -354,7 +344,7 @@
              <div class="bg-white p-6 rounded-[2rem] w-80 shadow-2xl relative">
                 <button @click="showDaySettingsModal=false" class="absolute top-4 right-4 text-gray-300 hover:text-gray-500 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
                 <h3 class="font-bold text-dark mb-4 pl-2">Day {{ selectedDayIndex }} 設定</h3>
-                <div class="space-y-4"><div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">標題</label><input type="text" v-model="tempDaySettings.title" class="w-full bg-gray-50 input-rounded p-3 text-base"></div><div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">天氣地點</label><div class="space-y-2"><div v-for="(slot, idx) in 3" :key="idx" class="relative"><input type="text" v-model="tempWeatherLocs[idx].name" :placeholder="`地點 ${idx + 1}`" class="w-full bg-gray-50 input-rounded p-3 text-base pr-8"><span v-if="tempWeatherLocs[idx].lat" class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 text-xs"><i class="fa-solid fa-check"></i></span></div></div></div></div>
+                <div class="space-y-4"><div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">標題</label><input type="text" v-model="tempDaySettings.title" class="w-full bg-gray-50 input-rounded p-3 text-base"></div><div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">天氣地點</label><div class="space-y-2"><div v-for="(slot, idx) in 3" :key="idx" class="relative"><input type="text" v-model="tempWeatherLocs[idx].name" :placeholder="`地點 ${idx + 1}`" @input="tempWeatherLocs[idx].lat = null; tempWeatherLocs[idx].lng = null" class="w-full bg-gray-50 input-rounded p-3 text-base pr-8"><span v-if="tempWeatherLocs[idx].lat" class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 text-xs"><i class="fa-solid fa-check"></i></span></div></div></div></div>
                 <button @click="saveDaySettings" class="w-full bg-primary text-white py-3 rounded-xl font-bold mt-6 shadow-lg shadow-primary/20 flex items-center justify-center gap-2 active:scale-95"><span v-if="isSavingSettings"><i class="fa-solid fa-circle-notch fa-spin"></i> 處理中...</span><span v-else>儲存並更新天氣</span></button>
              </div>
         </div>
@@ -369,7 +359,7 @@
             hojicha: { name: '焙茶拿鐵', colors: { primary: '#C89F81', primaryDark: '#A47E64', primaryLight: '#E6D2C3', cream: '#FFFCF5', creamDark: '#F5F0E6', creamDarker: '#EBE0D0', cardBg: '#F3E0C0', cardText: '#785A46', dark: '#54433A', darkSoft: '#8D7B72', accent: '#D4A373' } },
             matcha: { name: '宇治抹茶', colors: { primary: '#84A98C', primaryDark: '#52796F', primaryLight: '#CAD2C5', cream: '#FDFBF7', creamDark: '#F2EFE9', creamDarker: '#E6E2D8', cardBg: '#E9EDC9', cardText: '#3A4D39', dark: '#2F3E46', darkSoft: '#4A5759', accent: '#F4A261' } },
             tekapo: { name: '蒂卡波藍', colors: { primary: '#38BDF8', primaryDark: '#0284C7', primaryLight: '#BAE6FD', cream: '#F0F9FF', creamDark: '#E0F2FE', creamDarker: '#BAE6FD', cardBg: '#BAE6FD', cardText: '#0C4A6E', dark: '#0F172A', darkSoft: '#334155', accent: '#F472B6' } },
-            lavender: { name: '瓦納卡紫', colors: { primary: '#A78BFA', primaryDark: '#8B5CF6', primaryLight: '#C4B5FD', cream: '#FAF5FF', creamDark: '#F3E8FF', creamDarker: '#E9D5FF', cardBg: '#DDD6FE', cardText: '#4C1D95', dark: '#4C1D95', darkSoft: '#5B21B6', accent: '#F472B6' } },
+            lavender: { name: '瓦納卡紫', colors: { primary: '#A78BFA', primaryDark: '#8B5CF6', primaryLight: '#C4B5FD', cream: '#FAF5FF', creamDark: '#F3E8FF', creamDarker: '#E9D5FF', cardBg: '#DDD6FE', cardText: '#4C1D95', dark: '#4C1D95', darkSoft: '#5B21B6', accent: '#FBBF24' } },
             tussock: { name: '奧塔哥金', colors: { primary: '#D97706', primaryDark: '#B45309', primaryLight: '#FCD34D', cream: '#FFFBEB', creamDark: '#FEF3C7', creamDarker: '#FDE68A', cardBg: '#FDE68A', cardText: '#78350F', dark: '#451A03', darkSoft: '#78350F', accent: '#65A30D' } },
             sakura: { name: '基督城櫻', colors: { primary: '#FB7185', primaryDark: '#E11D48', primaryLight: '#FECDD3', cream: '#FFF1F2', creamDark: '#FFE4E6', creamDarker: '#FECDD3', cardBg: '#FECDD3', cardText: '#881337', dark: '#881337', darkSoft: '#9F1239', accent: '#F472B6' } },
             pudding: { name: '布丁狗', colors: { primary: '#784421', primaryDark: '#5D3518', primaryLight: '#A16A46', cream: '#FFF8D1', creamDark: '#FFF3B0', creamDarker: '#FFE082', cardBg: '#FFCA28', cardText: '#3E2723', dark: '#4E342E', darkSoft: '#6D4C41', accent: '#FFCA28' } }
