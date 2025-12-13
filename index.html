@@ -132,7 +132,7 @@
             <div class="h-12 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2">
                     <span class="bg-primary/20 p-1.5 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
-                    NZ Trip <span class="text-xs opacity-50">V25.36</span>
+                    NZ Trip <span class="text-xs opacity-50">V25.37</span>
                     <!-- Status Display -->
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
@@ -195,9 +195,11 @@
                                     </div>
                                 </div>
                             </div>
+                            <!-- EXPANDED CONTENT -->
                             <div v-show="expandedItems.has(item.id)" class="px-5 pb-5 pt-0 border-t border-dashed border-gray-100 bg-cream/30">
                                 <div class="mt-4 space-y-4">
-                                    <div v-if="item.location" class="flex justify-between items-center bg-white p-3 rounded-xl border border-cream-dark shadow-sm"><div class="flex items-center gap-2 overflow-hidden"><div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary"><i class="fa-solid fa-map-pin"></i></div><div class="flex flex-col min-w-0"><span class="text-xs font-bold text-dark truncate">{{ item.location }}</span><span v-if="item.lat" class="text-[9px] text-gray-400 font-mono">{{ item.lat.toFixed(4) }}, {{ item.lng.toFixed(4) }}</span></div></div><button @click.stop="navigateTo(item.address || item.location)" class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-sm hover:scale-105 transition-transform active:scale-90"><i class="fa-solid fa-location-arrow text-xs"></i></button></div>
+                                    <!-- REMOVED REDUNDANT LOCATION CARD -->
+                                    
                                     <div v-if="item.notes" class="p-3 bg-white border border-cream-dark rounded-xl text-sm text-gray-600 leading-relaxed whitespace-pre-wrap relative select-text border-l-4 border-l-primary/30">{{ item.notes }}</div>
                                     
                                     <!-- Sub Items (With Coords Display) -->
@@ -270,13 +272,7 @@
                     <div class="space-y-4">
                         <div class="grid grid-cols-5 gap-3"><div class="col-span-2"><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">DAY</label><select v-model="form.dayIndex" class="w-full bg-white input-rounded p-3 text-base font-bold text-center appearance-none outline-none"><option v-for="(d, i) in days" :value="i">Day {{ i }} - {{ formatDate(d) }}</option></select></div><div class="col-span-3"><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">TIME</label><div class="flex gap-2"><select v-model="formHour" class="flex-1 bg-white input-rounded p-3 text-base font-bold text-center appearance-none outline-none"><option v-for="h in 24" :value="(h-1).toString().padStart(2,'0')">{{ (h-1).toString().padStart(2,'0') }}</option></select><span class="self-center font-bold text-gray-300">:</span><select v-model="formMinute" class="flex-1 bg-white input-rounded p-3 text-base font-bold text-center appearance-none outline-none"><option v-for="m in 60" :value="(m-1).toString().padStart(2,'0')">{{ (m-1).toString().padStart(2,'0') }}</option></select></div></div></div>
                         <div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">TITLE</label><input type="text" v-model="form.title" placeholder="例如：前往餐廳吃晚餐" class="w-full bg-white input-rounded p-4 text-base font-bold outline-none"></div>
-                        <div class="bg-white p-3 rounded-2xl border border-dashed border-gray-200"><div class="flex justify-between items-center mb-1.5 px-1"><label class="text-[10px] font-bold text-gray-400">LOCATION</label><span v-if="form.lat" class="text-[9px] text-green-500 font-mono"><i class="fa-solid fa-check"></i> {{ form.lat.toFixed(3) }},{{ form.lng.toFixed(3) }}</span></div><div class="flex gap-2"><input type="text" v-model="form.location" placeholder="地點名稱" class="flex-1 bg-gray-50 rounded-xl p-2.5 text-base font-bold outline-none"><button @click="searchCoord(form)" :disabled="isSearchingCoord" class="w-10 h-10 rounded-xl bg-gray-100 text-gray-400 hover:bg-primary hover:text-white transition-colors flex items-center justify-center shrink-0 active:scale-90"><i class="fa-solid" :class="isSearchingCoord ? 'fa-circle-notch fa-spin' : 'fa-magnifying-glass'"></i></button></div>
-                        <!-- NEW: Main Item Coords Input -->
-                        <div class="flex gap-2 mt-2">
-                             <input type="number" step="any" v-model.number="form.lat" placeholder="緯度 Lat" class="w-1/2 bg-gray-50 rounded-lg p-2 text-[10px] text-center outline-none border border-transparent focus:border-primary">
-                             <input type="number" step="any" v-model.number="form.lng" placeholder="經度 Lng" class="w-1/2 bg-gray-50 rounded-lg p-2 text-[10px] text-center outline-none border border-transparent focus:border-primary">
-                        </div>
-                        </div>
+                        <div class="bg-white p-3 rounded-2xl border border-dashed border-gray-200"><div class="flex justify-between items-center mb-1.5 px-1"><label class="text-[10px] font-bold text-gray-400">LOCATION</label><span v-if="form.lat" class="text-[9px] text-green-500 font-mono"><i class="fa-solid fa-check"></i> {{ form.lat.toFixed(3) }},{{ form.lng.toFixed(3) }}</span></div><div class="flex gap-2"><input type="text" v-model="form.location" placeholder="地點名稱" class="flex-1 bg-gray-50 rounded-xl p-2.5 text-base font-bold outline-none"><button @click="searchCoord(form)" :disabled="isSearchingCoord" class="w-10 h-10 rounded-xl bg-gray-100 text-gray-400 hover:bg-primary hover:text-white transition-colors flex items-center justify-center shrink-0 active:scale-90"><i class="fa-solid" :class="isSearchingCoord ? 'fa-circle-notch fa-spin' : 'fa-magnifying-glass'"></i></button></div></div>
                         
                         <!-- Sub Items Section (Updated with Coords Input) -->
                         <div>
