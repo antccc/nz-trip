@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NZ Trip V26.1</title>
+    <title>NZ Trip V26.2</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -42,6 +42,9 @@
             db = getFirestore(app);
             auth = getAuth(app);
             
+            // Disable persistence to ensure stable connection
+            // enableIndexedDbPersistence(db).catch(() => {});
+
             window.firestoreDB = db;
             window.firebaseAuth = auth;
             window.firestoreMethods = { doc, onSnapshot, setDoc, deleteDoc, signInAnonymously, onAuthStateChanged };
@@ -129,7 +132,8 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-lg font-bold tracking-tight text-primary font-sans flex items-center gap-2">
                     <span class="bg-primary/20 p-1 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
-                    NZ Trip <span class="text-[10px] opacity-50">V26.1</span>
+                    NZ Trip <span class="text-[10px] opacity-50">V26.2</span>
+                    <!-- Status Display -->
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
                     <span v-else @click="showErrorDetail" class="text-[9px] bg-red-100 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all" title="點擊查看錯誤"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE (點擊重連)</span>
@@ -162,7 +166,7 @@
                                     <div class="flex items-center gap-2 mb-2">
                                         <span class="bg-white/20 text-white px-2 py-0.5 rounded-lg text-[10px] font-bold tracking-wider backdrop-blur-sm shrink-0">D{{ selectedDayIndex }} · {{ getWeekDay(days[selectedDayIndex]) }}</span>
                                         <div class="flex gap-2 overflow-x-auto no-scrollbar">
-                                            <span v-for="(w, idx) in dailyWeatherList" :key="idx" class="text-[10px] font-bold flex items-center gap-1 text-white bg-white/10 px-2 py-0.5 rounded-full whitespace-nowrap backdrop-blur-sm cursor-help shrink-0" :title="`📍 地點: ${w.name}`"><i :class="w.icon"></i><span class="opacity-90 max-w-[80px] truncate">{{ w.name }}</span><span>{{ w.temp }}°</span></span>
+                                            <span v-for="(w, idx) in dailyWeatherList" :key="idx" class="text-[10px] font-bold flex items-center gap-1 text-white bg-white/10 px-2 py-0.5 rounded-full whitespace-nowrap backdrop-blur-sm cursor-help shrink-0" :title="`📍 地點: ${w.name} (${w.lat}, ${w.lng})`"><i :class="w.icon"></i><span class="opacity-90 max-w-[80px] truncate">{{ w.name }}</span><span>{{ w.temp }}°</span></span>
                                         </div>
                                     </div>
                                     <h2 class="text-lg font-bold text-white flex items-start gap-2 leading-snug min-w-0"><span class="flex-1 min-w-0 break-words">{{ getDaySummary }}</span><button @click.stop="openDaySettings" class="text-white/60 hover:text-white text-xs transition-colors active:scale-90 shrink-0 mt-1"><i class="fa-solid fa-pen"></i></button></h2>
@@ -215,7 +219,7 @@
                         </div>
                     </div>
                 </div>
-                <button @click="openModal('expense')" class="fixed bottom-6 right-5 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl z-30 border-2 border-white active:scale-90"><i class="fa-solid fa-pen"></i></button>
+                <button @click="openModal('expense')" class="absolute bottom-28 right-5 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl z-30 border-2 border-white active:scale-90"><i class="fa-solid fa-pen"></i></button>
             </div>
 
             <!-- 3. MAP TAB -->
@@ -249,7 +253,7 @@
                 </div>
             </div>
 
-            <!-- 5. TODO TAB -->
+            <!-- 5. TODO TAB (Updated V26.2) -->
             <div v-if="currentTab === 'todo'" class="h-full flex flex-col bg-cream pt-2">
                 <div class="px-4 pb-2 shrink-0">
                     <div class="flex bg-white p-1 rounded-2xl shadow-sm border border-cream-darker">
@@ -259,7 +263,7 @@
                 <div class="flex-1 overflow-y-auto px-4 pb-28">
                     <div class="bg-white rounded-3xl p-4 shadow-card border border-cream-darker min-h-[300px]">
                          <div class="flex gap-2 mb-4 items-start">
-                             <textarea v-model="newTodoText" rows="2" placeholder="新增待辦事項 (可換行)..." class="flex-1 bg-gray-50 rounded-xl px-3 py-3 text-sm outline-none border border-transparent focus:border-primary resize-none"></textarea>
+                             <textarea v-model="newTodoText" rows="1" placeholder="新增待辦 (可換行)..." class="flex-1 bg-gray-50 rounded-xl px-3 py-3 text-sm outline-none border border-transparent focus:border-primary resize-none"></textarea>
                              <button @click="addTodo" class="w-10 h-10 bg-dark text-white rounded-xl flex items-center justify-center active:scale-95 shadow-sm shrink-0 mt-1"><i class="fa-solid fa-plus"></i></button>
                          </div>
                          <div class="space-y-2">
@@ -280,11 +284,11 @@
 
         <!-- Navigation (Fixed & Centered) with Active Feedback -->
         <nav class="fixed bottom-5 left-1/2 transform -translate-x-1/2 w-[calc(100%-3rem)] max-w-[20rem] h-14 bg-white/95 backdrop-blur-md rounded-full shadow-2xl border-2 border-primary/10 flex justify-between items-center px-4 z-[9999] transition-all duration-300">
-            <button @click="currentTab = 'itinerary'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'itinerary' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-list-ul text-sm"></i></button>
-            <button @click="currentTab = 'expenses'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'expenses' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-wallet text-sm"></i></button>
-            <button @click="currentTab = 'map'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'map' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-600'"><i class="fa-regular fa-map text-sm"></i></button>
-            <button @click="currentTab = 'calculator'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'calculator' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-calculator text-sm"></i></button>
-            <button @click="currentTab = 'todo'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'todo' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-clipboard-check text-sm"></i></button>
+            <button @click="currentTab = 'itinerary'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'itinerary' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-list-ul text-base"></i></button>
+            <button @click="currentTab = 'expenses'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'expenses' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-wallet text-base"></i></button>
+            <button @click="currentTab = 'map'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'map' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-600'"><i class="fa-regular fa-map text-base"></i></button>
+            <button @click="currentTab = 'calculator'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'calculator' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-calculator text-base"></i></button>
+            <button @click="currentTab = 'todo'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'todo' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-clipboard-check text-base"></i></button>
         </nav>
 
         <!-- Itinerary Modal (Updated for Sub-item Coords) -->
@@ -529,7 +533,11 @@
                     return { payers: pStats, categories: cStats };
                 });
 
-                const filteredTodos = computed(() => todos.value.filter(t => t.category === todoCategory.value));
+                const filteredTodos = computed(() => {
+                    return todos.value
+                        .filter(t => t.category === todoCategory.value)
+                        .sort((a, b) => Number(a.done) - Number(b.done));
+                });
 
                 // 3. Form & Logic
                 const form = ref({ id: null, dayIndex: 0, time: '09:00', type: '景點', title: '', location: '', address: '', lat: null, lng: null, notes: '', subItems: [] });
