@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NZ Trip V25</title>
+    <title>NZ Trip V26</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -42,9 +42,6 @@
             db = getFirestore(app);
             auth = getAuth(app);
             
-            // Disable persistence to ensure stable connection
-            // enableIndexedDbPersistence(db).catch(() => {});
-
             window.firestoreDB = db;
             window.firebaseAuth = auth;
             window.firestoreMethods = { doc, onSnapshot, setDoc, deleteDoc, signInAnonymously, onAuthStateChanged };
@@ -132,8 +129,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-lg font-bold tracking-tight text-primary font-sans flex items-center gap-2">
                     <span class="bg-primary/20 p-1 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
-                    NZ Trip <span class="text-[10px] opacity-50">V25.50</span>
-                    <!-- Status Display -->
+                    NZ Trip <span class="text-[10px] opacity-50">V26.0</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
                     <span v-else @click="showErrorDetail" class="text-[9px] bg-red-100 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all" title="點擊查看錯誤"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE (點擊重連)</span>
@@ -147,24 +143,17 @@
 
         <!-- Main -->
         <main class="flex-1 overflow-hidden relative">
+            
+            <!-- 1. ITINERARY TAB -->
             <div v-if="currentTab === 'itinerary'" class="h-full flex flex-col">
-                <!-- Date Selector (Fixed at top) -->
                 <div class="pt-1 pb-2 shrink-0 z-20 bg-cream/95 backdrop-blur-sm relative border-b border-cream-darker/30 shadow-sm">
                     <div ref="dateContainer" class="flex overflow-x-auto no-scrollbar px-4 space-x-2 scroll-smooth py-1">
-                        <button v-for="(date, index) in days" :key="index" @click="selectDate(index)"
-                            class="flex-shrink-0 flex flex-col items-center justify-center w-[3.2rem] h-[3.8rem] rounded-2xl transition-all duration-300 border-2 active:scale-95"
-                            :class="selectedDayIndex === index ? 'bg-primary text-white border-primary shadow-soft transform -translate-y-0.5' : 'bg-white text-gray-400 border-transparent hover:border-cream-dark'">
-                            <span class="text-[8px] uppercase font-bold tracking-wide opacity-70">Day</span>
-                            <span class="text-base font-bold font-sans">{{ index }}</span>
-                            <span class="text-[8px] mt-0.5">{{ date.getMonth()+1 }}/{{ date.getDate() }}</span>
+                        <button v-for="(date, index) in days" :key="index" @click="selectDate(index)" class="flex-shrink-0 flex flex-col items-center justify-center w-[3.2rem] h-[3.8rem] rounded-2xl transition-all duration-300 border-2 active:scale-95" :class="selectedDayIndex === index ? 'bg-primary text-white border-primary shadow-soft transform -translate-y-0.5' : 'bg-white text-gray-400 border-transparent hover:border-cream-dark'">
+                            <span class="text-[8px] uppercase font-bold tracking-wide opacity-70">Day</span><span class="text-base font-bold font-sans">{{ index }}</span><span class="text-[8px] mt-0.5">{{ date.getMonth()+1 }}/{{ date.getDate() }}</span>
                         </button>
                     </div>
                 </div>
-
-                <!-- Scrollable Content Area (Contains Summary Card + List) -->
                 <div class="flex-1 overflow-y-auto pb-32" id="itinerary-scroll-container">
-                    
-                    <!-- Daily Summary Card (Now Scrolls) -->
                     <div class="px-4 pt-4 pb-1">
                         <div class="bg-primary rounded-3xl p-4 shadow-lg shadow-primary/30 relative overflow-hidden group transition-all duration-300">
                             <div class="absolute right-[-20px] top-[-20px] w-24 h-24 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
@@ -173,198 +162,133 @@
                                     <div class="flex items-center gap-2 mb-2">
                                         <span class="bg-white/20 text-white px-2 py-0.5 rounded-lg text-[10px] font-bold tracking-wider backdrop-blur-sm shrink-0">D{{ selectedDayIndex }} · {{ getWeekDay(days[selectedDayIndex]) }}</span>
                                         <div class="flex gap-2 overflow-x-auto no-scrollbar">
-                                            <!-- Weather Pills -->
-                                            <span v-for="(w, idx) in dailyWeatherList" :key="idx" 
-                                                  class="text-[10px] font-bold flex items-center gap-1 text-white bg-white/10 px-2 py-0.5 rounded-full whitespace-nowrap backdrop-blur-sm cursor-help shrink-0"
-                                                  :title="`📍 地點: ${w.name} (${w.lat}, ${w.lng})`">
-                                                <i :class="w.icon"></i>
-                                                <span class="opacity-90 max-w-[80px] truncate">{{ w.name }}</span>
-                                                <span>{{ w.temp }}°</span>
-                                            </span>
+                                            <span v-for="(w, idx) in dailyWeatherList" :key="idx" class="text-[10px] font-bold flex items-center gap-1 text-white bg-white/10 px-2 py-0.5 rounded-full whitespace-nowrap backdrop-blur-sm cursor-help shrink-0" :title="`📍 地點: ${w.name}`"><i :class="w.icon"></i><span class="opacity-90 max-w-[80px] truncate">{{ w.name }}</span><span>{{ w.temp }}°</span></span>
                                         </div>
                                     </div>
-                                    <!-- Title with auto-height and wrap (Fixed) -->
-                                    <h2 class="text-lg font-bold text-white flex items-start gap-2 leading-snug min-w-0">
-                                        <span class="flex-1 min-w-0 break-words">{{ getDaySummary }}</span>
-                                        <button @click.stop="openDaySettings" class="text-white/60 hover:text-white text-xs transition-colors active:scale-90 shrink-0 mt-1"><i class="fa-solid fa-pen"></i></button>
-                                    </h2>
+                                    <h2 class="text-lg font-bold text-white flex items-start gap-2 leading-snug min-w-0"><span class="flex-1 min-w-0 break-words">{{ getDaySummary }}</span><button @click.stop="openDaySettings" class="text-white/60 hover:text-white text-xs transition-colors active:scale-90 shrink-0 mt-1"><i class="fa-solid fa-pen"></i></button></h2>
                                 </div>
                                 <div @click="toggleGlobalFold" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center cursor-pointer hover:bg-white/30 transition-colors text-white mt-0.5 active:scale-90 shrink-0"><i class="fa-solid text-xs transition-transform duration-300" :class="isAllExpanded ? 'fa-compress' : 'fa-expand'"></i></div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Timeline List -->
                     <div class="px-4 pt-2">
-                        <div v-if="filteredItinerary.length === 0" class="flex flex-col items-center justify-center h-32 text-gray-300 border-2 border-dashed border-cream-dark rounded-2xl m-2">
-                            <i class="fa-regular fa-calendar-plus text-2xl mb-1 text-primary/30"></i>
-                            <p class="font-bold text-[10px] text-primary/50">點擊右下角新增行程</p>
-                        </div>
-
+                        <div v-if="filteredItinerary.length === 0" class="flex flex-col items-center justify-center h-32 text-gray-300 border-2 border-dashed border-cream-dark rounded-2xl m-2"><i class="fa-regular fa-calendar-plus text-2xl mb-1 text-primary/30"></i><p class="font-bold text-[10px] text-primary/50">點擊右下角新增行程</p></div>
                         <div v-for="(item, index) in filteredItinerary" :key="item.id" class="group mb-2.5 relative pl-3">
                             <div v-if="index !== filteredItinerary.length - 1" class="timeline-line"></div>
-                            
                             <div class="relative bg-white rounded-2xl shadow-card border border-cream-dark flex flex-col transition-all duration-300 z-10 overflow-hidden hover:border-primary/30 active:scale-[0.995]">
-                                <!-- Main Row -->
                                 <div class="p-3 flex gap-3 items-start" @click="toggleItem(item.id)">
-                                    <div class="flex flex-col items-center min-w-[3rem] shrink-0 pt-0.5">
-                                        <span class="text-xs font-bold text-dark font-sans bg-cream-dark px-1.5 py-0.5 rounded-md">{{ item.time }}</span>
-                                        <div class="dot-marker mt-2"></div>
-                                    </div>
-                                    
+                                    <div class="flex flex-col items-center min-w-[3rem] shrink-0 pt-0.5"><span class="text-xs font-bold text-dark font-sans bg-cream-dark px-1.5 py-0.5 rounded-md">{{ item.time }}</span><div class="dot-marker mt-2"></div></div>
                                     <div class="flex-1 min-w-0 pt-0">
-                                        <div class="flex justify-between items-start">
-                                            <h3 class="font-bold text-dark text-base leading-tight truncate pr-1 select-text">{{ item.title || item.location }}</h3>
-                                            <div class="flex items-center gap-2 shrink-0">
-                                                <button @click.stop="navigateTo(item.address || item.location)" class="w-6 h-6 rounded-full bg-cream-dark text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-location-arrow text-[10px]"></i></button>
-                                                <button @click.stop="toggleItem(item.id)" class="w-6 h-6 rounded-full bg-cream-dark text-gray-400 flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300" :class="{'rotate-180': expandedItems.has(item.id)}"></i></button>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="flex items-center gap-1.5 mt-1 flex-wrap">
-                                             <span class="text-[9px] px-2 py-0.5 rounded-full font-bold tracking-wide" :class="getTypeColorClass(item.type)">{{ item.type }}</span>
-                                             <span v-if="item.location && item.location !== item.title" class="text-[10px] text-gray-500 flex items-center gap-0.5">
-                                                <i class="fa-solid fa-location-dot text-primary/70 text-[8px]"></i> {{ item.location }}
-                                             </span>
-                                             <span v-if="item.lat" class="text-[9px] text-gray-300 font-mono hidden sm:inline-block">{{ item.lat.toFixed(3) }},{{ item.lng.toFixed(3) }}</span>
-                                        </div>
+                                        <div class="flex justify-between items-start"><h3 class="font-bold text-dark text-base leading-tight truncate pr-1 select-text">{{ item.title || item.location }}</h3><div class="flex items-center gap-2 shrink-0"><button @click.stop="navigateTo(item.address || item.location)" class="w-6 h-6 rounded-full bg-cream-dark text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-location-arrow text-[10px]"></i></button><button @click.stop="toggleItem(item.id)" class="w-6 h-6 rounded-full bg-cream-dark text-gray-400 flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300" :class="{'rotate-180': expandedItems.has(item.id)}"></i></button></div></div>
+                                        <div class="flex items-center gap-1.5 mt-1 flex-wrap"><span class="text-[9px] px-2 py-0.5 rounded-full font-bold tracking-wide" :class="getTypeColorClass(item.type)">{{ item.type }}</span><span v-if="item.location && item.location !== item.title" class="text-[10px] text-gray-500 flex items-center gap-0.5"><i class="fa-solid fa-location-dot text-primary/70 text-[8px]"></i> {{ item.location }}</span><span v-if="item.lat" class="text-[9px] text-gray-300 font-mono hidden sm:inline-block">{{ item.lat.toFixed(3) }},{{ item.lng.toFixed(3) }}</span></div>
                                     </div>
                                 </div>
-
-                                <!-- Expanded Details -->
                                 <div v-show="expandedItems.has(item.id)" class="px-4 pb-4 pt-0 border-t border-dashed border-gray-100 bg-cream/30">
                                     <div class="mt-3 space-y-3">
-                                        <div v-if="item.notes" class="p-2.5 bg-white border border-cream-dark rounded-xl text-xs text-gray-600 leading-relaxed whitespace-pre-wrap relative select-text border-l-4 border-l-primary/30">
-                                            {{ item.notes }}
-                                        </div>
-                                        
-                                        <!-- Sub Items (With Coords Display) -->
-                                        <div v-if="item.subItems && item.subItems.length > 0">
-                                            <h4 class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 pl-1">子行程</h4>
-                                            <div class="space-y-1.5">
-                                                <div v-for="(sub, sIdx) in item.subItems" :key="sIdx" class="bg-white p-2 rounded-lg border border-cream-dark flex justify-between items-center">
-                                                    <div class="flex items-center gap-2 overflow-hidden">
-                                                         <div class="w-1 h-1 rounded-full bg-gray-300 shrink-0"></div>
-                                                         <div class="min-w-0">
-                                                             <div class="text-xs font-bold text-dark truncate">{{ sub.location }}</div>
-                                                             <div v-if="sub.notes" class="text-[9px] text-gray-400 truncate">{{ sub.notes }}</div>
-                                                             <!-- NEW: Coordinate Display for Sub-items -->
-                                                             <div v-if="sub.lat" class="text-[8px] text-primary/60 font-mono mt-0.5 hidden sm:block"><i class="fa-solid fa-globe"></i> {{ sub.lat.toFixed(4) }}, {{ sub.lng.toFixed(4) }}</div>
-                                                         </div>
-                                                    </div>
-                                                    <button @click.stop="navigateTo(sub.location)" class="w-6 h-6 rounded-full bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-location-arrow text-[9px]"></i></button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="flex gap-2 mt-2 pt-2 border-t border-dashed border-gray-200 justify-end">
-                                            <button @click.stop="editItem(item)" class="w-8 h-8 bg-white border border-cream-dark text-gray-400 rounded-lg hover:text-dark hover:border-dark transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-solid fa-pen text-xs"></i></button>
-                                            <button @click.stop="copyItem(item)" class="w-8 h-8 bg-white border border-cream-dark text-gray-400 rounded-lg hover:text-primary hover:border-primary transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-regular fa-copy text-xs"></i></button>
-                                            <button @click.stop="deleteItem(item.id)" class="w-8 h-8 bg-white border border-cream-dark text-gray-400 rounded-lg hover:text-red-400 hover:border-red-400 transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-regular fa-trash-can text-xs"></i></button>
-                                        </div>
+                                        <div v-if="item.notes" class="p-2.5 bg-white border border-cream-dark rounded-xl text-xs text-gray-600 leading-relaxed whitespace-pre-wrap relative select-text border-l-4 border-l-primary/30">{{ item.notes }}</div>
+                                        <div v-if="item.subItems && item.subItems.length > 0"><h4 class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 pl-1">子行程</h4><div class="space-y-1.5"><div v-for="(sub, sIdx) in item.subItems" :key="sIdx" class="bg-white p-2 rounded-lg border border-cream-dark flex justify-between items-center"><div class="flex items-center gap-2 overflow-hidden"><div class="w-1 h-1 rounded-full bg-gray-300 shrink-0"></div><div class="min-w-0"><div class="text-xs font-bold text-dark truncate">{{ sub.location }}</div><div v-if="sub.notes" class="text-[9px] text-gray-400 truncate">{{ sub.notes }}</div><div v-if="sub.lat" class="text-[8px] text-primary/60 font-mono mt-0.5 hidden sm:block"><i class="fa-solid fa-globe"></i> {{ sub.lat.toFixed(4) }}, {{ sub.lng.toFixed(4) }}</div></div></div><button @click.stop="navigateTo(sub.location)" class="w-6 h-6 rounded-full bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-location-arrow text-[9px]"></i></button></div></div></div>
+                                        <div class="flex gap-2 mt-2 pt-2 border-t border-dashed border-gray-200 justify-end"><button @click.stop="editItem(item)" class="w-8 h-8 bg-white border border-cream-dark text-gray-400 rounded-lg hover:text-dark hover:border-dark transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-solid fa-pen text-xs"></i></button><button @click.stop="copyItem(item)" class="w-8 h-8 bg-white border border-cream-dark text-gray-400 rounded-lg hover:text-primary hover:border-primary transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-regular fa-copy text-xs"></i></button><button @click.stop="deleteItem(item.id)" class="w-8 h-8 bg-white border border-cream-dark text-gray-400 rounded-lg hover:text-red-400 hover:border-red-400 transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-regular fa-trash-can text-xs"></i></button></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- ADD BUTTON MOVED TO BOTTOM-6 FIXED -->
-                <button @click="openModal('itinerary')" class="fixed bottom-6 right-5 w-12 h-12 bg-dark text-white rounded-full shadow-lg flex items-center justify-center text-lg hover:scale-105 transition-transform z-30 border-2 border-white active:scale-90">
-                    <i class="fa-solid fa-plus"></i>
-                </button>
+                <button @click="openModal('itinerary')" class="fixed bottom-6 right-5 w-12 h-12 bg-dark text-white rounded-full shadow-lg flex items-center justify-center text-lg hover:scale-105 transition-transform z-30 border-2 border-white active:scale-90"><i class="fa-solid fa-plus"></i></button>
             </div>
 
-            <!-- EXPENSES (Compacted) -->
+            <!-- 2. EXPENSES TAB -->
             <div v-if="currentTab === 'expenses'" class="h-full flex flex-col bg-cream rounded-t-[2.5rem] mt-2 shadow-inner overflow-hidden border-t border-cream-dark transition-colors duration-300">
                 <div class="p-5 bg-yellow-card m-3 rounded-3xl shadow-sm relative overflow-hidden transition-colors duration-300">
                     <div class="absolute right-[-10px] top-[-10px] w-20 h-20 bg-white/20 rounded-full blur-xl pointer-events-none"></div>
-                    <div class="flex justify-between items-start mb-1">
-                        <p class="text-[10px] font-bold text-yellow-text/70 uppercase tracking-widest">總支出 (估算)</p>
-                        <button @click="showStatsModal = true" class="bg-white/50 text-yellow-text hover:bg-white px-2 py-0.5 rounded-lg text-[10px] font-bold transition-colors flex items-center gap-1 active:scale-95">
-                             <i class="fa-solid fa-chart-pie"></i>
-                        </button>
-                    </div>
-                    <div class="flex flex-col mb-3">
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-sm font-bold text-yellow-text">NZD</span>
-                            <span class="text-3xl font-bold text-yellow-text font-sans">{{ grandTotalNZD.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span>
-                        </div>
-                        <div class="text-xs font-bold text-yellow-text/70 mt-0.5">
-                            ≈ NT$ {{ Math.round(grandTotalTWD).toLocaleString() }}
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <div class="flex-1 bg-white/40 px-2.5 py-1.5 rounded-xl text-yellow-text font-bold flex flex-col items-start">
-                            <span class="text-[9px] opacity-60 uppercase">NZD 現金/刷卡</span>
-                            <span class="text-sm font-sans">${{ totalNZD.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span>
-                        </div>
-                        <div class="flex-1 bg-white/40 px-2.5 py-1.5 rounded-xl text-yellow-text font-bold flex flex-col items-start">
-                            <span class="text-[9px] opacity-60 uppercase">TWD 刷卡/已付</span>
-                            <span class="text-sm font-sans">${{ totalTWD.toLocaleString() }}</span>
-                        </div>
-                    </div>
+                    <div class="flex justify-between items-start mb-1"><p class="text-[10px] font-bold text-yellow-text/70 uppercase tracking-widest">總支出 (估算)</p><button @click="showStatsModal = true" class="bg-white/50 text-yellow-text hover:bg-white px-2 py-0.5 rounded-lg text-[10px] font-bold transition-colors flex items-center gap-1 active:scale-95"><i class="fa-solid fa-chart-pie"></i></button></div>
+                    <div class="flex flex-col mb-3"><div class="flex items-baseline gap-2"><span class="text-sm font-bold text-yellow-text">NZD</span><span class="text-3xl font-bold text-yellow-text font-sans">{{ grandTotalNZD.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span></div><div class="text-xs font-bold text-yellow-text/70 mt-0.5">≈ NT$ {{ Math.round(grandTotalTWD).toLocaleString() }}</div></div>
+                    <div class="flex gap-2"><div class="flex-1 bg-white/40 px-2.5 py-1.5 rounded-xl text-yellow-text font-bold flex flex-col items-start"><span class="text-[9px] opacity-60 uppercase">NZD 現金/刷卡</span><span class="text-sm font-sans">${{ totalNZD.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span></div><div class="flex-1 bg-white/40 px-2.5 py-1.5 rounded-xl text-yellow-text font-bold flex flex-col items-start"><span class="text-[9px] opacity-60 uppercase">TWD 刷卡/已付</span><span class="text-sm font-sans">${{ totalTWD.toLocaleString() }}</span></div></div>
                 </div>
-                
                 <div class="flex-1 overflow-y-auto px-4 pb-28">
                     <div v-for="(group, date) in groupedExpenses" :key="date" class="mb-5">
-                        <div class="flex items-center justify-between mb-2 px-1">
-                            <span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-md">{{ date }}</span>
-                            <span class="text-[10px] font-bold text-dark">小計: NZD {{ group.total.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span>
-                        </div>
-                        
+                        <div class="flex items-center justify-between mb-2 px-1"><span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-md">{{ date }}</span><span class="text-[10px] font-bold text-dark">小計: NZD {{ group.total.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span></div>
                         <div v-for="expense in group.items" :key="expense.id" class="bg-white rounded-xl p-3 mb-2 border border-gray-100 hover:border-primary/30 transition-colors flex justify-between items-center group relative shadow-card active:scale-[0.995]">
-                            <div class="flex items-center gap-3 flex-1 min-w-0">
-                                <div class="w-9 h-9 rounded-lg bg-cream flex items-center justify-center text-xs shrink-0 text-gray-400 border border-cream-dark transition-colors duration-300">
-                                    <i :class="getCategoryIcon(expense.category)"></i>
-                                </div>
-                                <div class="min-w-0">
-                                    <div class="flex items-center gap-2">
-                                        <h4 class="font-bold text-dark text-xs truncate">{{ expense.item }}</h4>
-                                    </div>
-                                    <div class="flex gap-1 mt-0.5">
-                                        <span class="text-[8px] bg-gray-100 text-gray-500 px-1 py-0 rounded">{{ expense.payer }}</span>
-                                        <span class="text-[8px] border border-gray-100 text-gray-400 px-1 py-0 rounded">{{ expense.category }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-right shrink-0">
-                                <div class="font-bold text-dark text-xs">{{ expense.currency }} {{ expense.originalAmount }}</div>
-                                <div class="text-[9px] text-gray-400">≈ NT$ {{ Math.round(expense.baseAmount * exchangeRate) }}</div>
-                            </div>
-                            <button @click="deleteExpense(expense.id)" class="absolute -right-2 -top-2 bg-white text-red-400 w-6 h-6 rounded-full shadow-sm border border-gray-100 items-center justify-center hidden group-hover:flex hover:bg-red-50 active:scale-90">
-                                <i class="fa-solid fa-xmark text-[10px]"></i>
-                            </button>
+                            <div class="flex items-center gap-3 flex-1 min-w-0"><div class="w-9 h-9 rounded-lg bg-cream flex items-center justify-center text-xs shrink-0 text-gray-400 border border-cream-dark transition-colors duration-300"><i :class="getCategoryIcon(expense.category)"></i></div><div class="min-w-0"><div class="flex items-center gap-2"><h4 class="font-bold text-dark text-xs truncate">{{ expense.item }}</h4></div><div class="flex gap-1 mt-0.5"><span class="text-[8px] bg-gray-100 text-gray-500 px-1 py-0 rounded">{{ expense.payer }}</span><span class="text-[8px] border border-gray-100 text-gray-400 px-1 py-0 rounded">{{ expense.category }}</span></div></div></div>
+                            <div class="text-right shrink-0"><div class="font-bold text-dark text-xs">{{ expense.currency }} {{ expense.originalAmount }}</div><div class="text-[9px] text-gray-400">≈ NT$ {{ Math.round(expense.baseAmount * exchangeRate) }}</div></div>
+                            <button @click="deleteExpense(expense.id)" class="absolute -right-2 -top-2 bg-white text-red-400 w-6 h-6 rounded-full shadow-sm border border-gray-100 items-center justify-center hidden group-hover:flex hover:bg-red-50 active:scale-90"><i class="fa-solid fa-xmark text-[10px]"></i></button>
                         </div>
                     </div>
                 </div>
-                <button @click="openModal('expense')" class="absolute bottom-28 right-5 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl z-30 border-2 border-white active:scale-90">
-                    <i class="fa-solid fa-pen"></i>
-                </button>
+                <button @click="openModal('expense')" class="fixed bottom-6 right-5 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl z-30 border-2 border-white active:scale-90"><i class="fa-solid fa-pen"></i></button>
             </div>
 
-            <!-- MAP TAB -->
+            <!-- 3. MAP TAB -->
             <div v-if="currentTab === 'map'" class="h-full w-full relative">
                 <div id="map-container" class="h-full w-full bg-gray-100"></div>
-                <div class="absolute top-4 left-4 right-4 z-[400] flex justify-between pointer-events-none">
-                     <div class="bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl shadow-sm pointer-events-auto border border-white">
-                        <p class="text-xs font-bold text-gray-600">Day {{ selectedDayIndex }}</p>
-                     </div>
-                     <button @click="locateUser" class="bg-white/90 backdrop-blur w-9 h-9 rounded-xl shadow-sm flex items-center justify-center text-primary pointer-events-auto border border-white active:scale-95 transition-transform">
-                        <i class="fa-solid fa-crosshairs"></i>
-                     </button>
+                <div class="absolute top-4 left-4 right-4 z-[400] flex justify-between pointer-events-none"><div class="bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl shadow-sm pointer-events-auto border border-white"><p class="text-xs font-bold text-gray-600">Day {{ selectedDayIndex }}</p></div><button @click="locateUser" class="bg-white/90 backdrop-blur w-9 h-9 rounded-xl shadow-sm flex items-center justify-center text-primary pointer-events-auto border border-white active:scale-95 transition-transform"><i class="fa-solid fa-crosshairs"></i></button></div>
+            </div>
+
+            <!-- 4. CALCULATOR TAB -->
+            <div v-if="currentTab === 'calculator'" class="h-full flex flex-col p-6 bg-cream">
+                <div class="bg-white rounded-3xl p-6 shadow-card border border-cream-darker flex-1 flex flex-col">
+                    <h2 class="text-xl font-bold text-dark mb-6 text-center">匯率計算機</h2>
+                    <div class="space-y-6">
+                        <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100 relative">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">紐幣 (NZD)</label>
+                            <input type="number" v-model="calcNZD" class="w-full bg-transparent text-4xl font-bold text-dark outline-none" placeholder="0">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-2xl opacity-20 font-bold">$</span>
+                        </div>
+                        <div class="flex justify-center items-center text-gray-300"><i class="fa-solid fa-arrow-down-up"></i></div>
+                        <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100 relative">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">台幣 (TWD)</label>
+                            <input type="number" v-model="calcTWD" class="w-full bg-transparent text-4xl font-bold text-primary outline-none" placeholder="0">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-2xl opacity-20 font-bold">NT</span>
+                        </div>
+                    </div>
+                    <div class="mt-8 grid grid-cols-4 gap-3">
+                        <button v-for="n in [1,5,10,50]" @click="addNZD(n)" class="py-3 bg-white border border-cream-dark rounded-xl text-sm font-bold text-dark hover:bg-cream hover:border-primary transition-colors shadow-sm">+{{n}}</button>
+                        <button @click="calcNZD=0; calcTWD=0" class="col-span-4 py-3 bg-gray-100 text-gray-400 rounded-xl text-xs font-bold hover:bg-red-50 hover:text-red-400 transition-colors mt-2">清除 (Clear)</button>
+                    </div>
+                    <div class="mt-auto text-center text-xs text-gray-400 pt-4">匯率: 1 NZD ≈ {{ exchangeRate }} TWD</div>
                 </div>
             </div>
+
+            <!-- 5. TODO TAB -->
+            <div v-if="currentTab === 'todo'" class="h-full flex flex-col bg-cream pt-2">
+                <div class="px-4 pb-2 shrink-0">
+                    <div class="flex bg-white p-1 rounded-2xl shadow-sm border border-cream-darker">
+                        <button v-for="cat in ['行前準備', '行李清單', '購物清單']" @click="todoCategory = cat" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all" :class="todoCategory === cat ? 'bg-primary text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'">{{ cat }}</button>
+                    </div>
+                </div>
+                <div class="flex-1 overflow-y-auto px-4 pb-28">
+                    <div class="bg-white rounded-3xl p-4 shadow-card border border-cream-darker min-h-[300px]">
+                         <div class="flex gap-2 mb-4">
+                             <input type="text" v-model="newTodoText" @keyup.enter="addTodo" placeholder="新增待辦..." class="flex-1 bg-gray-50 rounded-xl px-3 py-2 text-sm outline-none border border-transparent focus:border-primary">
+                             <button @click="addTodo" class="w-10 h-10 bg-dark text-white rounded-xl flex items-center justify-center active:scale-95 shadow-sm"><i class="fa-solid fa-plus"></i></button>
+                         </div>
+                         <div class="space-y-2">
+                             <div v-for="todo in filteredTodos" :key="todo.id" class="flex items-center justify-between p-3 rounded-xl transition-colors" :class="todo.done ? 'bg-gray-50' : 'bg-white border border-gray-100'">
+                                 <div class="flex items-center gap-3 flex-1" @click="toggleTodo(todo)">
+                                     <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors" :class="todo.done ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 text-transparent'"><i class="fa-solid fa-check text-[10px]"></i></div>
+                                     <span class="text-sm font-bold transition-colors" :class="todo.done ? 'text-gray-400 line-through' : 'text-dark'">{{ todo.text }}</span>
+                                 </div>
+                                 <button @click="deleteTodo(todo.id)" class="text-gray-300 hover:text-red-400 px-2"><i class="fa-solid fa-xmark"></i></button>
+                             </div>
+                             <div v-if="filteredTodos.length === 0" class="text-center text-gray-300 py-10 text-xs">尚無項目</div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+
         </main>
 
         <!-- Navigation (Fixed & Centered) with Active Feedback -->
-        <nav class="fixed bottom-5 left-1/2 transform -translate-x-1/2 w-[calc(100%-3rem)] max-w-[20rem] h-14 bg-white/95 backdrop-blur-md rounded-full shadow-2xl border-2 border-primary/10 flex justify-around items-center px-2 z-[9999] transition-all duration-300">
-            <button @click="currentTab = 'itinerary'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'itinerary' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-list-ul text-base"></i></button>
-            <button @click="currentTab = 'expenses'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'expenses' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-wallet text-base"></i></button>
-            <button @click="currentTab = 'map'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'map' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-600'"><i class="fa-regular fa-map text-base"></i></button>
+        <nav class="fixed bottom-5 left-1/2 transform -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm h-14 bg-white/95 backdrop-blur-md rounded-full shadow-2xl border-2 border-primary/10 flex justify-between items-center px-4 z-[9999] transition-all duration-300">
+            <button @click="currentTab = 'itinerary'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'itinerary' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-list-ul text-sm"></i></button>
+            <button @click="currentTab = 'expenses'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'expenses' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-wallet text-sm"></i></button>
+            <button @click="currentTab = 'map'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'map' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-600'"><i class="fa-regular fa-map text-sm"></i></button>
+            <button @click="currentTab = 'calculator'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'calculator' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-calculator text-sm"></i></button>
+            <button @click="currentTab = 'todo'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'todo' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-clipboard-check text-sm"></i></button>
         </nav>
 
-        <!-- Itinerary Modal (Updated for Sub-item Coords) -->
+        <!-- Modals and other components kept same as V25.46, re-injected here for completeness -->
+        <!-- Itinerary Modal -->
         <transition name="slide-up">
             <div v-if="showItineraryModal" class="fixed inset-0 z-[10000] flex items-end justify-center sm:items-center">
                 <div class="absolute inset-0 bg-dark/20 backdrop-blur-[2px]" @click="closeModal"></div>
@@ -379,14 +303,11 @@
                         <div class="bg-white p-2.5 rounded-2xl border border-dashed border-gray-200">
                              <div class="flex justify-between items-center mb-1 px-1"><label class="text-[10px] font-bold text-gray-400">LOCATION</label><span v-if="form.lat" class="text-[9px] text-green-500 font-mono"><i class="fa-solid fa-check"></i> {{ form.lat.toFixed(3) }},{{ form.lng.toFixed(3) }}</span></div>
                              <div class="flex gap-2"><input type="text" v-model="form.location" placeholder="地點名稱" class="flex-1 bg-gray-50 rounded-xl p-2 text-sm font-bold outline-none"><button @click="searchCoord(form)" :disabled="isSearchingCoord" class="w-9 h-9 rounded-xl bg-gray-100 text-gray-400 hover:bg-primary hover:text-white transition-colors flex items-center justify-center shrink-0 active:scale-90"><i class="fa-solid" :class="isSearchingCoord ? 'fa-circle-notch fa-spin' : 'fa-magnifying-glass'"></i></button></div>
-                             <!-- NEW: Main Item Coords Input -->
                              <div class="flex gap-2 mt-2">
                                 <input type="number" step="any" v-model.number="form.lat" placeholder="Lat" class="w-1/2 bg-gray-50 rounded-lg p-1.5 text-[9px] text-center outline-none border border-transparent focus:border-primary">
                                 <input type="number" step="any" v-model.number="form.lng" placeholder="Lng" class="w-1/2 bg-gray-50 rounded-lg p-1.5 text-[9px] text-center outline-none border border-transparent focus:border-primary">
                              </div>
                         </div>
-                        
-                        <!-- Sub Items Section -->
                         <div>
                             <div class="flex justify-between items-center mb-1 px-1"><label class="text-[10px] font-bold text-gray-400">SUB-ITEMS</label><button @click="addSubItem" class="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded-lg font-bold hover:bg-primary hover:text-white transition-colors active:scale-95"><i class="fa-solid fa-plus mr-1"></i>新增</button></div>
                             <div class="space-y-2">
@@ -396,7 +317,6 @@
                                         <input type="text" v-model="sub.location" placeholder="子地點" class="flex-1 text-xs font-bold outline-none bg-transparent border-b border-gray-100 focus:border-primary pb-0.5">
                                         <button @click="searchCoord(sub)" :disabled="isSearchingCoord" class="text-gray-300 hover:text-primary active:scale-90"><i class="fa-solid fa-magnifying-glass text-xs"></i></button>
                                     </div>
-                                    <!-- NEW: Coords Input for Sub Items -->
                                     <div class="flex gap-2 mb-1.5">
                                         <input type="number" step="any" v-model.number="sub.lat" placeholder="Lat" class="w-1/2 bg-gray-50 rounded-lg p-1 text-[9px] text-center outline-none">
                                         <input type="number" step="any" v-model.number="sub.lng" placeholder="Lng" class="w-1/2 bg-gray-50 rounded-lg p-1 text-[9px] text-center outline-none">
@@ -405,7 +325,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">CATEGORY</label><div class="flex flex-wrap gap-2"><button v-for="t in ['景點','美食','住宿','交通','購物','其他']" @click="form.type = t" class="px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all active:scale-95" :class="form.type === t ? 'bg-dark text-white border-dark' : 'bg-white text-gray-400 border-gray-100 hover:border-gray-300'">{{ t }}</button></div></div>
                         <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">MEMO</label><textarea v-model="form.notes" rows="3" class="w-full bg-white input-rounded p-3 text-sm outline-none resize-none"></textarea></div>
                     </div>
@@ -414,7 +333,7 @@
             </div>
         </transition>
 
-        <!-- Expense Modal (Updated Z-Index) -->
+        <!-- Expense Modal -->
         <transition name="slide-up">
             <div v-if="showExpenseModal" class="fixed inset-0 z-[10000] flex items-end justify-center sm:items-center">
                 <div class="absolute inset-0 bg-dark/30 backdrop-blur-sm" @click="closeModal"></div>
@@ -432,6 +351,7 @@
             </div>
         </transition>
 
+        <!-- Stats Modal -->
         <div v-if="showStatsModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-dark/30 backdrop-blur-sm p-4">
             <div class="bg-cream w-full sm:w-[400px] rounded-3xl p-6 shadow-2xl relative max-h-[85vh] overflow-y-auto modal-scroll">
                 <button @click="showStatsModal=false" class="absolute top-4 right-4 text-gray-400 hover:text-dark transition-colors active:scale-90"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -442,12 +362,12 @@
             </div>
         </div>
 
+        <!-- Settings Modal -->
         <div v-if="showSettingsModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
             <div class="bg-white p-6 rounded-3xl w-72 shadow-2xl text-center relative max-h-[90vh] overflow-y-auto modal-scroll">
                 <button @click="showSettingsModal=false" class="absolute top-4 right-4 text-gray-300 hover:text-gray-500 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
                 <h3 class="font-bold text-dark mb-4">設定</h3>
                 
-                <!-- Font Size Control (Added) -->
                 <div class="mb-4 bg-gray-50 p-3 rounded-xl border border-cream-darker">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-[10px] font-bold text-gray-400 uppercase">字體大小</span>
@@ -480,6 +400,7 @@
             </div>
         </div>
 
+        <!-- Day Settings Modal -->
         <div v-if="showDaySettingsModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
              <div class="bg-white p-6 rounded-3xl w-72 shadow-2xl relative">
                 <button @click="showDaySettingsModal=false" class="absolute top-4 right-4 text-gray-300 hover:text-gray-500 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
@@ -550,6 +471,11 @@
 
                 const itinerary = ref([]);
                 const expenses = ref([]);
+                const todos = ref([]);
+                const todoCategory = ref('行前準備');
+                const newTodoText = ref('');
+                const calcNZD = ref(0);
+                const calcTWD = ref(0);
                 
                 // --- Computed Properties ---
                 const filteredItinerary = computed(() => itinerary.value.filter(i => i.day === selectedDayIndex.value).sort((a,b) => a.time.localeCompare(b.time)));
@@ -600,6 +526,8 @@
                     });
                     return { payers: pStats, categories: cStats };
                 });
+
+                const filteredTodos = computed(() => todos.value.filter(t => t.category === todoCategory.value));
 
                 // 3. Form & Logic
                 const form = ref({ id: null, dayIndex: 0, time: '09:00', type: '景點', title: '', location: '', address: '', lat: null, lng: null, notes: '', subItems: [] });
@@ -684,12 +612,12 @@
 
                 const loadLocalData = () => {
                     const s = localStorage.getItem('nz_data_v4');
-                    if (s) { const d = JSON.parse(s); itinerary.value = d.itinerary||[]; expenses.value = d.expenses||[]; exchangeRate.value = d.exchangeRate||19.5; dailyMetadata.value = d.dailyMetadata||{}; }
+                    if (s) { const d = JSON.parse(s); itinerary.value = d.itinerary||[]; expenses.value = d.expenses||[]; exchangeRate.value = d.exchangeRate||19.5; dailyMetadata.value = d.dailyMetadata||{}; todos.value = d.todos || []; }
                     updateDailyWeather();
                 };
 
                 const saveToLocal = () => {
-                    const d = { itinerary: itinerary.value, expenses: expenses.value, exchangeRate: exchangeRate.value, dailyMetadata: dailyMetadata.value, lastUpdated: Date.now() };
+                    const d = { itinerary: itinerary.value, expenses: expenses.value, exchangeRate: exchangeRate.value, dailyMetadata: dailyMetadata.value, todos: todos.value, lastUpdated: Date.now() };
                     localStorage.setItem('nz_data_v4', JSON.stringify(d));
                     if (connectionStatus.value === 'cloud') {
                         const { doc, setDoc } = window.firestoreMethods;
@@ -817,12 +745,13 @@
                             expenses.value = Array.from(m.values());
                             if (cData.dailyMetadata) dailyMetadata.value = cData.dailyMetadata;
                             if (cData.exchangeRate) exchangeRate.value = cData.exchangeRate;
-                            localStorage.setItem('nz_data_v4', JSON.stringify({ itinerary: itinerary.value, expenses: expenses.value, dailyMetadata: dailyMetadata.value, exchangeRate: exchangeRate.value, lastUpdated: cData.lastUpdated || 0 }));
+                            if (cData.todos) todos.value = cData.todos;
+                            localStorage.setItem('nz_data_v4', JSON.stringify({ itinerary: itinerary.value, expenses: expenses.value, dailyMetadata: dailyMetadata.value, exchangeRate: exchangeRate.value, todos: todos.value, lastUpdated: cData.lastUpdated || 0 }));
                             updateDailyWeather();
                         } else {
                              const l = localStorage.getItem('nz_data_v4');
                              if(l) setDoc(ref, JSON.parse(l));
-                             else { const init = { itinerary: [], expenses: [], exchangeRate: 19.5, dailyMetadata: {}, lastUpdated: Date.now() }; setDoc(ref, init); localStorage.setItem('nz_data_v4', JSON.stringify(init)); loadLocalData(); }
+                             else { const init = { itinerary: [], expenses: [], exchangeRate: 19.5, dailyMetadata: {}, todos: [], lastUpdated: Date.now() }; setDoc(ref, init); localStorage.setItem('nz_data_v4', JSON.stringify(init)); loadLocalData(); }
                         }
                     }, (e) => { 
                         console.error("Snap err", e); 
@@ -844,6 +773,7 @@
                         itinerary.value = [];
                         expenses.value = [];
                         dailyMetadata.value = {};
+                        todos.value = [];
                         localStorage.removeItem('nz_data_v4'); 
 
                         tripId.value = newTripId.value; 
@@ -1006,6 +936,21 @@
                     setTimeout(() => centerActiveDate(), 800); 
                 });
 
+                // Calculator logic
+                const addNZD = (amount) => { calcNZD.value += amount; };
+                watch(calcNZD, (newVal) => { calcTWD.value = parseFloat((newVal * exchangeRate.value).toFixed(2)); });
+                watch(calcTWD, (newVal) => { calcNZD.value = parseFloat((newVal / exchangeRate.value).toFixed(2)); });
+
+                // Todo logic
+                const addTodo = () => {
+                    if (!newTodoText.value.trim()) return;
+                    todos.value.push({ id: Date.now(), text: newTodoText.value.trim(), done: false, category: todoCategory.value });
+                    newTodoText.value = '';
+                    saveToLocal();
+                };
+                const toggleTodo = (todo) => { todo.done = !todo.done; saveToLocal(); };
+                const deleteTodo = (id) => { if(confirm('刪除此項目?')) { todos.value = todos.value.filter(t => t.id !== id); saveToLocal(); } };
+
                 return {
                     currentTab, selectedDayIndex, days, itinerary, expenses, filteredItinerary, totalExpenses, groupedExpenses, connectionStatus, loadingMessage, errorMessage,
                     showItineraryModal, showExpenseModal, showSettingsModal, showDaySettingsModal, showStatsModal, isEditing, form, expenseForm, exchangeRate, isFetchingRate, saveFileInput, dateContainer,
@@ -1018,7 +963,10 @@
                     totalNZD, totalTWD, grandTotalNZD, grandTotalTWD, expenseStats, exportExpensesCSV,
                     THEMES, currentTheme, applyTheme, getWeekDay,
                     tripId, newTripId, changeTripId, hasPendingUploads, initSync, manualRetry, showErrorDetail,
-                    clearLocalData, deleteCloudData, currentFontSize, changeFontSize
+                    clearLocalData, deleteCloudData, currentFontSize, changeFontSize,
+                    // New logic
+                    todos, todoCategory, newTodoText, addTodo, toggleTodo, deleteTodo, filteredTodos,
+                    calcNZD, calcTWD, addNZD
                 };
             }
         }).mount('#app');
