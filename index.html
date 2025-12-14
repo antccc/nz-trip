@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NZ Trip V26.2</title>
+    <title>NZ Trip V26.3</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -42,9 +42,6 @@
             db = getFirestore(app);
             auth = getAuth(app);
             
-            // Disable persistence to ensure stable connection
-            // enableIndexedDbPersistence(db).catch(() => {});
-
             window.firestoreDB = db;
             window.firebaseAuth = auth;
             window.firestoreMethods = { doc, onSnapshot, setDoc, deleteDoc, signInAnonymously, onAuthStateChanged };
@@ -132,7 +129,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-lg font-bold tracking-tight text-primary font-sans flex items-center gap-2">
                     <span class="bg-primary/20 p-1 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
-                    NZ Trip <span class="text-[10px] opacity-50">V26.2</span>
+                    NZ Trip <span class="text-[10px] opacity-50">V26.3</span>
                     <!-- Status Display -->
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
@@ -219,7 +216,7 @@
                         </div>
                     </div>
                 </div>
-                <button @click="openModal('expense')" class="absolute bottom-28 right-5 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl z-30 border-2 border-white active:scale-90"><i class="fa-solid fa-pen"></i></button>
+                <button @click="openModal('expense')" class="fixed bottom-6 right-5 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl z-30 border-2 border-white active:scale-90"><i class="fa-solid fa-pen"></i></button>
             </div>
 
             <!-- 3. MAP TAB -->
@@ -291,84 +288,7 @@
             <button @click="currentTab = 'todo'" class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90" :class="currentTab === 'todo' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-clipboard-check text-base"></i></button>
         </nav>
 
-        <!-- Itinerary Modal (Updated for Sub-item Coords) -->
-        <transition name="slide-up">
-            <div v-if="showItineraryModal" class="fixed inset-0 z-[10000] flex items-end justify-center sm:items-center">
-                <div class="absolute inset-0 bg-dark/20 backdrop-blur-[2px]" @click="closeModal"></div>
-                <div class="bg-cream w-full sm:w-96 rounded-t-3xl p-6 shadow-2xl relative z-10 max-h-[90vh] overflow-y-auto modal-scroll pb-10">
-                    <h3 class="text-xl font-bold text-dark mb-6 text-center">{{ isEditing ? '編輯行程' : '新增行程' }}</h3>
-                    <div class="space-y-3">
-                        <div class="grid grid-cols-5 gap-3">
-                            <div class="col-span-2"><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">DAY</label><select v-model="form.dayIndex" class="w-full bg-white input-rounded p-2.5 text-sm font-bold text-center appearance-none outline-none"><option v-for="(d, i) in days" :value="i">Day {{ i }} - {{ formatDate(d) }}</option></select></div>
-                            <div class="col-span-3"><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">TIME</label><div class="flex gap-2"><select v-model="formHour" class="flex-1 bg-white input-rounded p-2.5 text-sm font-bold text-center appearance-none outline-none"><option v-for="h in 24" :value="(h-1).toString().padStart(2,'0')">{{ (h-1).toString().padStart(2,'0') }}</option></select><span class="self-center font-bold text-gray-300">:</span><select v-model="formMinute" class="flex-1 bg-white input-rounded p-2.5 text-sm font-bold text-center appearance-none outline-none"><option v-for="m in 60" :value="(m-1).toString().padStart(2,'0')">{{ (m-1).toString().padStart(2,'0') }}</option></select></div></div>
-                        </div>
-                        <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">TITLE</label><input type="text" v-model="form.title" placeholder="例如：前往餐廳吃晚餐" class="w-full bg-white input-rounded p-3 text-sm font-bold outline-none"></div>
-                        <div class="bg-white p-2.5 rounded-2xl border border-dashed border-gray-200">
-                             <div class="flex justify-between items-center mb-1 px-1"><label class="text-[10px] font-bold text-gray-400">LOCATION</label><span v-if="form.lat" class="text-[9px] text-green-500 font-mono"><i class="fa-solid fa-check"></i> {{ form.lat.toFixed(3) }},{{ form.lng.toFixed(3) }}</span></div>
-                             <div class="flex gap-2"><input type="text" v-model="form.location" placeholder="地點名稱" class="flex-1 bg-gray-50 rounded-xl p-2 text-sm font-bold outline-none"><button @click="searchCoord(form)" :disabled="isSearchingCoord" class="w-9 h-9 rounded-xl bg-gray-100 text-gray-400 hover:bg-primary hover:text-white transition-colors flex items-center justify-center shrink-0 active:scale-90"><i class="fa-solid" :class="isSearchingCoord ? 'fa-circle-notch fa-spin' : 'fa-magnifying-glass'"></i></button></div>
-                             <!-- NEW: Main Item Coords Input -->
-                             <div class="flex gap-2 mt-2">
-                                <input type="number" step="any" v-model.number="form.lat" placeholder="Lat" class="w-1/2 bg-gray-50 rounded-lg p-1.5 text-[9px] text-center outline-none border border-transparent focus:border-primary">
-                                <input type="number" step="any" v-model.number="form.lng" placeholder="Lng" class="w-1/2 bg-gray-50 rounded-lg p-1.5 text-[9px] text-center outline-none border border-transparent focus:border-primary">
-                             </div>
-                        </div>
-                        
-                        <!-- Sub Items Section -->
-                        <div>
-                            <div class="flex justify-between items-center mb-1 px-1"><label class="text-[10px] font-bold text-gray-400">SUB-ITEMS</label><button @click="addSubItem" class="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded-lg font-bold hover:bg-primary hover:text-white transition-colors active:scale-95"><i class="fa-solid fa-plus mr-1"></i>新增</button></div>
-                            <div class="space-y-2">
-                                <div v-for="(sub, idx) in form.subItems" :key="idx" class="bg-white p-2.5 rounded-xl border border-cream-dark relative">
-                                    <button @click="removeSubItem(idx)" class="absolute top-2 right-2 text-gray-300 hover:text-red-400 active:scale-90"><i class="fa-solid fa-xmark text-xs"></i></button>
-                                    <div class="flex gap-2 mb-1.5 pr-6">
-                                        <input type="text" v-model="sub.location" placeholder="子地點" class="flex-1 text-xs font-bold outline-none bg-transparent border-b border-gray-100 focus:border-primary pb-0.5">
-                                        <button @click="searchCoord(sub)" :disabled="isSearchingCoord" class="text-gray-300 hover:text-primary active:scale-90"><i class="fa-solid fa-magnifying-glass text-xs"></i></button>
-                                    </div>
-                                    <!-- NEW: Coords Input for Sub Items -->
-                                    <div class="flex gap-2 mb-1.5">
-                                        <input type="number" step="any" v-model.number="sub.lat" placeholder="Lat" class="w-1/2 bg-gray-50 rounded-lg p-1 text-[9px] text-center outline-none">
-                                        <input type="number" step="any" v-model.number="sub.lng" placeholder="Lng" class="w-1/2 bg-gray-50 rounded-lg p-1 text-[9px] text-center outline-none">
-                                    </div>
-                                    <input type="text" v-model="sub.notes" placeholder="備註..." class="w-full text-xs text-gray-500 bg-transparent outline-none">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">CATEGORY</label><div class="flex flex-wrap gap-2"><button v-for="t in ['景點','美食','住宿','交通','購物','其他']" @click="form.type = t" class="px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all active:scale-95" :class="form.type === t ? 'bg-dark text-white border-dark' : 'bg-white text-gray-400 border-gray-100 hover:border-gray-300'">{{ t }}</button></div></div>
-                        <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">MEMO</label><textarea v-model="form.notes" rows="3" class="w-full bg-white input-rounded p-3 text-sm outline-none resize-none"></textarea></div>
-                    </div>
-                    <button @click="saveItinerary" class="w-full py-3.5 bg-primary text-white rounded-2xl font-bold mt-5 shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform">儲存行程</button>
-                </div>
-            </div>
-        </transition>
-
-        <!-- Expense Modal (Updated Z-Index) -->
-        <transition name="slide-up">
-            <div v-if="showExpenseModal" class="fixed inset-0 z-[10000] flex items-end justify-center sm:items-center">
-                <div class="absolute inset-0 bg-dark/30 backdrop-blur-sm" @click="closeModal"></div>
-                <div class="bg-[#FDFBF7] w-full sm:w-[400px] rounded-t-3xl p-6 shadow-2xl relative z-10">
-                    <button @click="closeModal" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-400 hover:bg-gray-200 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
-                    <h3 class="text-lg font-bold text-dark mb-5 pl-1">新增支出</h3>
-                    <div class="space-y-4">
-                        <div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">項目名稱</label><input type="text" v-model="expenseForm.item" placeholder="例如：午餐" class="w-full bg-white h-12 rounded-xl px-4 text-sm font-bold text-dark shadow-sm border border-transparent focus:border-primary outline-none"></div>
-                        <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-50"><div class="flex bg-gray-50 rounded-lg p-1 mb-2"><button @click="expenseForm.currency = 'NZD'" class="flex-1 py-1.5 rounded-md text-xs font-bold transition-all active:scale-95" :class="expenseForm.currency === 'NZD' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'">NZD $</button><button @click="expenseForm.currency = 'TWD'" class="flex-1 py-1.5 rounded-md text-xs font-bold transition-all active:scale-95" :class="expenseForm.currency === 'TWD' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'">TWD $</button></div><div class="px-2 pb-1 relative"><input type="number" v-model.number="expenseForm.amount" placeholder="0" class="w-full text-2xl font-bold text-dark bg-transparent outline-none placeholder-gray-200 pl-1"></div></div>
-                        <div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">分類</label><div class="relative"><select v-model="expenseForm.category" class="w-full bg-white h-10 rounded-xl pl-3 pr-8 text-xs font-bold text-dark appearance-none shadow-sm border border-transparent outline-none"><option v-for="c in expenseCategories" :value="c">{{ c }}</option></select><i class="fa-solid fa-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i></div></div><div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">付款人</label><div class="relative"><select v-model="expenseForm.payer" class="w-full bg-white h-10 rounded-xl pl-3 pr-8 text-xs font-bold text-dark appearance-none shadow-sm border border-transparent outline-none"><option v-for="p in payers" :value="p">{{ p }}</option></select><i class="fa-solid fa-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i></div></div></div>
-                        <div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">日期</label><div class="relative"><input type="date" v-model="expenseForm.date" class="w-full bg-white h-10 rounded-xl px-3 text-xs font-bold text-gray-600 appearance-none shadow-sm border border-transparent outline-none"><i class="fa-regular fa-calendar absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none text-xs"></i></div></div>
-                    </div>
-                    <button @click="saveExpense" class="w-full py-3.5 bg-dark text-white rounded-xl font-bold mt-6 shadow-lg shadow-dark/20 active:scale-[0.98] transition-transform">儲存紀錄</button>
-                </div>
-            </div>
-        </transition>
-
-        <div v-if="showStatsModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-dark/30 backdrop-blur-sm p-4">
-            <div class="bg-cream w-full sm:w-[400px] rounded-3xl p-6 shadow-2xl relative max-h-[85vh] overflow-y-auto modal-scroll">
-                <button @click="showStatsModal=false" class="absolute top-4 right-4 text-gray-400 hover:text-dark transition-colors active:scale-90"><i class="fa-solid fa-xmark text-lg"></i></button>
-                <h3 class="text-lg font-bold text-dark mb-4 flex items-center gap-2"><span class="bg-yellow-card p-1 rounded-lg text-yellow-text"><i class="fa-solid fa-chart-pie"></i></span>消費統計</h3>
-                <div class="mb-4"><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">依付款人 (By Payer)</h4><div class="space-y-2"><div v-for="payer in payers" :key="payer" class="bg-white p-3 rounded-xl shadow-card border border-cream-dark flex justify-between items-center"><div class="flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">{{ payer.charAt(0) }}</div><span class="font-bold text-dark text-xs">{{ payer }}</span></div><div class="text-right flex flex-col gap-0.5"><span v-if="expenseStats.payers[payer].NZD > 0" class="text-[10px] font-bold text-dark bg-gray-50 px-1.5 py-0.5 rounded">NZD {{ expenseStats.payers[payer].NZD.toLocaleString() }}</span><span v-if="expenseStats.payers[payer].TWD > 0" class="text-[10px] font-bold text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded">TWD {{ expenseStats.payers[payer].TWD.toLocaleString() }}</span><span v-if="expenseStats.payers[payer].NZD === 0 && expenseStats.payers[payer].TWD === 0" class="text-[9px] text-gray-300">-</span></div></div></div></div>
-                <div><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">依分類 (By Category)</h4><div class="space-y-1"><div v-for="cat in expenseCategories" :key="cat" class="flex justify-between items-center py-1.5 px-2 border-b border-dashed border-gray-200 last:border-0"><div class="flex items-center gap-2"><i :class="getCategoryIcon(cat)" class="text-gray-300 text-[10px] w-4 text-center"></i><span class="text-[10px] font-bold text-gray-600">{{ cat }}</span></div><div class="flex gap-2 text-right"><span v-if="expenseStats.categories[cat].NZD > 0" class="text-[10px] font-bold text-dark">NZD {{ expenseStats.categories[cat].NZD.toLocaleString() }}</span><span v-if="expenseStats.categories[cat].TWD > 0" class="text-[10px] font-bold text-gray-400">TWD {{ expenseStats.categories[cat].TWD.toLocaleString() }}</span><span v-if="expenseStats.categories[cat].NZD === 0 && expenseStats.categories[cat].TWD === 0" class="text-[10px] text-gray-300">-</span></div></div></div></div>
-                <button @click="showStatsModal=false" class="w-full mt-4 py-3 bg-primary text-white rounded-xl font-bold shadow-soft hover:bg-primary-dark transition-colors active:scale-95">關閉</button>
-            </div>
-        </div>
-
+        <!-- Settings Modal (With Custom Config & New Exports) -->
         <div v-if="showSettingsModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
             <div class="bg-white p-6 rounded-3xl w-72 shadow-2xl text-center relative max-h-[90vh] overflow-y-auto modal-scroll">
                 <button @click="showSettingsModal=false" class="absolute top-4 right-4 text-gray-300 hover:text-gray-500 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
@@ -402,7 +322,10 @@
                         <input type="number" v-model.number="exchangeRate" class="w-full bg-transparent text-center text-lg font-bold text-dark outline-none border-b border-gray-200 focus:border-primary pb-0.5">
                     </div>
                     <div class="grid grid-cols-2 gap-2"><button @click="saveToFile" class="py-2.5 bg-blue-50 text-blue-500 rounded-lg text-[10px] font-bold hover:bg-blue-100 active:scale-95">備份</button><button @click="$refs.saveFileInput.click()" class="py-2.5 bg-orange-50 text-orange-500 rounded-lg text-[10px] font-bold hover:bg-orange-100 active:scale-95">讀取</button></div>
-                    <button @click="exportExpensesCSV" class="w-full py-2.5 bg-green-50 text-green-600 rounded-lg text-[10px] font-bold hover:bg-green-100 transition-colors flex items-center justify-center gap-2 active:scale-95"><i class="fa-solid fa-file-csv"></i> 匯出記帳 (CSV)</button>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button @click="exportExpensesCSV" class="w-full py-2.5 bg-green-50 text-green-600 rounded-lg text-[10px] font-bold hover:bg-green-100 transition-colors flex items-center justify-center gap-1 active:scale-95"><i class="fa-solid fa-file-csv"></i> 匯出記帳</button>
+                        <button @click="exportItineraryCSV" class="w-full py-2.5 bg-teal-50 text-teal-600 rounded-lg text-[10px] font-bold hover:bg-teal-100 transition-colors flex items-center justify-center gap-1 active:scale-95"><i class="fa-solid fa-file-csv"></i> 匯出行程</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -920,6 +843,58 @@
                     const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `nz_expenses_export_${new Date().toISOString().slice(0,10)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
                 };
                 
+                // NEW: Export Itinerary CSV
+                const exportItineraryCSV = () => {
+                    if (itinerary.value.length === 0) { alert('目前沒有行程資料可以匯出喔！'); return; }
+                    const BOM = '\uFEFF'; 
+                    let csvContent = BOM + "日期,時間,類別,標題/地點,詳細內容,備註,緯度,經度\n";
+                    
+                    // Helper to get date string
+                    const getFullDate = (dayIndex) => {
+                        const d = new Date(startDate); // use the startDate variable from closure
+                        d.setDate(d.getDate() + dayIndex);
+                        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                    };
+
+                    // Sort by day then time
+                    const sorted = [...itinerary.value].sort((a, b) => {
+                        if (a.day !== b.day) return a.day - b.day;
+                        return a.time.localeCompare(b.time);
+                    });
+
+                    sorted.forEach(item => {
+                        const dateStr = getFullDate(item.day);
+                        let details = "";
+                        if (item.subItems && item.subItems.length > 0) {
+                            details = item.subItems.map(s => `[${s.location}] ${s.notes || ''}`).join("; ");
+                        }
+                        
+                        // Escape quotes for CSV
+                        const escape = (str) => str ? `"${str.toString().replace(/"/g, '""')}"` : "";
+
+                        const row = [
+                            dateStr,
+                            item.time,
+                            item.type,
+                            escape(item.title || item.location),
+                            escape(details),
+                            escape(item.notes),
+                            item.lat || "",
+                            item.lng || ""
+                        ].join(",");
+                        csvContent += row + "\n";
+                    });
+
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", `nz_itinerary_export_${new Date().toISOString().slice(0,10)}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                };
+
                 const loadFromFile = (event) => {
                     const file = event.target.files[0];
                     if (!file) return;
@@ -970,7 +945,7 @@
                     openDaySettings, tempDaySettings, saveDaySettings, currentDayItems, tempWeatherLocs, isSavingSettings,
                     searchCoord, isSearchingCoord, hasCoordinatesForDay, copyItem, addSubItem, removeSubItem,
                     payers, expenseCategories, getTypeColorClass,
-                    totalNZD, totalTWD, grandTotalNZD, grandTotalTWD, expenseStats, exportExpensesCSV,
+                    totalNZD, totalTWD, grandTotalNZD, grandTotalTWD, expenseStats, exportExpensesCSV, exportItineraryCSV,
                     THEMES, currentTheme, applyTheme, getWeekDay,
                     tripId, newTripId, changeTripId, hasPendingUploads, initSync, manualRetry, showErrorDetail,
                     clearLocalData, deleteCloudData, currentFontSize, changeFontSize,
