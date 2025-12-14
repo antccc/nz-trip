@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NZ Trip V26.4</title>
+    <title>NZ Trip V26.5</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -129,7 +129,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-lg font-bold tracking-tight text-primary font-sans flex items-center gap-2">
                     <span class="bg-primary/20 p-1 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
-                    NZ Trip <span class="text-[10px] opacity-50">V26.4</span>
+                    NZ Trip <span class="text-[10px] opacity-50">V26.5</span>
                     <!-- Status Display -->
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
@@ -374,7 +374,7 @@
             <div class="bg-cream w-full sm:w-[400px] rounded-3xl p-6 shadow-2xl relative max-h-[85vh] overflow-y-auto modal-scroll">
                 <button @click="showStatsModal=false" class="absolute top-4 right-4 text-gray-400 hover:text-dark transition-colors active:scale-90"><i class="fa-solid fa-xmark text-lg"></i></button>
                 <h3 class="text-lg font-bold text-dark mb-4 flex items-center gap-2"><span class="bg-yellow-card p-1 rounded-lg text-yellow-text"><i class="fa-solid fa-chart-pie"></i></span>消費統計</h3>
-                <div class="mb-4"><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">依付款人 (By Payer)</h4><div class="space-y-2"><div v-for="payer in payers" :key="payer" class="bg-white p-3 rounded-xl shadow-card border border-cream-dark flex justify-between items-center"><div class="flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">{{ payer.charAt(0) }}</div><span class="font-bold text-dark text-xs">{{ payer }}</span></div><div class="text-right flex flex-col gap-0.5"><span v-if="expenseStats.payers[payer].NZD > 0" class="text-[10px] font-bold text-dark bg-gray-50 px-1.5 py-0.5 rounded">NZD {{ expenseStats.payers[payer].NZD.toLocaleString() }}</span><span v-if="expenseStats.payers[payer].TWD > 0" class="text-[10px] font-bold text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded">TWD {{ expenseStats.payers[payer].TWD.toLocaleString() }}</span><span v-if="expenseStats.payers[payer].NZD === 0 && expenseStats.payers[payer].TWD === 0" class="text-[10px] text-gray-300">-</span></div></div></div></div>
+                <div class="mb-4"><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">依付款人 (By Payer)</h4><div class="space-y-2"><div v-for="payer in payers" :key="payer" class="bg-white p-3 rounded-xl shadow-card border border-cream-dark flex justify-between items-center"><div class="flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">{{ payer.charAt(0) }}</div><span class="font-bold text-dark text-xs">{{ payer }}</span></div><div class="text-right flex flex-col gap-0.5"><span v-if="expenseStats.payers[payer].NZD > 0" class="text-[10px] font-bold text-dark bg-gray-50 px-1.5 py-0.5 rounded">NZD {{ expenseStats.payers[payer].NZD.toLocaleString() }}</span><span v-if="expenseStats.payers[payer].TWD > 0" class="text-[10px] font-bold text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded">TWD {{ expenseStats.payers[payer].TWD.toLocaleString() }}</span><span v-if="expenseStats.payers[payer].NZD === 0 && expenseStats.payers[payer].TWD === 0" class="text-[9px] text-gray-300">-</span></div></div></div></div>
                 <div><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">依分類 (By Category)</h4><div class="space-y-1"><div v-for="cat in expenseCategories" :key="cat" class="flex justify-between items-center py-1.5 px-2 border-b border-dashed border-gray-200 last:border-0"><div class="flex items-center gap-2"><i :class="getCategoryIcon(cat)" class="text-gray-300 text-[10px] w-4 text-center"></i><span class="text-[10px] font-bold text-gray-600">{{ cat }}</span></div><div class="flex gap-2 text-right"><span v-if="expenseStats.categories[cat].NZD > 0" class="text-[10px] font-bold text-dark">NZD {{ expenseStats.categories[cat].NZD.toLocaleString() }}</span><span v-if="expenseStats.categories[cat].TWD > 0" class="text-[10px] font-bold text-gray-400">TWD {{ expenseStats.categories[cat].TWD.toLocaleString() }}</span><span v-if="expenseStats.categories[cat].NZD === 0 && expenseStats.categories[cat].TWD === 0" class="text-[10px] text-gray-300">-</span></div></div></div></div>
                 <button @click="showStatsModal=false" class="w-full mt-4 py-3 bg-primary text-white rounded-xl font-bold shadow-soft hover:bg-primary-dark transition-colors active:scale-95">關閉</button>
             </div>
@@ -413,7 +413,10 @@
                         <input type="number" v-model.number="exchangeRate" class="w-full bg-transparent text-center text-lg font-bold text-dark outline-none border-b border-gray-200 focus:border-primary pb-0.5">
                     </div>
                     <div class="grid grid-cols-2 gap-2"><button @click="saveToFile" class="py-2.5 bg-blue-50 text-blue-500 rounded-lg text-[10px] font-bold hover:bg-blue-100 active:scale-95">備份</button><button @click="$refs.saveFileInput.click()" class="py-2.5 bg-orange-50 text-orange-500 rounded-lg text-[10px] font-bold hover:bg-orange-100 active:scale-95">讀取</button></div>
-                    <button @click="exportExpensesCSV" class="w-full py-2.5 bg-green-50 text-green-600 rounded-lg text-[10px] font-bold hover:bg-green-100 transition-colors flex items-center justify-center gap-2 active:scale-95"><i class="fa-solid fa-file-csv"></i> 匯出記帳 (CSV)</button>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button @click="exportExpensesCSV" class="w-full py-2.5 bg-green-50 text-green-600 rounded-lg text-[10px] font-bold hover:bg-green-100 transition-colors flex items-center justify-center gap-1 active:scale-95"><i class="fa-solid fa-file-csv"></i> 匯出記帳</button>
+                        <button @click="exportItineraryCSV" class="w-full py-2.5 bg-teal-50 text-teal-600 rounded-lg text-[10px] font-bold hover:bg-teal-100 transition-colors flex items-center justify-center gap-1 active:scale-95"><i class="fa-solid fa-file-csv"></i> 匯出行程</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -437,7 +440,7 @@
             hojicha: { name: '焙茶拿鐵', colors: { primary: '#C89F81', primaryDark: '#A47E64', primaryLight: '#E6D2C3', cream: '#FFFCF5', creamDark: '#F5F0E6', creamDarker: '#EBE0D0', cardBg: '#F3E0C0', cardText: '#785A46', dark: '#54433A', darkSoft: '#8D7B72', accent: '#D4A373' } },
             matcha: { name: '宇治抹茶', colors: { primary: '#84A98C', primaryDark: '#52796F', primaryLight: '#CAD2C5', cream: '#FDFBF7', creamDark: '#F2EFE9', creamDarker: '#E6E2D8', cardBg: '#E9EDC9', cardText: '#3A4D39', dark: '#2F3E46', darkSoft: '#4A5759', accent: '#F4A261' } },
             tekapo: { name: '蒂卡波藍', colors: { primary: '#38BDF8', primaryDark: '#0284C7', primaryLight: '#BAE6FD', cream: '#F0F9FF', creamDark: '#E0F2FE', creamDarker: '#BAE6FD', cardBg: '#BAE6FD', cardText: '#0C4A6E', dark: '#0F172A', darkSoft: '#334155', accent: '#F472B6' } },
-            lavender: { name: '瓦納卡紫', colors: { primary: '#A78BFA', primaryDark: '#8B5CF6', primaryLight: '#C4B5FD', cream: '#FAF5FF', creamDark: '#F3E8FF', creamDarker: '#E9D5FF', cardBg: '#DDD6FE', cardText: '#4C1D95', dark: '#4C1D95', darkSoft: '#5B21B6', accent: '#FBBF24' } },
+            lavender: { name: '瓦納卡紫', colors: { primary: '#A78BFA', primaryDark: '#8B5CF6', primaryLight: '#C4B5FD', cream: '#FAF5FF', creamDark: '#F3E8FF', creamDarker: '#E9D5FF', cardBg: '#DDD6FE', cardText: '#4C1D95', dark: '#4C1D95', darkSoft: '#5B21B6', accent: '#F4A261' } },
             tussock: { name: '奧塔哥金', colors: { primary: '#D97706', primaryDark: '#B45309', primaryLight: '#FCD34D', cream: '#FFFBEB', creamDark: '#FEF3C7', creamDarker: '#FDE68A', cardBg: '#FDE68A', cardText: '#78350F', dark: '#451A03', darkSoft: '#78350F', accent: '#65A30D' } },
             sakura: { name: '基督城櫻', colors: { primary: '#FB7185', primaryDark: '#E11D48', primaryLight: '#FECDD3', cream: '#FFF1F2', creamDark: '#FFE4E6', creamDarker: '#FECDD3', cardBg: '#FECDD3', cardText: '#881337', dark: '#881337', darkSoft: '#9F1239', accent: '#F472B6' } },
             pudding: { name: '布丁狗', colors: { primary: '#784421', primaryDark: '#5D3518', primaryLight: '#A16A46', cream: '#FFF8D1', creamDark: '#FFF3B0', creamDarker: '#FFE082', cardBg: '#FFCA28', cardText: '#3E2723', dark: '#4E342E', darkSoft: '#6D4C41', accent: '#FFCA28' } }
