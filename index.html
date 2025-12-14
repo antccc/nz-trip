@@ -132,7 +132,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-lg font-bold tracking-tight text-primary font-sans flex items-center gap-2">
                     <span class="bg-primary/20 p-1 rounded-lg transition-colors duration-300"><i class="fa-solid fa-mountain-sun text-primary"></i></span>
-                    NZ Trip <span class="text-[10px] opacity-50">V25.49</span>
+                    NZ Trip <span class="text-[10px] opacity-50">V25.50</span>
                     <!-- Status Display -->
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
@@ -338,8 +338,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- ADD BUTTON MOVED TO BOTTOM-6 FIXED -->
-                <button @click="openModal('expense')" class="fixed bottom-6 right-5 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl z-30 border-2 border-white active:scale-90">
+                <button @click="openModal('expense')" class="absolute bottom-28 right-5 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl z-30 border-2 border-white active:scale-90">
                     <i class="fa-solid fa-pen"></i>
                 </button>
             </div>
@@ -885,7 +884,7 @@
                         if(item.subItems) {
                             item.subItems.forEach(sub => {
                                 if(sub.lat && sub.lng) {
-                                    const subIcon = L.divIcon({className:'custom-div-icon', html:`<div class='marker-pin-sub'></div><span class='marker-text' style='bottom:-16px; left:-23px;'>${item.time}</span>`, iconSize:[24,24], iconAnchor:[12,12]});
+                                    const subIcon = L.divIcon({className:'custom-div-icon', html:`<div class='marker-pin-sub'></div><span class='marker-text' style='bottom:-16px; left:-23px; width: 70px;'>${item.time}</span>`, iconSize:[24,24], iconAnchor:[12,12]});
                                     L.marker([sub.lat, sub.lng], {icon: subIcon}).addTo(map).bindPopup(`<b>${sub.location}</b><br>${sub.notes || ''}`);
                                     bounds.extend([sub.lat, sub.lng]); hasPoints=true;
                                 }
