@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NZ Trip V27 (Diary Style)</title>
+    <title>NZ Trip V28 (Ultimate Diary)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,7 +18,7 @@
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Google Fonts: Zen Maru Gothic for Japanese/Handwritten feel -->
+    <!-- Google Fonts: Zen Maru Gothic -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -29,7 +29,6 @@
         import { getFirestore, doc, onSnapshot, setDoc, enableIndexedDbPersistence, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // Your Personal Config
         const firebaseConfig = {
             apiKey: "AIzaSyBWCdRmB3l8PDg6O_tzX2pT2-50ajpdXEw",
             authDomain: "mynztrip-4955d.firebaseapp.com",
@@ -45,11 +44,9 @@
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            
             window.firestoreDB = db;
             window.firebaseAuth = auth;
             window.firestoreMethods = { doc, onSnapshot, setDoc, deleteDoc, signInAnonymously, onAuthStateChanged };
-            console.log("Firebase initialized");
         } catch (e) {
             console.warn("Firebase config missing. Running in local mode.");
         }
@@ -60,32 +57,17 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: { 
-                            DEFAULT: 'rgb(var(--c-primary) / <alpha-value>)', 
-                            dark: 'rgb(var(--c-primary-dark) / <alpha-value>)', 
-                            light: 'rgb(var(--c-primary-light) / <alpha-value>)' 
-                        },
-                        cream: { 
-                            DEFAULT: 'rgb(var(--c-cream) / <alpha-value>)', 
-                            dark: 'rgb(var(--c-cream-dark) / <alpha-value>)', 
-                            darker: 'rgb(var(--c-cream-darker) / <alpha-value>)' 
-                        },
-                        yellow: { 
-                            card: 'rgb(var(--c-card-bg) / <alpha-value>)', 
-                            text: 'rgb(var(--c-card-text) / <alpha-value>)' 
-                        },
-                        dark: { 
-                            DEFAULT: 'rgb(var(--c-dark) / <alpha-value>)', 
-                            soft: 'rgb(var(--c-dark-soft) / <alpha-value>)' 
-                        },
+                        primary: { DEFAULT: 'rgb(var(--c-primary) / <alpha-value>)', dark: 'rgb(var(--c-primary-dark) / <alpha-value>)', light: 'rgb(var(--c-primary-light) / <alpha-value>)' },
+                        cream: { DEFAULT: 'rgb(var(--c-cream) / <alpha-value>)', dark: 'rgb(var(--c-cream-dark) / <alpha-value>)', darker: 'rgb(var(--c-cream-darker) / <alpha-value>)' },
+                        yellow: { card: 'rgb(var(--c-card-bg) / <alpha-value>)', text: 'rgb(var(--c-card-text) / <alpha-value>)' },
+                        dark: { DEFAULT: 'rgb(var(--c-dark) / <alpha-value>)', soft: 'rgb(var(--c-dark-soft) / <alpha-value>)' },
                         accent: 'rgb(var(--c-accent) / <alpha-value>)',
-                        paper: '#FFFFFF'
                     },
                     fontFamily: { sans: ['Zen Maru Gothic', 'sans-serif'] },
                     boxShadow: { 
                         'soft': '0 4px 20px -5px rgba(var(--c-primary), 0.2)',
-                        'card': '0 2px 10px rgba(var(--c-dark), 0.05)',
-                        'sticker': '2px 3px 0px rgba(0,0,0,0.1)' // New hard shadow for sticker effect
+                        'sticker': '2px 3px 0px rgba(0,0,0,0.15)',
+                        'float': '0 10px 30px -10px rgba(var(--c-primary), 0.3)'
                     }
                 }
             }
@@ -94,108 +76,101 @@
 
     <style>
         :root {
-            --c-primary: 78 52 46; 
-            --c-primary-dark: 62 39 35;
-            --c-primary-light: 141 110 99;
-            --c-cream: 255 248 209;
-            --c-cream-dark: 255 240 179;
-            --c-cream-darker: 255 224 130;
-            --c-card-bg: 255 202 40;
-            --c-card-text: 62 39 35;
-            --c-dark: 78 52 46;
-            --c-dark-soft: 109 76 65;
-            --c-accent: 255 179 0;
+            --c-primary: 78 52 46; --c-primary-dark: 62 39 35; --c-primary-light: 141 110 99;
+            --c-cream: 255 248 209; --c-cream-dark: 255 240 179; --c-cream-darker: 255 224 130;
+            --c-card-bg: 255 202 40; --c-card-text: 62 39 35;
+            --c-dark: 78 52 46; --c-dark-soft: 109 76 65; --c-accent: 255 179 0;
         }
         body { 
-            -webkit-tap-highlight-color: transparent; 
-            overscroll-behavior-y: none; 
+            -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; 
             background-color: rgb(var(--c-cream)); 
-            /* Subtle grid pattern for background */
-            background-image: radial-gradient(rgb(var(--c-primary-dark)) 0.5px, transparent 0.5px);
-            background-size: 20px 20px;
-            background-position: 0 0, 10px 10px;
-            background-color: rgb(var(--c-cream));
-            opacity: 1;
-            color: rgb(var(--c-dark)); 
-            transition: background-color 0.3s, color 0.3s; 
+            /* Improved Dot Grid Texture */
+            background-image: radial-gradient(rgb(var(--c-primary-dark)) 0.8px, transparent 0.8px);
+            background-size: 24px 24px;
+            background-position: 0 0;
+            opacity: 1; color: rgb(var(--c-dark)); transition: background-color 0.3s, color 0.3s; 
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .slide-up-enter-active, .slide-up-leave-active { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         .slide-up-enter-from, .slide-up-leave-to { transform: translateY(100%); }
         
-        /* Updated Timeline Line - Dashed like a map trail */
-        .timeline-line { 
-            position: absolute; 
-            left: 23px; 
-            top: 3.5rem; 
-            bottom: -1rem; 
-            width: 0px; 
-            border-left: 2px dashed rgb(var(--c-primary-light)); 
-            opacity: 0.6;
-            z-index: 0; 
-        }
-        
+        .timeline-line { position: absolute; left: 23px; top: 3.5rem; bottom: -1rem; width: 0px; border-left: 2px dashed rgb(var(--c-primary-light)); opacity: 0.6; z-index: 0; }
         .dot-marker { width: 10px; height: 10px; border-radius: 50%; background: rgb(var(--c-cream)); border: 2px solid rgb(var(--c-primary)); position: relative; z-index: 1; }
         .input-rounded { border-radius: 12px; border: 1px solid rgb(var(--c-cream-darker)); transition: all 0.2s; }
         .input-rounded:focus { border-color: rgb(var(--c-primary)); box-shadow: 0 0 0 3px rgba(var(--c-primary), 0.15); }
+        
+        /* Map Styles */
         .custom-div-icon { background: transparent; border: none; }
         .marker-pin { width: 34px; height: 34px; border-radius: 50% 50% 50% 0; background: rgb(var(--c-primary)); position: absolute; transform: rotate(-45deg); left: 50%; top: 50%; margin: -15px 0 0 -15px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; }
         .marker-pin::after { content: ''; width: 20px; height: 20px; margin: 0; background: #fff; position: absolute; border-radius: 50%; }
-        .marker-text { position: absolute; bottom: -8px; left: -25px; width: 70px; text-align: center; font-size: 10px; font-weight: 700; color: rgb(var(--c-dark)); background: rgba(255,255,255,0.95); border-radius: 8px; padding: 2px 4px; pointer-events: none; border: 1px solid rgb(var(--c-cream-darker)); }
-        .marker-pin-sub { width: 24px; height: 24px; border-radius: 50% 50% 50% 0; background: rgb(var(--c-dark-soft)); position: absolute; transform: rotate(-45deg); left: 50%; top: 50%; margin: -12px 0 0 -12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; }
-        .marker-pin-sub::after { content: ''; width: 10px; height: 10px; margin: 0; background: #fff; position: absolute; border-radius: 50%; }
+        .marker-text { position: absolute; bottom: -8px; left: -25px; width: 70px; text-align: center; font-size: 10px; font-weight: 700; color: rgb(var(--c-dark)); background: rgba(255,255,255,0.95); border-radius: 8px; padding: 2px 4px; pointer-events: none; border: 1px solid rgb(var(--c-cream-darker)); box-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
         .modal-scroll { overscroll-behavior: contain; }
 
-        /* HANDWRITTEN STYLE CLASSES */
+        /* HANDWRITTEN & WASHI TAPE STYLES */
         .hand-drawn-box {
             border: 2px solid rgba(var(--c-dark), 0.1);
             border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
             box-shadow: 3px 4px 0px rgba(var(--c-dark), 0.08);
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             background: white;
+            transform-origin: center;
         }
-        .hand-drawn-box:hover {
-            transform: scale(1.01);
-            box-shadow: 4px 5px 0px rgba(var(--c-dark), 0.12);
-        }
-        .hand-drawn-box:active {
-            transform: scale(0.99);
-            box-shadow: 1px 2px 0px rgba(var(--c-dark), 0.1);
-        }
+        .hand-drawn-box:hover { transform: scale(1.01) rotate(0.2deg); box-shadow: 5px 6px 0px rgba(var(--c-dark), 0.12); }
+        .hand-drawn-box:active { transform: scale(0.99); box-shadow: 1px 2px 0px rgba(var(--c-dark), 0.1); }
 
         .washi-tape {
-            position: absolute;
-            top: -6px;
-            left: 50%;
-            transform: translateX(-50%) rotate(-1deg);
-            width: 80px;
-            height: 18px;
+            position: absolute; top: -6px; left: 50%;
+            width: 80px; height: 18px;
             background-color: rgba(var(--c-primary-light), 0.4);
-            opacity: 0.8;
-            z-index: 20;
-            /* Create ragged edges using mask or simple linear gradient tricks */
+            opacity: 0.9; z-index: 20;
             mask-image: linear-gradient(90deg, transparent 2px, black 2px, black calc(100% - 2px), transparent calc(100% - 2px));
-            border-left: 2px dotted rgba(255,255,255,0.5);
-            border-right: 2px dotted rgba(255,255,255,0.5);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            /* Tape texture mix */
+            mix-blend-mode: multiply;
         }
+
+        /* Tape Patterns */
+        .tape-pattern-dots {
+            background-image: radial-gradient(rgba(255,255,255,0.6) 30%, transparent 30%);
+            background-size: 6px 6px;
+        }
+        .tape-pattern-stripes {
+            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.4) 0, rgba(255,255,255,0.4) 3px, transparent 3px, transparent 8px);
+        }
+        .tape-pattern-grid {
+            background-image: linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px);
+            background-size: 8px 8px;
+        }
+
+        /* Stamp Effect */
+        .stamp-mark {
+            position: absolute;
+            z-index: 5;
+            opacity: 0.7;
+            mix-blend-mode: multiply;
+            filter: contrast(120%) brightness(95%);
+            pointer-events: none;
+            animation: stamp-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes stamp-pop { 0% { transform: scale(1.5) rotate(0deg); opacity: 0; } 100% { transform: scale(1) rotate(var(--r)); opacity: 0.7; } }
 
         .notebook-lines {
-            background-image: linear-gradient(transparent 95%, rgba(var(--c-primary), 0.2) 95%);
-            background-size: 100% 1.5rem;
-            line-height: 1.5rem;
+            background-image: linear-gradient(transparent 95%, rgba(var(--c-primary), 0.15) 95%);
+            background-size: 100% 1.6rem;
+            line-height: 1.6rem;
             padding-top: 0.2rem;
         }
+        
+        .leaflet-popup-content-wrapper { border-radius: 12px; padding: 0; box-shadow: 3px 4px 0px rgba(0,0,0,0.2); border: 2px solid white; }
+        .leaflet-popup-content { margin: 0; font-family: 'Zen Maru Gothic', sans-serif !important; }
+        .polaroid-popup { padding: 8px; text-align: center; background: #fff; }
+        .polaroid-title { font-weight: 800; color: #333; font-size: 14px; margin-bottom: 2px; }
+        .polaroid-desc { font-size: 10px; color: #666; }
+        .leaflet-popup-tip { background: white; box-shadow: 3px 3px 0px rgba(0,0,0,0.05); }
 
-        .tab-sticky {
-            border-radius: 10px 10px 0 0;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
-            margin-bottom: -2px;
-            position: relative;
-            z-index: 10;
-        }
     </style>
 </head>
 <body class="text-dark h-[100dvh] w-screen flex flex-col overflow-hidden selection:bg-primary-light selection:text-dark-soft">
@@ -207,11 +182,11 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2" style="text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">
                     <i class="fa-solid fa-mountain-sun text-primary"></i>
-                    NZ Trip <span class="text-xs opacity-50 font-normal mt-1">V27 手帳版</span>
+                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V28 手帳極致版</span>
                     <!-- Status Display -->
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100/80 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider border border-green-200"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100/80 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
-                    <span v-else @click="showErrorDetail" class="text-[9px] bg-red-100/80 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all border border-red-200" title="點擊查看錯誤"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE</span>
+                    <span v-else @click="showErrorDetail" class="text-[9px] bg-red-100/80 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all border border-red-200"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE</span>
                 </h1>
             </div>
             <div class="flex gap-2">
@@ -245,7 +220,7 @@
                     <div class="px-4 pt-4 pb-2">
                         <!-- Day Header Card -->
                         <div class="bg-primary text-white p-4 relative overflow-hidden group transition-all duration-300" style="border-radius: 15px 255px 15px 255px / 255px 15px 225px 15px; box-shadow: 3px 4px 0px rgba(0,0,0,0.15);">
-                             <div class="washi-tape" style="background-color: rgba(255,255,255,0.3); top:-5px; transform: translateX(-50%) rotate(2deg);"></div>
+                             <div class="washi-tape tape-pattern-stripes" style="background-color: rgba(255,255,255,0.3); top:-5px; transform: translateX(-50%) rotate(2deg);"></div>
                             <div class="flex justify-between items-start relative z-10">
                                 <div class="flex-1 min-w-0 mr-1">
                                     <div class="flex items-center gap-2 mb-2">
@@ -269,10 +244,16 @@
                             <div v-if="index !== filteredItinerary.length - 1" class="timeline-line"></div>
                             
                             <!-- HAND DRAWN BOX CARD -->
-                            <div class="hand-drawn-box relative flex flex-col z-10 overflow-hidden">
-                                <div class="washi-tape"></div>
+                            <div class="hand-drawn-box relative flex flex-col z-10 overflow-hidden" :style="getCardRotation(index)">
+                                <!-- Randomized Washi Tape -->
+                                <div class="washi-tape" :class="getWashiTapeClass(item)" :style="getWashiTapeStyle(item)"></div>
                                 
-                                <div class="p-3 flex gap-3 items-start" @click="toggleItem(item.id)">
+                                <!-- Stamp (If any) -->
+                                <div v-if="item.stamp" class="stamp-mark" :style="getStampStyle(item)">
+                                    <i :class="['fa-solid', item.stamp]" class="text-4xl text-red-500/60"></i>
+                                </div>
+
+                                <div class="p-3 flex gap-3 items-start relative z-10" @click="toggleItem(item.id)">
                                     <div class="flex flex-col items-center min-w-[3rem] shrink-0 pt-0.5">
                                         <span class="text-sm font-black text-dark/80 font-sans tracking-tight">{{ item.time }}</span>
                                         <div class="dot-marker mt-2 shadow-sm"></div>
@@ -295,10 +276,13 @@
                                     </div>
                                 </div>
                                 
-                                <div v-show="expandedItems.has(item.id)" class="px-4 pb-4 pt-0">
+                                <div v-show="expandedItems.has(item.id)" class="px-4 pb-4 pt-0 relative z-10">
                                     <div class="mt-2 space-y-3 pt-3 border-t-2 border-dashed border-gray-100">
-                                        <!-- Notebook Lines Style for Notes -->
-                                        <div v-if="item.notes" class="p-3 bg-yellow-50/50 rounded-lg text-sm text-gray-700 leading-relaxed whitespace-pre-wrap relative select-text notebook-lines font-medium" style="font-family: 'Zen Maru Gothic', sans-serif;">{{ item.notes }}</div>
+                                        <!-- Note: Paperclip visual -->
+                                        <div v-if="item.notes" class="relative group/note">
+                                            <div class="absolute -top-3 left-1/2 -translate-x-1/2 w-4 h-8 border-2 border-gray-300 rounded-full z-20 pointer-events-none opacity-50"></div>
+                                            <div class="p-3 bg-yellow-50/50 rounded-lg text-sm text-gray-700 leading-relaxed whitespace-pre-wrap relative select-text notebook-lines font-medium shadow-sm transform rotate-[0.5deg]" style="font-family: 'Zen Maru Gothic', sans-serif;">{{ item.notes }}</div>
+                                        </div>
                                         
                                         <div v-if="item.subItems && item.subItems.length > 0">
                                             <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1 flex items-center gap-2"><span class="w-1 h-1 rounded-full bg-gray-300"></span>子行程</h4>
@@ -332,7 +316,7 @@
             <!-- 2. EXPENSES TAB -->
             <div v-if="currentTab === 'expenses'" class="h-full flex flex-col bg-cream rounded-t-[2.5rem] mt-2 shadow-inner overflow-hidden border-t border-cream-dark transition-colors duration-300">
                 <div class="p-5 bg-yellow-card m-3 mb-1 shadow-sticker relative overflow-hidden transition-colors duration-300" style="border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;">
-                    <div class="washi-tape" style="top: -8px; background-color: rgba(255,255,255,0.4);"></div>
+                    <div class="washi-tape tape-pattern-dots" style="top: -8px; background-color: rgba(255,255,255,0.4);"></div>
                     <div class="flex justify-between items-start mb-2"><p class="text-[10px] font-bold text-yellow-text/70 uppercase tracking-widest">總支出 (估算)</p><button @click="showStatsModal = true" class="bg-white/50 text-yellow-text hover:bg-white px-2 py-0.5 rounded-lg text-[10px] font-bold transition-colors flex items-center gap-1 active:scale-95"><i class="fa-solid fa-chart-pie"></i></button></div>
                     <div class="flex flex-col mb-3"><div class="flex items-baseline gap-2"><span class="text-sm font-bold text-yellow-text">NZD</span><span class="text-4xl font-black text-yellow-text font-sans tracking-tight">{{ grandTotalNZD.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span></div><div class="text-xs font-bold text-yellow-text/70 mt-0.5 border-t border-yellow-text/20 pt-1 inline-block">≈ NT$ {{ Math.round(grandTotalTWD).toLocaleString() }}</div></div>
                     <div class="flex gap-2"><div class="flex-1 bg-white/40 px-3 py-2 rounded-xl text-yellow-text font-bold flex flex-col items-start"><span class="text-[9px] opacity-60 uppercase">NZD 現金/刷卡</span><span class="text-base font-sans">${{ totalNZD.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span></div><div class="flex-1 bg-white/40 px-3 py-2 rounded-xl text-yellow-text font-bold flex flex-col items-start"><span class="text-[9px] opacity-60 uppercase">TWD 刷卡/已付</span><span class="text-base font-sans">${{ totalTWD.toLocaleString() }}</span></div></div>
@@ -374,7 +358,7 @@
             <!-- 4. CALCULATOR TAB -->
             <div v-if="currentTab === 'calculator'" class="h-full flex flex-col p-6 bg-cream">
                 <div class="bg-white p-6 shadow-sticker flex-1 flex flex-col relative" style="border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;">
-                    <div class="washi-tape"></div>
+                    <div class="washi-tape tape-pattern-grid"></div>
                     <h2 class="text-xl font-bold text-dark mb-6 text-center">匯率計算機</h2>
                     <div class="space-y-6">
                         <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100 relative">
@@ -397,7 +381,7 @@
                 </div>
             </div>
 
-            <!-- 5. TODO TAB (Updated V26.4) -->
+            <!-- 5. TODO TAB -->
             <div v-if="currentTab === 'todo'" class="h-full flex flex-col bg-cream pt-2">
                 <div class="px-4 pb-2 shrink-0">
                     <div class="flex bg-white p-1 rounded-2xl shadow-sticker border border-cream-darker">
@@ -413,7 +397,6 @@
                          </div>
                          <div class="space-y-2 relative z-10">
                              <div v-for="todo in filteredTodos" :key="todo.id" class="p-3 rounded-xl transition-colors notebook-lines" :class="todo.done ? 'bg-gray-50/50' : 'bg-white border-b border-gray-100'">
-                                 <!-- Edit Mode -->
                                  <div v-if="editingTodoId === todo.id" class="flex gap-2 items-start">
                                      <textarea v-model="tempTodoText" rows="2" class="flex-1 bg-white border border-primary/50 rounded-lg px-2 py-1 text-sm outline-none resize-none focus:ring-2 focus:ring-primary/20"></textarea>
                                      <div class="flex flex-col gap-1 shrink-0">
@@ -421,21 +404,16 @@
                                           <button @click="cancelEditTodo" class="w-8 h-8 bg-gray-100 text-gray-400 rounded-lg flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button>
                                      </div>
                                  </div>
-                                 <!-- View Mode -->
                                  <div v-else class="flex items-start justify-between">
                                      <div class="flex items-start gap-3 flex-1 cursor-pointer" @click="toggleTodo(todo)">
-                                         <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors mt-0.5 shrink-0" :class="todo.done ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 text-transparent'"><i class="fa-solid fa-check text-[10px]"></i></div>
-                                         <span class="text-sm font-bold transition-colors whitespace-pre-wrap break-words leading-snug font-hand" :class="todo.done ? 'text-gray-400 line-through' : 'text-dark'">{{ todo.text }}</span>
+                                         <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300 mt-0.5 shrink-0" :class="todo.done ? 'bg-green-500 border-green-500 text-white scale-110' : 'border-gray-300 text-transparent'"><i class="fa-solid fa-check text-[10px]" :class="{'scale-0': !todo.done, 'scale-100': todo.done}"></i></div>
+                                         <span class="text-sm font-bold transition-all whitespace-pre-wrap break-words leading-snug font-hand" :class="todo.done ? 'text-gray-400 line-through opacity-60 blur-[0.3px]' : 'text-dark'">{{ todo.text }}</span>
                                      </div>
                                      <div class="flex gap-1 shrink-0 ml-2 mt-0.5">
                                          <button @click.stop="startEditTodo(todo)" class="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-primary"><i class="fa-solid fa-pen text-xs"></i></button>
                                          <button @click.stop="deleteTodo(todo.id)" class="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-red-400"><i class="fa-solid fa-xmark text-sm"></i></button>
                                      </div>
                                  </div>
-                             </div>
-                             <div v-if="filteredTodos.length === 0" class="text-center text-gray-300 py-10 text-xs">
-                                 <i class="fa-solid fa-pencil text-2xl mb-2 opacity-30"></i>
-                                 <p>開始寫下清單吧！</p>
                              </div>
                          </div>
                     </div>
@@ -444,31 +422,16 @@
 
         </main>
 
-        <!-- Navigation (Fixed & Centered) with Active Feedback -->
+        <!-- Navigation -->
         <nav class="fixed bottom-5 left-1/2 transform -translate-x-1/2 w-[calc(100%-3rem)] max-w-[20rem] h-16 bg-white/90 backdrop-blur-md shadow-2xl border-2 border-white/50 flex justify-between items-center px-4 z-[9999] transition-all duration-300" style="border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;">
-            <button @click="currentTab = 'itinerary'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'itinerary' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'">
-                <i class="fa-solid fa-book-open text-xl mb-0.5"></i>
-                <span class="text-[9px] font-bold">行程</span>
-            </button>
-            <button @click="currentTab = 'expenses'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'expenses' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'">
-                <i class="fa-solid fa-wallet text-xl mb-0.5"></i>
-                <span class="text-[9px] font-bold">記帳</span>
-            </button>
-            <button @click="currentTab = 'map'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'map' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'">
-                <i class="fa-regular fa-map text-xl mb-0.5"></i>
-                <span class="text-[9px] font-bold">地圖</span>
-            </button>
-            <button @click="currentTab = 'calculator'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'calculator' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'">
-                <i class="fa-solid fa-calculator text-xl mb-0.5"></i>
-                <span class="text-[9px] font-bold">換算</span>
-            </button>
-            <button @click="currentTab = 'todo'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'todo' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'">
-                <i class="fa-solid fa-list-check text-xl mb-0.5"></i>
-                <span class="text-[9px] font-bold">清單</span>
-            </button>
+            <button @click="currentTab = 'itinerary'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'itinerary' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-book-open text-xl mb-0.5"></i><span class="text-[9px] font-bold">行程</span></button>
+            <button @click="currentTab = 'expenses'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'expenses' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-wallet text-xl mb-0.5"></i><span class="text-[9px] font-bold">記帳</span></button>
+            <button @click="currentTab = 'map'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'map' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'"><i class="fa-regular fa-map text-xl mb-0.5"></i><span class="text-[9px] font-bold">地圖</span></button>
+            <button @click="currentTab = 'calculator'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'calculator' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-calculator text-xl mb-0.5"></i><span class="text-[9px] font-bold">換算</span></button>
+            <button @click="currentTab = 'todo'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'todo' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-list-check text-xl mb-0.5"></i><span class="text-[9px] font-bold">清單</span></button>
         </nav>
 
-        <!-- Itinerary Modal (Updated for Sub-item Coords) -->
+        <!-- Itinerary Modal -->
         <transition name="slide-up">
             <div v-if="showItineraryModal" class="fixed inset-0 z-[10000] flex items-end justify-center sm:items-center">
                 <div class="absolute inset-0 bg-dark/20 backdrop-blur-[2px]" @click="closeModal"></div>
@@ -477,7 +440,7 @@
                     <h3 class="text-xl font-bold text-dark mb-6 text-center">{{ isEditing ? '編輯行程' : '新增行程' }}</h3>
                     <div class="space-y-3">
                         <div class="grid grid-cols-5 gap-3">
-                            <div class="col-span-2"><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">DAY</label><select v-model="form.dayIndex" class="w-full bg-white input-rounded p-2.5 text-sm font-bold text-center appearance-none outline-none"><option v-for="(d, i) in days" :value="i">Day {{ i }} - {{ formatDate(d) }}</option></select></div>
+                            <div class="col-span-2"><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">DAY</label><select v-model="form.dayIndex" class="w-full bg-white input-rounded p-2.5 text-sm font-bold text-center appearance-none outline-none"><option v-for="(d, i) in days" :value="i">Day {{ i }}</option></select></div>
                             <div class="col-span-3"><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">TIME</label><div class="flex gap-2"><select v-model="formHour" class="flex-1 bg-white input-rounded p-2.5 text-sm font-bold text-center appearance-none outline-none"><option v-for="h in 24" :value="(h-1).toString().padStart(2,'0')">{{ (h-1).toString().padStart(2,'0') }}</option></select><span class="self-center font-bold text-gray-300">:</span><select v-model="formMinute" class="flex-1 bg-white input-rounded p-2.5 text-sm font-bold text-center appearance-none outline-none"><option v-for="m in 60" :value="(m-1).toString().padStart(2,'0')">{{ (m-1).toString().padStart(2,'0') }}</option></select></div></div>
                         </div>
                         <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">TITLE</label><input type="text" v-model="form.title" placeholder="例如：前往餐廳吃晚餐" class="w-full bg-white input-rounded p-3 text-sm font-bold outline-none"></div>
@@ -489,6 +452,14 @@
                                 <input type="number" step="any" v-model.number="form.lng" placeholder="Lng" class="w-1/2 bg-gray-50 rounded-lg p-1.5 text-[9px] text-center outline-none border border-transparent focus:border-primary">
                              </div>
                         </div>
+
+                        <!-- Stamp Selector -->
+                        <div class="bg-white p-2.5 rounded-2xl border border-dashed border-gray-200">
+                            <label class="text-[10px] font-bold text-gray-400 mb-1 block pl-1">MOOD STAMP (心情印章)</label>
+                            <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
+                                <button v-for="icon in stamps" :key="icon" @click="form.stamp === icon ? form.stamp = null : form.stamp = icon" class="w-10 h-10 rounded-xl border-2 flex items-center justify-center text-xl transition-all active:scale-90 shrink-0" :class="form.stamp === icon ? 'border-red-400 bg-red-50 text-red-500 shadow-sm' : 'border-gray-100 text-gray-300 hover:border-gray-200'"><i :class="['fa-solid', icon]"></i></button>
+                            </div>
+                        </div>
                         
                         <div>
                             <div class="flex justify-between items-center mb-1 px-1"><label class="text-[10px] font-bold text-gray-400">SUB-ITEMS</label><button @click="addSubItem" class="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded-lg font-bold hover:bg-primary hover:text-white transition-colors active:scale-95"><i class="fa-solid fa-plus mr-1"></i>新增</button></div>
@@ -499,10 +470,8 @@
                                         <input type="text" v-model="sub.location" placeholder="子地點" class="flex-1 text-xs font-bold outline-none bg-transparent border-b border-gray-100 focus:border-primary pb-0.5">
                                         <button @click="searchCoord(sub)" :disabled="isSearchingCoord" class="text-gray-300 hover:text-primary active:scale-90"><i class="fa-solid fa-magnifying-glass text-xs"></i></button>
                                     </div>
-                                    <div class="flex gap-2 mb-1.5">
-                                        <input type="number" step="any" v-model.number="sub.lat" placeholder="Lat" class="w-1/2 bg-gray-50 rounded-lg p-1 text-[9px] text-center outline-none">
-                                        <input type="number" step="any" v-model.number="sub.lng" placeholder="Lng" class="w-1/2 bg-gray-50 rounded-lg p-1 text-[9px] text-center outline-none">
-                                    </div>
+                                    <input type="number" step="any" v-model.number="sub.lat" placeholder="Lat" class="w-1/2 bg-gray-50 rounded-lg p-1 text-[9px] text-center outline-none hidden">
+                                    <input type="number" step="any" v-model.number="sub.lng" placeholder="Lng" class="w-1/2 bg-gray-50 rounded-lg p-1 text-[9px] text-center outline-none hidden">
                                     <input type="text" v-model="sub.notes" placeholder="備註..." class="w-full text-xs text-gray-500 bg-transparent outline-none">
                                 </div>
                             </div>
@@ -549,7 +518,6 @@
                 <button @click="showSettingsModal=false" class="absolute top-4 right-4 text-gray-300 hover:text-gray-500 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
                 <h3 class="font-bold text-dark mb-4">設定</h3>
                 
-                <!-- Font Size Control (Added) -->
                 <div class="mb-4 bg-gray-50 p-3 rounded-xl border border-cream-darker">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-[10px] font-bold text-gray-400 uppercase">字體大小</span>
@@ -610,7 +578,6 @@
             pudding: { name: '布丁狗', colors: { primary: '#784421', primaryDark: '#5D3518', primaryLight: '#A16A46', cream: '#FFF8D1', creamDark: '#FFF3B0', creamDarker: '#FFE082', cardBg: '#FFCA28', cardText: '#3E2723', dark: '#4E342E', darkSoft: '#6D4C41', accent: '#FFCA28' } }
         };
         const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const IMPORTED_DATA = [];
 
         createApp({
             setup() {
@@ -663,7 +630,44 @@
                 const editingTodoId = ref(null);
                 const tempTodoText = ref('');
 
-                // --- Computed Properties ---
+                // NEW: Stamp Options
+                const stamps = ['fa-heart', 'fa-star', 'fa-mug-hot', 'fa-camera', 'fa-plane', 'fa-face-laugh-beam', 'fa-paw', 'fa-music', 'fa-check'];
+                
+                // Helper to generate consistent but random-looking properties based on item ID
+                const getPseudoRandom = (id, max) => (id % max);
+                
+                const getWashiTapeClass = (item) => {
+                    const types = ['tape-pattern-dots', 'tape-pattern-stripes', 'tape-pattern-grid', '', '']; // empty string = solid color (opacity only)
+                    const idx = getPseudoRandom(item.id, types.length);
+                    return types[idx];
+                }
+
+                const getWashiTapeStyle = (item) => {
+                    const rot = (item.id % 5) - 2; // -2 to 2 deg
+                    const hueRotate = (item.id % 40) - 20; // Slight color variation
+                    return {
+                        transform: `translateX(-50%) rotate(${rot}deg)`,
+                        filter: `hue-rotate(${hueRotate}deg)`
+                    };
+                }
+
+                const getCardRotation = (index) => {
+                    // Slight rotation for each card to look hand-placed
+                    const deg = (index % 2 === 0) ? 0.5 : -0.5;
+                    return { transform: `rotate(${deg}deg)` };
+                }
+
+                const getStampStyle = (item) => {
+                    const rot = (item.id % 40) - 20; // -20 to 20 deg
+                    const left = 75 + (item.id % 15); // 75% to 90%
+                    const top = 10 + (item.id % 40); // 10% to 50%
+                    return {
+                        top: `${top}%`,
+                        left: `${left}%`,
+                        '--r': `${rot}deg`
+                    };
+                }
+
                 const filteredItinerary = computed(() => itinerary.value.filter(i => i.day === selectedDayIndex.value).sort((a,b) => a.time.localeCompare(b.time)));
                 const currentDayItems = computed(() => filteredItinerary.value); 
                 const hasCoordinatesForDay = computed(() => filteredItinerary.value.some(i => i.lat && i.lng));
@@ -681,7 +685,6 @@
                 const totalTWD = computed(() => expenses.value.filter(e => e.currency === 'TWD').reduce((s, i) => s + i.amount, 0));
                 const grandTotalNZD = computed(() => totalNZD.value + (totalTWD.value / exchangeRate.value));
                 const grandTotalTWD = computed(() => (totalNZD.value * exchangeRate.value) + totalTWD.value);
-                const totalExpenses = computed(() => expenses.value.reduce((s, i) => s + (i.baseAmount || i.amount), 0));
                 
                 const groupedExpenses = computed(() => {
                     const groups = {};
@@ -714,13 +717,10 @@
                 });
 
                 const filteredTodos = computed(() => {
-                    return todos.value
-                        .filter(t => t.category === todoCategory.value)
-                        .sort((a, b) => Number(a.done) - Number(b.done));
+                    return todos.value.filter(t => t.category === todoCategory.value).sort((a, b) => Number(a.done) - Number(b.done));
                 });
 
-                // 3. Form & Logic
-                const form = ref({ id: null, dayIndex: 0, time: '09:00', type: '景點', title: '', location: '', address: '', lat: null, lng: null, notes: '', subItems: [] });
+                const form = ref({ id: null, dayIndex: 0, time: '09:00', type: '景點', title: '', location: '', address: '', lat: null, lng: null, notes: '', subItems: [], stamp: null });
                 const expenseForm = ref({ amount: '', item: '', category: '餐飲', payer: 'Ant', currency: 'NZD', date: new Date().toISOString().split('T')[0] });
                 const payers = ref(['Ant', 'Fish', '公費']);
                 const expenseCategories = ['餐飲', '交通', '住宿', '購物', '活動', '其他'];
@@ -743,30 +743,15 @@
                 const selectDate = (index) => selectedDayIndex.value = index;
 
                 const getCategoryIcon = (c) => {
-                    const map = {
-                        '餐飲': 'fa-solid fa-utensils',
-                        '交通': 'fa-solid fa-car',
-                        '住宿': 'fa-solid fa-bed',
-                        '購物': 'fa-solid fa-bag-shopping',
-                        '活動': 'fa-solid fa-ticket',
-                        '其他': 'fa-solid fa-ellipsis'
-                    };
+                    const map = {'餐飲': 'fa-solid fa-utensils', '交通': 'fa-solid fa-car', '住宿': 'fa-solid fa-bed', '購物': 'fa-solid fa-bag-shopping', '活動': 'fa-solid fa-ticket', '其他': 'fa-solid fa-ellipsis'};
                     return map[c] || 'fa-solid fa-circle-question';
                 };
 
                 const getTypeColorClass = (type) => {
-                     const map = {
-                         '景點': 'bg-teal-50 text-teal-600 border-teal-100',
-                         '美食': 'bg-orange-50 text-orange-500 border-orange-100',
-                         '住宿': 'bg-indigo-50 text-indigo-500 border-indigo-100',
-                         '交通': 'bg-gray-100 text-gray-500 border-gray-200',
-                         '購物': 'bg-pink-50 text-pink-500 border-pink-100',
-                         '其他': 'bg-gray-50 text-gray-500'
-                     };
+                     const map = {'景點': 'bg-teal-50 text-teal-600 border-teal-100', '美食': 'bg-orange-50 text-orange-500 border-orange-100', '住宿': 'bg-indigo-50 text-indigo-500 border-indigo-100', '交通': 'bg-gray-100 text-gray-500 border-gray-200', '購物': 'bg-pink-50 text-pink-500 border-pink-100', '其他': 'bg-gray-50 text-gray-500'};
                      return map[type] || 'bg-gray-50 text-gray-500';
                 };
 
-                // Font Size Logic
                 const changeFontSize = (delta) => {
                     if (delta === 0) currentFontSize.value = 16;
                     else currentFontSize.value = Math.max(12, Math.min(24, currentFontSize.value + delta));
@@ -778,10 +763,6 @@
                     dailyWeatherList.value = [];
                     const dayMeta = dailyMetadata.value[selectedDayIndex.value] || {};
                     let targetLocs = dayMeta.weatherLocs || [];
-                    if (targetLocs.length === 0 && dayMeta.weatherItemIds) {
-                         const legacyItems = dayMeta.weatherItemIds.map(id => itinerary.value.find(i => i.id === id)).filter(item => item && item.lat);
-                         targetLocs = legacyItems.map(item => ({ name: item.location, lat: item.lat, lng: item.lng }));
-                    }
                     if (targetLocs.length === 0) {
                          const dayItems = itinerary.value.filter(i => i.day === selectedDayIndex.value);
                          if (dayItems.length > 0 && dayItems[0].lat) targetLocs = [{ name: dayItems[0].location, lat: dayItems[0].lat, lng: dayItems[0].lng }];
@@ -817,102 +798,43 @@
 
                 const initSync = async () => {
                     const t = localStorage.getItem('nz_theme_pref'); if (t && THEMES[t]) applyTheme(t); else applyTheme('hojicha');
-                    
-                    // Load Font Size
                     const savedFont = localStorage.getItem('nz_font_size');
-                    if(savedFont) {
-                        currentFontSize.value = parseInt(savedFont);
-                    } else {
-                        // Device Detection logic
-                        const isDesktop = window.matchMedia("(pointer:fine)").matches;
-                        currentFontSize.value = isDesktop ? 17 : 16;
-                    }
+                    if(savedFont) currentFontSize.value = parseInt(savedFont);
+                    else { const isDesktop = window.matchMedia("(pointer:fine)").matches; currentFontSize.value = isDesktop ? 17 : 16; }
                     document.documentElement.style.fontSize = currentFontSize.value + 'px';
 
                     loadLocalData();
-                    let a = 0; while (!window.firestoreDB && a < 50) { await new Promise(r => setTimeout(r, 300)); a++; } // Wait up to 15s
+                    let a = 0; while (!window.firestoreDB && a < 50) { await new Promise(r => setTimeout(r, 300)); a++; }
                     
                     if (window.firestoreDB && window.firebaseAuth) {
                         try {
-                             // Force check ID
                              const savedId = localStorage.getItem('nz_trip_id');
                              if(savedId && savedId !== tripId.value) tripId.value = savedId;
-                             
                              loadingMessage.value = '登入中...';
-                             
-                             // 1. Try to sign in anonymously first (Active approach)
-                             if(!window.firebaseAuth.currentUser) {
-                                 await window.firestoreMethods.signInAnonymously(window.firebaseAuth);
-                             }
-                             
-                             // 2. Connect immediately after auth
+                             if(!window.firebaseAuth.currentUser) await window.firestoreMethods.signInAnonymously(window.firebaseAuth);
                              loadingMessage.value = '同步中...';
                              startSnapshotListener(); 
-
                         } catch (e) {
                              console.warn("Auth failed", e);
                              connectionStatus.value = 'error'; 
-                             // DETECT SPECIFIC FIREBASE CONFIG ERROR
-                             if(e.code === 'auth/configuration-not-found' || e.code === 'auth/admin-restricted-operation') {
-                                 errorMessage.value = "auth_config_error"; // Special flag
-                                 alert('您的 Firebase 專案未啟用『匿名登入』功能。\n\n請至 Firebase Console > Authentication > Sign-in method 將「匿名 (Anonymous)」開啟。');
-                             } else {
-                                 errorMessage.value = e.message;
-                             }
+                             errorMessage.value = (e.code === 'auth/configuration-not-found' || e.code === 'auth/admin-restricted-operation') ? "auth_config_error" : e.message;
                         }
-                    } else {
-                        connectionStatus.value = 'local';
-                    }
-                    
-                    // Network Status Listeners
+                    } else connectionStatus.value = 'local';
                     window.addEventListener('online', manualRetry);
                 };
                 
                 const showErrorDetail = () => {
-                    if(errorMessage.value === 'auth_config_error') {
-                        alert('您的 Firebase 專案未啟用『匿名登入』功能。\n\n請至 Firebase Console > Authentication > Sign-in method 將「匿名 (Anonymous)」開啟。');
-                    } else if(errorMessage.value) {
-                        alert(`連線錯誤：${errorMessage.value}\n請嘗試重新整理或檢查網路。`);
-                    } else {
-                        manualRetry();
-                    }
+                    if(errorMessage.value === 'auth_config_error') alert('請至 Firebase Console 開啟匿名登入功能。');
+                    else if(errorMessage.value) alert(`連線錯誤：${errorMessage.value}`);
+                    else manualRetry();
                 }
 
-                const manualRetry = () => {
-                     connectionStatus.value = 'connecting';
-                     loadingMessage.value = '重連中...';
-                     initSync();
-                };
+                const manualRetry = () => { connectionStatus.value = 'connecting'; loadingMessage.value = '重連中...'; initSync(); };
 
-                // Clear functions for Danger Zone
-                const clearLocalData = () => {
-                    if(confirm('確定要清除本機所有資料嗎？這將會重置所有行程與記帳紀錄。')) {
-                        localStorage.removeItem('nz_data_v4');
-                        location.reload();
-                    }
-                };
-                const deleteCloudData = async () => {
-                    if(connectionStatus.value !== 'cloud') { alert('請先連線到雲端才能刪除！'); return; }
-                    if(confirm(`警告：確定要永久刪除雲端頻道 "${tripId.value}" 的所有資料嗎？此動作無法復原！`)) {
-                        try {
-                            const { doc, deleteDoc } = window.firestoreMethods;
-                            await deleteDoc(doc(window.firestoreDB, "trips", tripId.value));
-                            alert('雲端資料已刪除。');
-                            connectionStatus.value = 'local';
-                            if(unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
-                        } catch(e) {
-                            alert('刪除失敗，請檢查網路連線。');
-                            console.error(e);
-                        }
-                    }
-                };
-
-                let retryCount = 0;
-                let heartbeatInterval = null;
+                let retryCount = 0; let heartbeatInterval = null;
                 const startSnapshotListener = () => {
                     connectionStatus.value = 'cloud'; 
                     const { doc, onSnapshot, setDoc } = window.firestoreMethods;
-                    
                     if(unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
                     const ref = doc(window.firestoreDB, "trips", tripId.value);
                     
@@ -920,19 +842,11 @@
                         retryCount = 0; 
                         if (snap.exists()) {
                             const cData = snap.data();
-                            const lString = localStorage.getItem('nz_data_v4');
-                            let lData = lString ? JSON.parse(lString) : {};
-                            
-                            // Simple timestamp check - if local is newer (by 5s buffer), push local
-                            if ((lData.lastUpdated || 0) > (cData.lastUpdated || 0) + 5000) { 
-                                setDoc(ref, lData, { merge: true }); 
-                                return; 
-                            }
+                            const lData = localStorage.getItem('nz_data_v4') ? JSON.parse(localStorage.getItem('nz_data_v4')) : {};
+                            if ((lData.lastUpdated || 0) > (cData.lastUpdated || 0) + 5000) { setDoc(ref, lData, { merge: true }); return; }
                             
                             if (cData.itinerary) itinerary.value = cData.itinerary;
-                            const cEx = cData.expenses || []; const lEx = expenses.value; const m = new Map();
-                            cEx.forEach(e => m.set(e.id, e)); lEx.forEach(e => { if(!m.has(e.id)) m.set(e.id, e); });
-                            expenses.value = Array.from(m.values());
+                            if (cData.expenses) { const m = new Map(); cData.expenses.forEach(e => m.set(e.id, e)); expenses.value.forEach(e => { if(!m.has(e.id)) m.set(e.id, e); }); expenses.value = Array.from(m.values()); }
                             if (cData.dailyMetadata) dailyMetadata.value = cData.dailyMetadata;
                             if (cData.exchangeRate) exchangeRate.value = cData.exchangeRate;
                             if (cData.todos) todos.value = cData.todos;
@@ -943,33 +857,15 @@
                              if(l) setDoc(ref, JSON.parse(l));
                              else { const init = { itinerary: [], expenses: [], exchangeRate: 19.5, dailyMetadata: {}, todos: [], lastUpdated: Date.now() }; setDoc(ref, init); localStorage.setItem('nz_data_v4', JSON.stringify(init)); loadLocalData(); }
                         }
-                    }, (e) => { 
-                        console.error("Snap err", e); 
-                        connectionStatus.value = 'error';
-                        errorMessage.value = e.message;
-                        if (retryCount < 5) { retryCount++; setTimeout(startSnapshotListener, 3000); }
-                    });
+                    }, (e) => { connectionStatus.value = 'error'; errorMessage.value = e.message; if (retryCount < 5) { retryCount++; setTimeout(startSnapshotListener, 3000); } });
 
-                    if(!heartbeatInterval) {
-                        heartbeatInterval = setInterval(() => {
-                            if(connectionStatus.value !== 'cloud' && navigator.onLine) manualRetry();
-                        }, 5000);
-                    }
+                    if(!heartbeatInterval) heartbeatInterval = setInterval(() => { if(connectionStatus.value !== 'cloud' && navigator.onLine) manualRetry(); }, 5000);
                 };
 
                 const changeTripId = () => { 
-                    if(newTripId.value && confirm(`確定切換頻道至 "${newTripId.value}"？\n注意：這將會清空目前的畫面資料，並載入新頻道的內容。`)) { 
-                        // CLEAR LOCAL STATE TO PREVENT LEAK
-                        itinerary.value = [];
-                        expenses.value = [];
-                        dailyMetadata.value = {};
-                        todos.value = [];
-                        localStorage.removeItem('nz_data_v4'); 
-
-                        tripId.value = newTripId.value; 
-                        localStorage.setItem('nz_trip_id', tripId.value); 
-                        newTripId.value=''; 
-                        startSnapshotListener(); 
+                    if(newTripId.value && confirm(`確定切換頻道至 "${newTripId.value}"？`)) { 
+                        itinerary.value = []; expenses.value = []; dailyMetadata.value = {}; todos.value = []; localStorage.removeItem('nz_data_v4'); 
+                        tripId.value = newTripId.value; localStorage.setItem('nz_trip_id', tripId.value); newTripId.value=''; startSnapshotListener(); 
                     }
                 };
                 const toggleGlobalFold = () => { isAllExpanded.value = !isAllExpanded.value; if (isAllExpanded.value) { const allIds = new Set(); filteredItinerary.value.forEach(i => allIds.add(i.id)); expandedItems.value = allIds; } else { expandedItems.value = new Set(); } };
@@ -998,17 +894,9 @@
                     filteredItinerary.value.forEach(item => {
                         if(item.lat && item.lng) {
                             const icon = L.divIcon({className:'custom-div-icon', html:`<div class='marker-pin'></div><span class='marker-text'>${item.time}</span>`, iconSize:[30,42], iconAnchor:[15,42]});
-                            L.marker([item.lat, item.lng], {icon}).addTo(map).bindPopup(`<b>${item.title || item.location}</b><br>${item.location}`);
+                            const marker = L.marker([item.lat, item.lng], {icon}).addTo(map);
+                            marker.bindPopup(`<div class='polaroid-popup'><div class='polaroid-title'>${item.title || item.location}</div><div class='polaroid-desc'>${item.notes || item.location}</div></div>`);
                             bounds.extend([item.lat, item.lng]); hasPoints=true;
-                        }
-                        if(item.subItems) {
-                            item.subItems.forEach(sub => {
-                                if(sub.lat && sub.lng) {
-                                    const subIcon = L.divIcon({className:'custom-div-icon', html:`<div class='marker-pin-sub'></div><span class='marker-text' style='bottom:-16px; left:-23px; width: 70px;'>${item.time}</span>`, iconSize:[24,24], iconAnchor:[12,12]});
-                                    L.marker([sub.lat, sub.lng], {icon: subIcon}).addTo(map).bindPopup(`<b>${sub.location}</b><br>${sub.notes || ''}`);
-                                    bounds.extend([sub.lat, sub.lng]); hasPoints=true;
-                                }
-                            });
                         }
                     });
                     locateUser();
@@ -1018,7 +906,7 @@
                 const openModal = (type) => {
                      if(type==='itinerary') { 
                         isEditing.value=false; 
-                        form.value={id:Date.now(), dayIndex:selectedDayIndex.value, time:'09:00', type:'景點', location:'', address: '', lat: null, lng: null, notes:'', subItems:[]}; 
+                        form.value={id:Date.now(), dayIndex:selectedDayIndex.value, time:'09:00', type:'景點', location:'', address: '', lat: null, lng: null, notes:'', subItems:[], stamp: null}; 
                         showItineraryModal.value=true; 
                      }
                      else { const d=new Date(); const t=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; expenseForm.value={amount:'', item:'', category:'餐飲', payer:'Ant', currency:'NZD', date:t}; showExpenseModal.value=true; }
@@ -1039,9 +927,7 @@
                 const deleteItem = (id) => { if(confirm('Delete?')) { itinerary.value = itinerary.value.filter(i=>i.id!==id); saveToLocal(); }};
                 const saveExpense = () => { if(!expenseForm.value.amount) return; const b = expenseForm.value.currency==='TWD'?expenseForm.value.amount/exchangeRate.value:expenseForm.value.amount; expenses.value.push({id:Date.now(), ...expenseForm.value, baseAmount:b, originalAmount:expenseForm.value.amount}); saveToLocal(); closeModal(); };
                 const deleteExpense = (id) => { if(confirm('Delete?')) { expenses.value = expenses.value.filter(e=>e.id!==id); saveToLocal(); }};
-                const saveSettings = () => { saveToLocal(); showSettingsModal.value=false; };
                 const navigateTo = (loc) => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc + ', New Zealand')}`, '_blank');
-                const navigateToLoc = (lat, lng) => window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank');
                 const locateUser = () => { if(navigator.geolocation && map) navigator.geolocation.getCurrentPosition(p=>{ map.setView([p.coords.latitude, p.coords.longitude], 14); if(window.userMarker) window.userMarker.setLatLng([p.coords.latitude, p.coords.longitude]); else window.userMarker = L.marker([p.coords.latitude, p.coords.longitude], {icon: L.divIcon({className:'custom-div-icon', html:`<div style="width:16px;height:16px;background:#3B82F6;border:3px solid white;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,0.3);"></div>`})}).addTo(map); }); };
 
                 const openDaySettings = () => {
@@ -1091,10 +977,7 @@
                     if (expenses.value.length === 0) { alert('目前沒有記帳資料可以匯出喔！'); return; }
                     const BOM = '\uFEFF'; let csvContent = BOM + "日期,項目,分類,付款人,幣別,金額,換算紐幣(NZD)\n";
                     const sorted = [...expenses.value].sort((a, b) => new Date(b.date) - new Date(a.date));
-                    sorted.forEach(e => {
-                        const row = [e.date, `"${e.item.replace(/"/g, '""')}"`, e.category, e.payer, e.currency, e.amount, e.baseAmount.toFixed(2)].join(",");
-                        csvContent += row + "\n";
-                    });
+                    sorted.forEach(e => { csvContent += [e.date, `"${e.item.replace(/"/g, '""')}"`, e.category, e.payer, e.currency, e.amount, e.baseAmount.toFixed(2)].join(",") + "\n"; });
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `nz_expenses_export_${new Date().toISOString().slice(0,10)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
@@ -1102,128 +985,58 @@
                 
                 const exportItineraryCSV = () => {
                     if (itinerary.value.length === 0) { alert('目前沒有行程資料可以匯出喔！'); return; }
-                    const BOM = '\uFEFF'; 
-                    let csvContent = BOM + "日期,時間,類別,標題/地點,詳細內容,備註,緯度,經度\n";
-                    
-                    const getFullDate = (dayIndex) => {
-                        const d = new Date(startDate); 
-                        d.setDate(d.getDate() + dayIndex);
-                        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-                    };
-
-                    const sorted = [...itinerary.value].sort((a, b) => {
-                        if (a.day !== b.day) return a.day - b.day;
-                        return a.time.localeCompare(b.time);
-                    });
-
+                    const BOM = '\uFEFF'; let csvContent = BOM + "日期,時間,類別,標題/地點,詳細內容,備註,緯度,經度\n";
+                    const sorted = [...itinerary.value].sort((a, b) => (a.day !== b.day) ? a.day - b.day : a.time.localeCompare(b.time));
                     sorted.forEach(item => {
-                        const dateStr = getFullDate(item.day);
-                        let details = "";
-                        if (item.subItems && item.subItems.length > 0) {
-                            details = item.subItems.map(s => `[${s.location}] ${s.notes || ''}`).join("; ");
-                        }
-                        
+                        const d = new Date(startDate); d.setDate(d.getDate() + item.day); const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                        const details = item.subItems ? item.subItems.map(s => `[${s.location}] ${s.notes || ''}`).join("; ") : "";
                         const escape = (str) => str ? `"${str.toString().replace(/"/g, '""')}"` : "";
-
-                        const row = [
-                            dateStr,
-                            item.time,
-                            item.type,
-                            escape(item.title || item.location),
-                            escape(details),
-                            escape(item.notes),
-                            item.lat || "",
-                            item.lng || ""
-                        ].join(",");
-                        csvContent += row + "\n";
+                        csvContent += [dateStr, item.time, item.type, escape(item.title || item.location), escape(details), escape(item.notes), item.lat||"", item.lng||""].join(",") + "\n";
                     });
-
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const url = URL.createObjectURL(blob);
-                    const link = document.createElement("a");
-                    link.setAttribute("href", url);
-                    link.setAttribute("download", `nz_itinerary_export_${new Date().toISOString().slice(0,10)}.csv`);
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                    const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `nz_itinerary_export_${new Date().toISOString().slice(0,10)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
                 };
 
                 const loadFromFile = (event) => {
-                    const file = event.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        try {
-                            const data = JSON.parse(e.target.result);
-                            if (confirm(`讀取存檔？\n時間: ${data.savedAt || '未知'}`)) {
-                                itinerary.value = data.itinerary || []; expenses.value = data.expenses || []; exchangeRate.value = data.exchangeRate || 19.5; dailyMetadata.value = data.dailyMetadata || {};
-                                saveToLocal(); alert('讀檔成功！'); showSettingsModal.value = false; updateDailyWeather();
-                            }
-                        } catch (err) { alert('檔案格式錯誤'); }
-                    };
-                    reader.readAsText(file);
-                    event.target.value = ''; 
+                    const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
+                    reader.onload = (e) => { try { const data = JSON.parse(e.target.result); if (confirm(`讀取存檔？\n時間: ${data.savedAt || '未知'}`)) { itinerary.value = data.itinerary || []; expenses.value = data.expenses || []; exchangeRate.value = data.exchangeRate || 19.5; dailyMetadata.value = data.dailyMetadata || {}; saveToLocal(); alert('讀檔成功！'); showSettingsModal.value = false; updateDailyWeather(); } } catch (err) { alert('檔案格式錯誤'); } };
+                    reader.readAsText(file); event.target.value = ''; 
                 };
 
                 watch(currentTab, (v) => { if(v==='map') nextTick(initMap); });
                 watch(selectedDayIndex, () => { centerActiveDate(); updateDailyWeather(); if(currentTab.value==='map') initMap(); });
-                onMounted(() => { 
-                    const savedId = localStorage.getItem('nz_trip_id');
-                    if(savedId) tripId.value = savedId;
-                    initSync(); 
-                    setTimeout(() => centerActiveDate(), 800); 
-                });
+                onMounted(() => { const savedId = localStorage.getItem('nz_trip_id'); if(savedId) tripId.value = savedId; initSync(); setTimeout(() => centerActiveDate(), 800); });
 
-                // Calculator logic
                 const addNZD = (amount) => { calcNZD.value += amount; };
                 watch(calcNZD, (newVal) => { calcTWD.value = parseFloat((newVal * exchangeRate.value).toFixed(2)); });
                 watch(calcTWD, (newVal) => { calcNZD.value = parseFloat((newVal / exchangeRate.value).toFixed(2)); });
 
-                // Todo logic
-                const addTodo = () => {
-                    if (!newTodoText.value.trim()) return;
-                    todos.value.push({ id: Date.now(), text: newTodoText.value.trim(), done: false, category: todoCategory.value });
-                    newTodoText.value = '';
-                    saveToLocal();
-                };
+                const addTodo = () => { if (!newTodoText.value.trim()) return; todos.value.push({ id: Date.now(), text: newTodoText.value.trim(), done: false, category: todoCategory.value }); newTodoText.value = ''; saveToLocal(); };
                 const toggleTodo = (todo) => { todo.done = !todo.done; saveToLocal(); };
                 const deleteTodo = (id) => { if(confirm('刪除此項目?')) { todos.value = todos.value.filter(t => t.id !== id); saveToLocal(); } };
-                
-                // Todo Editing logic
-                const startEditTodo = (todo) => {
-                    editingTodoId.value = todo.id;
-                    tempTodoText.value = todo.text;
-                };
-                
-                const saveEditTodo = (todo) => {
-                    if (!tempTodoText.value.trim()) return; // Prevent empty
-                    todo.text = tempTodoText.value.trim();
-                    editingTodoId.value = null;
-                    saveToLocal();
-                };
-                
-                const cancelEditTodo = () => {
-                    editingTodoId.value = null;
-                    tempTodoText.value = '';
-                };
+                const startEditTodo = (todo) => { editingTodoId.value = todo.id; tempTodoText.value = todo.text; };
+                const saveEditTodo = (todo) => { if (!tempTodoText.value.trim()) return; todo.text = tempTodoText.value.trim(); editingTodoId.value = null; saveToLocal(); };
+                const cancelEditTodo = () => { editingTodoId.value = null; tempTodoText.value = ''; };
 
                 return {
-                    currentTab, selectedDayIndex, days, itinerary, expenses, filteredItinerary, totalExpenses, groupedExpenses, connectionStatus, loadingMessage, errorMessage,
+                    currentTab, selectedDayIndex, days, itinerary, expenses, filteredItinerary, groupedExpenses, connectionStatus, loadingMessage, errorMessage,
                     showItineraryModal, showExpenseModal, showSettingsModal, showDaySettingsModal, showStatsModal, isEditing, form, expenseForm, exchangeRate, isFetchingRate, saveFileInput, dateContainer,
                     dailyWeatherList, expandedItems, getDaySummary, toggleGlobalFold, toggleItem, isAllExpanded,
-                    openModal, closeModal, saveItinerary, deleteItem, editItem, deleteExpense, saveExpense, saveSettings, fetchRate, saveToFile, loadFromFile, selectDate,
-                    formatDate, getCategoryIcon, navigateTo, navigateToLoc, locateUser, formHour, formMinute, 
+                    openModal, closeModal, saveItinerary, deleteItem, editItem, deleteExpense, saveExpense, fetchRate, saveToFile, loadFromFile, selectDate,
+                    formatDate, getCategoryIcon, navigateTo, locateUser, formHour, formMinute, 
                     openDaySettings, tempDaySettings, saveDaySettings, currentDayItems, tempWeatherLocs, isSavingSettings,
                     searchCoord, isSearchingCoord, hasCoordinatesForDay, copyItem, addSubItem, removeSubItem,
                     payers, expenseCategories, getTypeColorClass,
                     totalNZD, totalTWD, grandTotalNZD, grandTotalTWD, expenseStats, exportExpensesCSV, exportItineraryCSV,
                     THEMES, currentTheme, applyTheme, getWeekDay,
                     tripId, newTripId, changeTripId, hasPendingUploads, initSync, manualRetry, showErrorDetail,
-                    clearLocalData, deleteCloudData, currentFontSize, changeFontSize,
-                    // New logic
+                    currentFontSize, changeFontSize,
                     todos, todoCategory, newTodoText, addTodo, toggleTodo, deleteTodo, filteredTodos,
                     calcNZD, calcTWD, addNZD,
-                    editingTodoId, tempTodoText, startEditTodo, saveEditTodo, cancelEditTodo
+                    editingTodoId, tempTodoText, startEditTodo, saveEditTodo, cancelEditTodo,
+                    // New Diary Features
+                    stamps, getWashiTapeClass, getWashiTapeStyle, getCardRotation, getStampStyle
                 };
             }
         }).mount('#app');
