@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NZ Trip V28 (Ultimate Diary)</title>
+    <title>NZ Trip V34 (MUJI Style)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -65,9 +65,9 @@
                     },
                     fontFamily: { sans: ['Zen Maru Gothic', 'sans-serif'] },
                     boxShadow: { 
-                        'soft': '0 4px 20px -5px rgba(var(--c-primary), 0.2)',
-                        'sticker': '2px 3px 0px rgba(0,0,0,0.15)',
-                        'float': '0 10px 30px -10px rgba(var(--c-primary), 0.3)'
+                        'soft': '0 4px 20px -5px rgba(var(--c-primary), 0.1)',
+                        'sticker': '2px 3px 0px rgba(0,0,0,0.08)',
+                        'float': '0 10px 30px -10px rgba(var(--c-primary), 0.2)'
                     }
                 }
             }
@@ -76,19 +76,27 @@
 
     <style>
         :root {
-            --c-primary: 78 52 46; --c-primary-dark: 62 39 35; --c-primary-light: 141 110 99;
-            --c-cream: 255 248 209; --c-cream-dark: 255 240 179; --c-cream-darker: 255 224 130;
-            --c-card-bg: 255 202 40; --c-card-text: 62 39 35;
-            --c-dark: 78 52 46; --c-dark-soft: 109 76 65; --c-accent: 255 179 0;
+            /* Default: MUJI Style */
+            --c-primary: 151 143 133; /* Kraft Paper Grey-Brown */
+            --c-primary-dark: 110 102 94;
+            --c-primary-light: 224 220 214;
+            --c-cream: 247 246 242; /* Unbleached Paper White */
+            --c-cream-dark: 235 231 224;
+            --c-cream-darker: 214 206 195;
+            --c-card-bg: 255 255 255; /* Pure White Card */
+            --c-card-text: 51 51 51;
+            --c-dark: 51 51 51; /* Charcoal Grey (Not Black) */
+            --c-dark-soft: 89 89 89;
+            --c-accent: 127 0 25; /* MUJI Red (Subtle) */
         }
         body { 
             -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; 
             background-color: rgb(var(--c-cream)); 
-            /* Improved Dot Grid Texture */
-            background-image: radial-gradient(rgb(var(--c-primary-dark)) 0.8px, transparent 0.8px);
+            /* Improved Dot Grid Texture - Fainter for MUJI look */
+            background-image: radial-gradient(rgb(var(--c-primary-dark)) 0.5px, transparent 0.5px);
             background-size: 24px 24px;
             background-position: 0 0;
-            opacity: 1; color: rgb(var(--c-dark)); transition: background-color 0.3s, color 0.3s; 
+            opacity: 1; color: rgb(var(--c-dark)); transition: background-color 0.5s, color 0.5s; 
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -111,15 +119,15 @@
 
         /* HANDWRITTEN & WASHI TAPE STYLES */
         .hand-drawn-box {
-            border: 2px solid rgba(var(--c-dark), 0.1);
+            border: 1px solid rgba(var(--c-dark), 0.08); /* Thinner border for MUJI look */
             border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
-            box-shadow: 3px 4px 0px rgba(var(--c-dark), 0.08);
+            box-shadow: 2px 3px 0px rgba(var(--c-dark), 0.05); /* Softer shadow */
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             background: white;
             transform-origin: center;
         }
-        .hand-drawn-box:hover { transform: scale(1.01) rotate(0.2deg); box-shadow: 5px 6px 0px rgba(var(--c-dark), 0.12); }
-        .hand-drawn-box:active { transform: scale(0.99); box-shadow: 1px 2px 0px rgba(var(--c-dark), 0.1); }
+        .hand-drawn-box:hover { transform: scale(1.01) rotate(0.2deg); box-shadow: 4px 5px 0px rgba(var(--c-dark), 0.08); }
+        .hand-drawn-box:active { transform: scale(0.99); box-shadow: 1px 2px 0px rgba(var(--c-dark), 0.05); }
 
         .washi-tape {
             position: absolute; top: -6px; left: 50%;
@@ -128,31 +136,15 @@
             opacity: 0.9; z-index: 20;
             mask-image: linear-gradient(90deg, transparent 2px, black 2px, black calc(100% - 2px), transparent calc(100% - 2px));
             box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-            /* Tape texture mix */
             mix-blend-mode: multiply;
         }
 
-        /* Tape Patterns */
-        .tape-pattern-dots {
-            background-image: radial-gradient(rgba(255,255,255,0.6) 30%, transparent 30%);
-            background-size: 6px 6px;
-        }
-        .tape-pattern-stripes {
-            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.4) 0, rgba(255,255,255,0.4) 3px, transparent 3px, transparent 8px);
-        }
-        .tape-pattern-grid {
-            background-image: linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px);
-            background-size: 8px 8px;
-        }
+        .tape-pattern-dots { background-image: radial-gradient(rgba(255,255,255,0.6) 30%, transparent 30%); background-size: 6px 6px; }
+        .tape-pattern-stripes { background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.4) 0, rgba(255,255,255,0.4) 3px, transparent 3px, transparent 8px); }
+        .tape-pattern-grid { background-image: linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px); background-size: 8px 8px; }
 
-        /* Stamp Effect */
         .stamp-mark {
-            position: absolute;
-            z-index: 5;
-            opacity: 0.7;
-            mix-blend-mode: multiply;
-            filter: contrast(120%) brightness(95%);
-            pointer-events: none;
+            position: absolute; z-index: 5; opacity: 0.7; mix-blend-mode: multiply; filter: contrast(120%) brightness(95%); pointer-events: none;
             animation: stamp-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         @keyframes stamp-pop { 0% { transform: scale(1.5) rotate(0deg); opacity: 0; } 100% { transform: scale(1) rotate(var(--r)); opacity: 0.7; } }
@@ -182,8 +174,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2" style="text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">
                     <i class="fa-solid fa-mountain-sun text-primary"></i>
-                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V28 手帳極致版</span>
-                    <!-- Status Display -->
+                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V34 無印良品</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100/80 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider border border-green-200"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100/80 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
                     <span v-else @click="showErrorDetail" class="text-[9px] bg-red-100/80 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all border border-red-200"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE</span>
@@ -191,7 +182,7 @@
             </div>
             <div class="flex gap-2">
                 <div v-if="hasPendingUploads" class="w-9 h-9 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center animate-bounce border border-orange-200 shadow-sm" title="有未上傳的變更"><i class="fa-solid fa-arrow-up-from-bracket text-xs"></i></div>
-                <button @click="showSettingsModal = true" class="w-10 h-10 rounded-full bg-white/80 border-2 border-primary/20 shadow-sm flex items-center justify-center text-primary/70 hover:text-primary transition-colors active:scale-90 hover:border-primary/50"><i class="fa-solid fa-sliders text-sm"></i></button>
+                <button @click="showSettingsModal = true" class="w-10 h-10 rounded-full bg-white/80 border-2 border-primary/20 shadow-sm flex items-center justify-center text-primary/70 hover:text-primary transition-colors active:scale-90 hover:border-primary/50 relative"><i class="fa-solid fa-sliders text-sm"></i><div class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-400 rounded-full border-2 border-white"></div></button>
             </div>
         </header>
 
@@ -203,11 +194,8 @@
                 <div class="pt-1 pb-2 shrink-0 z-20 bg-cream/80 backdrop-blur-sm relative border-b border-cream-darker/30">
                     <div ref="dateContainer" class="flex overflow-x-auto no-scrollbar px-4 space-x-2 scroll-smooth py-1">
                         <button v-for="(date, index) in days" :key="index" @click="selectDate(index)" class="flex-shrink-0 flex flex-col items-center justify-center w-[3.5rem] h-[4rem] transition-all duration-300 relative group active:scale-95" :class="selectedDayIndex === index ? 'z-10' : 'opacity-70 hover:opacity-100'">
-                             <!-- Sticky Note Style for Date -->
                              <div class="absolute inset-0 border-2 bg-white transition-colors duration-300" :class="selectedDayIndex === index ? 'bg-white border-primary rotate-[-2deg] shadow-sticker' : 'border-transparent bg-white/50 hover:border-cream-darker'" style="border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;"></div>
-                             <!-- Tape on top of date -->
                              <div v-if="selectedDayIndex === index" class="absolute -top-1.5 w-8 h-3 bg-primary/30 rotate-2" style="mask-image: radial-gradient(circle at 2px, transparent 2px, black 2.5px); mask-position: -2px;"></div>
-                             
                              <div class="relative z-10 flex flex-col items-center" :class="selectedDayIndex === index ? 'text-primary' : 'text-gray-500'">
                                 <span class="text-[9px] font-bold tracking-wide uppercase">Day</span>
                                 <span class="text-xl font-black font-sans -my-1">{{ index }}</span>
@@ -243,15 +231,9 @@
                         <div v-for="(item, index) in filteredItinerary" :key="item.id" class="group mb-4 relative pl-3">
                             <div v-if="index !== filteredItinerary.length - 1" class="timeline-line"></div>
                             
-                            <!-- HAND DRAWN BOX CARD -->
                             <div class="hand-drawn-box relative flex flex-col z-10 overflow-hidden" :style="getCardRotation(index)">
-                                <!-- Randomized Washi Tape -->
                                 <div class="washi-tape" :class="getWashiTapeClass(item)" :style="getWashiTapeStyle(item)"></div>
-                                
-                                <!-- Stamp (If any) -->
-                                <div v-if="item.stamp" class="stamp-mark" :style="getStampStyle(item)">
-                                    <i :class="['fa-solid', item.stamp]" class="text-4xl text-red-500/60"></i>
-                                </div>
+                                <div v-if="item.stamp" class="stamp-mark" :style="getStampStyle(item)"><i :class="['fa-solid', item.stamp]" class="text-4xl text-red-500/60"></i></div>
 
                                 <div class="p-3 flex gap-3 items-start relative z-10" @click="toggleItem(item.id)">
                                     <div class="flex flex-col items-center min-w-[3rem] shrink-0 pt-0.5">
@@ -278,7 +260,6 @@
                                 
                                 <div v-show="expandedItems.has(item.id)" class="px-4 pb-4 pt-0 relative z-10">
                                     <div class="mt-2 space-y-3 pt-3 border-t-2 border-dashed border-gray-100">
-                                        <!-- Note: Paperclip visual -->
                                         <div v-if="item.notes" class="relative group/note">
                                             <div class="absolute -top-3 left-1/2 -translate-x-1/2 w-4 h-8 border-2 border-gray-300 rounded-full z-20 pointer-events-none opacity-50"></div>
                                             <div class="p-3 bg-yellow-50/50 rounded-lg text-sm text-gray-700 leading-relaxed whitespace-pre-wrap relative select-text notebook-lines font-medium shadow-sm transform rotate-[0.5deg]" style="font-family: 'Zen Maru Gothic', sans-serif;">{{ item.notes }}</div>
@@ -431,88 +412,6 @@
             <button @click="currentTab = 'todo'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'todo' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-list-check text-xl mb-0.5"></i><span class="text-[9px] font-bold">清單</span></button>
         </nav>
 
-        <!-- Itinerary Modal -->
-        <transition name="slide-up">
-            <div v-if="showItineraryModal" class="fixed inset-0 z-[10000] flex items-end justify-center sm:items-center">
-                <div class="absolute inset-0 bg-dark/20 backdrop-blur-[2px]" @click="closeModal"></div>
-                <div class="bg-cream w-full sm:w-96 p-6 shadow-2xl relative z-10 max-h-[90vh] overflow-y-auto modal-scroll pb-10" style="border-radius: 25px 25px 0 0;">
-                    <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4 opacity-50"></div>
-                    <h3 class="text-xl font-bold text-dark mb-6 text-center">{{ isEditing ? '編輯行程' : '新增行程' }}</h3>
-                    <div class="space-y-3">
-                        <div class="grid grid-cols-5 gap-3">
-                            <div class="col-span-2"><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">DAY</label><select v-model="form.dayIndex" class="w-full bg-white input-rounded p-2.5 text-sm font-bold text-center appearance-none outline-none"><option v-for="(d, i) in days" :value="i">Day {{ i }}</option></select></div>
-                            <div class="col-span-3"><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">TIME</label><div class="flex gap-2"><select v-model="formHour" class="flex-1 bg-white input-rounded p-2.5 text-sm font-bold text-center appearance-none outline-none"><option v-for="h in 24" :value="(h-1).toString().padStart(2,'0')">{{ (h-1).toString().padStart(2,'0') }}</option></select><span class="self-center font-bold text-gray-300">:</span><select v-model="formMinute" class="flex-1 bg-white input-rounded p-2.5 text-sm font-bold text-center appearance-none outline-none"><option v-for="m in 60" :value="(m-1).toString().padStart(2,'0')">{{ (m-1).toString().padStart(2,'0') }}</option></select></div></div>
-                        </div>
-                        <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">TITLE</label><input type="text" v-model="form.title" placeholder="例如：前往餐廳吃晚餐" class="w-full bg-white input-rounded p-3 text-sm font-bold outline-none"></div>
-                        <div class="bg-white p-2.5 rounded-2xl border border-dashed border-gray-200">
-                             <div class="flex justify-between items-center mb-1 px-1"><label class="text-[10px] font-bold text-gray-400">LOCATION</label><span v-if="form.lat" class="text-[9px] text-green-500 font-mono"><i class="fa-solid fa-check"></i> {{ form.lat.toFixed(3) }},{{ form.lng.toFixed(3) }}</span></div>
-                             <div class="flex gap-2"><input type="text" v-model="form.location" placeholder="地點名稱" class="flex-1 bg-gray-50 rounded-xl p-2 text-sm font-bold outline-none"><button @click="searchCoord(form)" :disabled="isSearchingCoord" class="w-9 h-9 rounded-xl bg-gray-100 text-gray-400 hover:bg-primary hover:text-white transition-colors flex items-center justify-center shrink-0 active:scale-90"><i class="fa-solid" :class="isSearchingCoord ? 'fa-circle-notch fa-spin' : 'fa-magnifying-glass'"></i></button></div>
-                             <div class="flex gap-2 mt-2">
-                                <input type="number" step="any" v-model.number="form.lat" placeholder="Lat" class="w-1/2 bg-gray-50 rounded-lg p-1.5 text-[9px] text-center outline-none border border-transparent focus:border-primary">
-                                <input type="number" step="any" v-model.number="form.lng" placeholder="Lng" class="w-1/2 bg-gray-50 rounded-lg p-1.5 text-[9px] text-center outline-none border border-transparent focus:border-primary">
-                             </div>
-                        </div>
-
-                        <!-- Stamp Selector -->
-                        <div class="bg-white p-2.5 rounded-2xl border border-dashed border-gray-200">
-                            <label class="text-[10px] font-bold text-gray-400 mb-1 block pl-1">MOOD STAMP (心情印章)</label>
-                            <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
-                                <button v-for="icon in stamps" :key="icon" @click="form.stamp === icon ? form.stamp = null : form.stamp = icon" class="w-10 h-10 rounded-xl border-2 flex items-center justify-center text-xl transition-all active:scale-90 shrink-0" :class="form.stamp === icon ? 'border-red-400 bg-red-50 text-red-500 shadow-sm' : 'border-gray-100 text-gray-300 hover:border-gray-200'"><i :class="['fa-solid', icon]"></i></button>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <div class="flex justify-between items-center mb-1 px-1"><label class="text-[10px] font-bold text-gray-400">SUB-ITEMS</label><button @click="addSubItem" class="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded-lg font-bold hover:bg-primary hover:text-white transition-colors active:scale-95"><i class="fa-solid fa-plus mr-1"></i>新增</button></div>
-                            <div class="space-y-2">
-                                <div v-for="(sub, idx) in form.subItems" :key="idx" class="bg-white p-2.5 rounded-xl border border-cream-dark relative">
-                                    <button @click="removeSubItem(idx)" class="absolute top-2 right-2 text-gray-300 hover:text-red-400 active:scale-90"><i class="fa-solid fa-xmark text-xs"></i></button>
-                                    <div class="flex gap-2 mb-1.5 pr-6">
-                                        <input type="text" v-model="sub.location" placeholder="子地點" class="flex-1 text-xs font-bold outline-none bg-transparent border-b border-gray-100 focus:border-primary pb-0.5">
-                                        <button @click="searchCoord(sub)" :disabled="isSearchingCoord" class="text-gray-300 hover:text-primary active:scale-90"><i class="fa-solid fa-magnifying-glass text-xs"></i></button>
-                                    </div>
-                                    <input type="number" step="any" v-model.number="sub.lat" placeholder="Lat" class="w-1/2 bg-gray-50 rounded-lg p-1 text-[9px] text-center outline-none hidden">
-                                    <input type="number" step="any" v-model.number="sub.lng" placeholder="Lng" class="w-1/2 bg-gray-50 rounded-lg p-1 text-[9px] text-center outline-none hidden">
-                                    <input type="text" v-model="sub.notes" placeholder="備註..." class="w-full text-xs text-gray-500 bg-transparent outline-none">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">CATEGORY</label><div class="flex flex-wrap gap-2"><button v-for="t in ['景點','美食','住宿','交通','購物','其他']" @click="form.type = t" class="px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all active:scale-95" :class="form.type === t ? 'bg-dark text-white border-dark' : 'bg-white text-gray-400 border-gray-100 hover:border-gray-300'">{{ t }}</button></div></div>
-                        <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">MEMO</label><textarea v-model="form.notes" rows="3" class="w-full bg-white input-rounded p-3 text-sm outline-none resize-none notebook-lines"></textarea></div>
-                    </div>
-                    <button @click="saveItinerary" class="w-full py-3.5 bg-primary text-white rounded-2xl font-bold mt-5 shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform">儲存行程</button>
-                </div>
-            </div>
-        </transition>
-
-        <!-- Expense Modal (Updated Z-Index) -->
-        <transition name="slide-up">
-            <div v-if="showExpenseModal" class="fixed inset-0 z-[10000] flex items-end justify-center sm:items-center">
-                <div class="absolute inset-0 bg-dark/30 backdrop-blur-sm" @click="closeModal"></div>
-                <div class="bg-[#FDFBF7] w-full sm:w-[400px] rounded-t-3xl p-6 shadow-2xl relative z-10">
-                    <button @click="closeModal" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-400 hover:bg-gray-200 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
-                    <h3 class="text-lg font-bold text-dark mb-5 pl-1">新增支出</h3>
-                    <div class="space-y-4">
-                        <div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">項目名稱</label><input type="text" v-model="expenseForm.item" placeholder="例如：午餐" class="w-full bg-white h-12 rounded-xl px-4 text-sm font-bold text-dark shadow-sm border border-transparent focus:border-primary outline-none"></div>
-                        <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-50"><div class="flex bg-gray-50 rounded-lg p-1 mb-2"><button @click="expenseForm.currency = 'NZD'" class="flex-1 py-1.5 rounded-md text-xs font-bold transition-all active:scale-95" :class="expenseForm.currency === 'NZD' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'">NZD $</button><button @click="expenseForm.currency = 'TWD'" class="flex-1 py-1.5 rounded-md text-xs font-bold transition-all active:scale-95" :class="expenseForm.currency === 'TWD' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'">TWD $</button></div><div class="px-2 pb-1 relative"><input type="number" v-model.number="expenseForm.amount" placeholder="0" class="w-full text-2xl font-bold text-dark bg-transparent outline-none placeholder-gray-200 pl-1"></div></div>
-                        <div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">分類</label><div class="relative"><select v-model="expenseForm.category" class="w-full bg-white h-10 rounded-xl pl-3 pr-8 text-xs font-bold text-dark appearance-none shadow-sm border border-transparent outline-none"><option v-for="c in expenseCategories" :value="c">{{ c }}</option></select><i class="fa-solid fa-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i></div></div><div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">付款人</label><div class="relative"><select v-model="expenseForm.payer" class="w-full bg-white h-10 rounded-xl pl-3 pr-8 text-xs font-bold text-dark appearance-none shadow-sm border border-transparent outline-none"><option v-for="p in payers" :value="p">{{ p }}</option></select><i class="fa-solid fa-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i></div></div></div>
-                        <div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">日期</label><div class="relative"><input type="date" v-model="expenseForm.date" class="w-full bg-white h-10 rounded-xl px-3 text-xs font-bold text-gray-600 appearance-none shadow-sm border border-transparent outline-none"><i class="fa-regular fa-calendar absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none text-xs"></i></div></div>
-                    </div>
-                    <button @click="saveExpense" class="w-full py-3.5 bg-dark text-white rounded-xl font-bold mt-6 shadow-lg shadow-dark/20 active:scale-[0.98] transition-transform">儲存紀錄</button>
-                </div>
-            </div>
-        </transition>
-
-        <div v-if="showStatsModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-dark/30 backdrop-blur-sm p-4">
-            <div class="bg-cream w-full sm:w-[400px] rounded-3xl p-6 shadow-2xl relative max-h-[85vh] overflow-y-auto modal-scroll">
-                <button @click="showStatsModal=false" class="absolute top-4 right-4 text-gray-400 hover:text-dark transition-colors active:scale-90"><i class="fa-solid fa-xmark text-lg"></i></button>
-                <h3 class="text-lg font-bold text-dark mb-4 flex items-center gap-2"><span class="bg-yellow-card p-1 rounded-lg text-yellow-text"><i class="fa-solid fa-chart-pie"></i></span>消費統計</h3>
-                <div class="mb-4"><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">依付款人 (By Payer)</h4><div class="space-y-2"><div v-for="payer in payers" :key="payer" class="bg-white p-3 rounded-xl shadow-card border border-cream-dark flex justify-between items-center"><div class="flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">{{ payer.charAt(0) }}</div><span class="font-bold text-dark text-xs">{{ payer }}</span></div><div class="text-right flex flex-col gap-0.5"><span v-if="expenseStats.payers[payer].NZD > 0" class="text-[10px] font-bold text-dark bg-gray-50 px-1.5 py-0.5 rounded">NZD {{ expenseStats.payers[payer].NZD.toLocaleString() }}</span><span v-if="expenseStats.payers[payer].TWD > 0" class="text-[10px] font-bold text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded">TWD {{ expenseStats.payers[payer].TWD.toLocaleString() }}</span><span v-if="expenseStats.payers[payer].NZD === 0 && expenseStats.payers[payer].TWD === 0" class="text-[9px] text-gray-300">-</span></div></div></div></div>
-                <div><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">依分類 (By Category)</h4><div class="space-y-1"><div v-for="cat in expenseCategories" :key="cat" class="flex justify-between items-center py-1.5 px-2 border-b border-dashed border-gray-200 last:border-0"><div class="flex items-center gap-2"><i :class="getCategoryIcon(cat)" class="text-gray-300 text-[10px] w-4 text-center"></i><span class="text-[10px] font-bold text-gray-600">{{ cat }}</span></div><div class="flex gap-2 text-right"><span v-if="expenseStats.categories[cat].NZD > 0" class="text-[10px] font-bold text-dark">NZD {{ expenseStats.categories[cat].NZD.toLocaleString() }}</span><span v-if="expenseStats.categories[cat].TWD > 0" class="text-[10px] font-bold text-gray-400">TWD {{ expenseStats.categories[cat].TWD.toLocaleString() }}</span><span v-if="expenseStats.categories[cat].NZD === 0 && expenseStats.categories[cat].TWD === 0" class="text-[10px] text-gray-300">-</span></div></div></div></div>
-                <button @click="showStatsModal=false" class="w-full mt-4 py-3 bg-primary text-white rounded-xl font-bold shadow-soft hover:bg-primary-dark transition-colors active:scale-95">關閉</button>
-            </div>
-        </div>
-
         <div v-if="showSettingsModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
             <div class="bg-white p-6 rounded-3xl w-72 shadow-2xl text-center relative max-h-[90vh] overflow-y-auto modal-scroll">
                 <button @click="showSettingsModal=false" class="absolute top-4 right-4 text-gray-300 hover:text-gray-500 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
@@ -536,9 +435,35 @@
                     <p class="text-[9px] text-gray-400 mt-1 text-left leading-relaxed">頻道: <span class="font-bold text-primary">{{ tripId }}</span></p>
                 </div>
                 <div class="mb-4">
-                    <div class="flex justify-between items-center mb-2"><span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">主題風格</span><span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-bold">{{ THEMES[currentTheme].name }}</span></div>
-                    <div class="grid grid-cols-3 gap-2"><button v-for="(t, key) in THEMES" :key="key" @click="applyTheme(key)" class="relative p-2 rounded-xl border transition-all duration-200 flex flex-col items-center gap-1 group active:scale-95" :class="currentTheme === key ? 'border-primary bg-primary/5' : 'border-gray-100 hover:border-gray-200'"><div class="w-6 h-6 rounded-full shadow-sm border border-white/50" :style="{backgroundColor: t.colors.primary}"></div><span class="text-[10px] font-bold text-gray-500 group-hover:text-dark">{{ t.name }}</span><div v-if="currentTheme === key" class="absolute top-2 right-2 w-1.5 h-1.5 bg-primary rounded-full"></div></button></div>
+                    <div class="flex justify-between items-center mb-2"><span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">主題風格</span><span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-bold truncate max-w-[80px]">{{ THEMES[currentTheme] ? THEMES[currentTheme].name : '自訂' }}</span></div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <!-- Custom Theme Toggle -->
+                        <button @click="applyTheme('custom')" class="relative p-2 rounded-xl border transition-all duration-200 flex flex-col items-center gap-1 group active:scale-95" :class="currentTheme === 'custom' ? 'border-primary bg-primary/5' : 'border-gray-100 hover:border-gray-200'">
+                            <div class="w-6 h-6 rounded-full shadow-sm border border-white/50 flex items-center justify-center text-[8px] bg-gradient-to-br from-pink-200 to-blue-200 text-gray-500"><i class="fa-solid fa-palette"></i></div>
+                            <span class="text-[10px] font-bold text-gray-500 group-hover:text-dark">自訂</span>
+                            <div v-if="currentTheme === 'custom'" class="absolute top-2 right-2 w-1.5 h-1.5 bg-primary rounded-full"></div>
+                        </button>
+                        <!-- Existing Themes -->
+                        <button v-for="(t, key) in THEMES" :key="key" @click="applyTheme(key)" class="relative p-2 rounded-xl border transition-all duration-200 flex flex-col items-center gap-1 group active:scale-95" :class="currentTheme === key ? 'border-primary bg-primary/5' : 'border-gray-100 hover:border-gray-200'">
+                            <div class="w-6 h-6 rounded-full shadow-sm border border-white/50 relative" :style="{backgroundColor: t.colors.primary}">
+                                <div v-if="['muji'].includes(key)" class="absolute -top-1 -right-1 bg-red-500 text-white text-[6px] px-1 rounded-full animate-pulse border border-white">NEW</div>
+                            </div>
+                            <span class="text-[10px] font-bold text-gray-500 group-hover:text-dark truncate w-full text-center">{{ t.name }}</span>
+                            <div v-if="currentTheme === key" class="absolute top-2 right-2 w-1.5 h-1.5 bg-primary rounded-full"></div>
+                        </button>
+                    </div>
+                    
+                    <!-- Custom Theme Editor (Only shows when Custom is active) -->
+                    <div v-if="currentTheme === 'custom'" class="mt-3 bg-gray-50 p-3 rounded-xl border border-gray-200 animate-fade-in-down">
+                        <h4 class="text-[10px] font-bold text-gray-400 mb-2 uppercase">自訂調色盤</h4>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-600">主色 (Primary)</span><input type="color" v-model="customColors.primary" @input="updateCustomTheme" class="w-8 h-8 rounded-full overflow-hidden border-none cursor-pointer"></div>
+                            <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-600">背景色 (Bg)</span><input type="color" v-model="customColors.cream" @input="updateCustomTheme" class="w-8 h-8 rounded-full overflow-hidden border-none cursor-pointer"></div>
+                            <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-600">文字色 (Text)</span><input type="color" v-model="customColors.dark" @input="updateCustomTheme" class="w-8 h-8 rounded-full overflow-hidden border-none cursor-pointer"></div>
+                        </div>
+                    </div>
                 </div>
+                <!-- ... existing buttons ... -->
                 <div class="space-y-3">
                     <div class="bg-gray-50 p-3 rounded-xl">
                         <div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold text-gray-400">匯率 (NZD:TWD)</span><button @click="fetchRate" :disabled="isFetchingRate" class="text-[9px] bg-white border border-gray-200 px-2 py-0.5 rounded-full text-primary font-bold active:scale-90"><i class="fa-solid fa-rotate" :class="{'fa-spin': isFetchingRate}"></i></button></div>
@@ -553,6 +478,7 @@
             </div>
         </div>
 
+        <!-- ... other modals ... -->
         <div v-if="showDaySettingsModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
              <div class="bg-white p-6 rounded-3xl w-72 shadow-2xl relative">
                 <button @click="showDaySettingsModal=false" class="absolute top-4 right-4 text-gray-300 hover:text-gray-500 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
@@ -567,15 +493,25 @@
     <script>
         const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
 
-        const hexToRgb = (hex) => { const r = parseInt(hex.slice(1, 3), 16); const g = parseInt(hex.slice(3, 5), 16); const b = parseInt(hex.slice(5, 7), 16); return `${r} ${g} ${b}`; };
+        const hexToRgb = (hex) => { 
+            const r = parseInt(hex.slice(1, 3), 16); 
+            const g = parseInt(hex.slice(3, 5), 16); 
+            const b = parseInt(hex.slice(5, 7), 16); 
+            return `${r} ${g} ${b}`; 
+        };
+        
+        // Helper to lighten/darken color for auto-generation
+        const adjustColor = (hex, amount) => {
+            return '#' + hex.replace(/^#/, '').replace(/../g, c => ('0' + Math.min(255, Math.max(0, parseInt(c, 16) + amount)).toString(16)).substr(-2));
+        }
+
         const THEMES = { 
+            muji: { name: '無印良品', colors: { primary: '#978F85', primaryDark: '#6E665E', primaryLight: '#E0DCD6', cream: '#F7F6F2', creamDark: '#EBE7E0', creamDarker: '#D6CEC3', cardBg: '#FFFFFF', cardText: '#4A4A4A', dark: '#333333', darkSoft: '#595959', accent: '#7F0019' } }, // New Default
+            rose: { name: '乾燥玫瑰', colors: { primary: '#BC8F8F', primaryDark: '#8C5A5A', primaryLight: '#DCC3C3', cream: '#FDF8F8', creamDark: '#F5EBEB', creamDarker: '#E6D2D2', cardBg: '#E6D2D2', cardText: '#5E3C3C', dark: '#5E3C3C', darkSoft: '#785050', accent: '#BC8F8F' } },
             hojicha: { name: '焙茶拿鐵', colors: { primary: '#C89F81', primaryDark: '#A47E64', primaryLight: '#E6D2C3', cream: '#FFFCF5', creamDark: '#F5F0E6', creamDarker: '#EBE0D0', cardBg: '#F3E0C0', cardText: '#785A46', dark: '#54433A', darkSoft: '#8D7B72', accent: '#D4A373' } },
-            matcha: { name: '宇治抹茶', colors: { primary: '#84A98C', primaryDark: '#52796F', primaryLight: '#CAD2C5', cream: '#FDFBF7', creamDark: '#F2EFE9', creamDarker: '#E6E2D8', cardBg: '#E9EDC9', cardText: '#3A4D39', dark: '#2F3E46', darkSoft: '#4A5759', accent: '#F4A261' } },
-            tekapo: { name: '蒂卡波藍', colors: { primary: '#38BDF8', primaryDark: '#0284C7', primaryLight: '#BAE6FD', cream: '#F0F9FF', creamDark: '#E0F2FE', creamDarker: '#BAE6FD', cardBg: '#BAE6FD', cardText: '#0C4A6E', dark: '#0F172A', darkSoft: '#334155', accent: '#F472B6' } },
-            lavender: { name: '瓦納卡紫', colors: { primary: '#A78BFA', primaryDark: '#8B5CF6', primaryLight: '#C4B5FD', cream: '#FAF5FF', creamDark: '#F3E8FF', creamDarker: '#E9D5FF', cardBg: '#DDD6FE', cardText: '#4C1D95', dark: '#4C1D95', darkSoft: '#5B21B6', accent: '#F4A261' } },
-            tussock: { name: '奧塔哥金', colors: { primary: '#D97706', primaryDark: '#B45309', primaryLight: '#FCD34D', cream: '#FFFBEB', creamDark: '#FEF3C7', creamDarker: '#FDE68A', cardBg: '#FDE68A', cardText: '#78350F', dark: '#451A03', darkSoft: '#78350F', accent: '#65A30D' } },
-            sakura: { name: '基督城櫻', colors: { primary: '#FB7185', primaryDark: '#E11D48', primaryLight: '#FECDD3', cream: '#FFF1F2', creamDark: '#FFE4E6', creamDarker: '#FECDD3', cardBg: '#FECDD3', cardText: '#881337', dark: '#881337', darkSoft: '#9F1239', accent: '#F472B6' } },
-            pudding: { name: '布丁狗', colors: { primary: '#784421', primaryDark: '#5D3518', primaryLight: '#A16A46', cream: '#FFF8D1', creamDark: '#FFF3B0', creamDarker: '#FFE082', cardBg: '#FFCA28', cardText: '#3E2723', dark: '#4E342E', darkSoft: '#6D4C41', accent: '#FFCA28' } }
+            mint: { name: '薄荷巧克', colors: { primary: '#80CBC4', primaryDark: '#00695C', primaryLight: '#B2DFDB', cream: '#F0FDFC', creamDark: '#E0F2F1', creamDarker: '#B2DFDB', cardBg: '#B2DFDB', cardText: '#004D40', dark: '#3E2723', darkSoft: '#4E342E', accent: '#009688' } },
+            pudding: { name: '布丁狗', colors: { primary: '#784421', primaryDark: '#5D3518', primaryLight: '#A16A46', cream: '#FFF8D1', creamDark: '#FFF3B0', creamDarker: '#FFE082', cardBg: '#FFCA28', cardText: '#3E2723', dark: '#4E342E', darkSoft: '#6D4C41', accent: '#FFCA28' } },
+            caramel: { name: '焦糖布丁', colors: { primary: '#EDB95E', primaryDark: '#D99836', primaryLight: '#FCEFCF', cream: '#FFFCF2', creamDark: '#FFF5E0', creamDarker: '#FFE0B2', cardBg: '#FFF3CD', cardText: '#5D4037', dark: '#5D4037', darkSoft: '#795548', accent: '#FFA000' } },
         };
         const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -598,9 +534,17 @@
                 const saveFileInput = ref(null);
                 const dateContainer = ref(null);
                 const isAllExpanded = ref(false); 
-                const currentTheme = ref('hojicha'); 
+                // Set default to MUJI
+                const currentTheme = ref('muji'); 
                 const isSavingSettings = ref(false);
                 const currentFontSize = ref(16);
+                
+                // Custom Color State
+                const customColors = ref({
+                    primary: '#BC8F8F',
+                    cream: '#FDF8F8',
+                    dark: '#5E3C3C'
+                });
 
                 let storedId = localStorage.getItem('nz_trip_id');
                 if (!storedId) { storedId = 'nz_' + Math.random().toString(36).substr(2, 6); localStorage.setItem('nz_trip_id', storedId); }
@@ -729,14 +673,47 @@
                 const formHour = computed({ get: () => form.value.time ? form.value.time.split(':')[0] : '09', set: (v) => { const m = form.value.time ? form.value.time.split(':')[1] : '00'; form.value.time = `${v}:${m}`; } });
                 const formMinute = computed({ get: () => form.value.time ? form.value.time.split(':')[1] : '00', set: (v) => { const h = form.value.time ? form.value.time.split(':')[0] : '09'; form.value.time = `${h}:${v}`; } });
 
+                const updateCustomTheme = () => {
+                    const p = customColors.value.primary;
+                    const b = customColors.value.cream;
+                    const t = customColors.value.dark;
+                    const r = document.documentElement;
+                    
+                    r.style.setProperty('--c-primary', hexToRgb(p));
+                    r.style.setProperty('--c-primary-dark', hexToRgb(adjustColor(p, -40)));
+                    r.style.setProperty('--c-primary-light', hexToRgb(adjustColor(p, 40)));
+                    
+                    r.style.setProperty('--c-cream', hexToRgb(b));
+                    r.style.setProperty('--c-cream-dark', hexToRgb(adjustColor(b, -10)));
+                    r.style.setProperty('--c-cream-darker', hexToRgb(adjustColor(b, -25)));
+                    
+                    r.style.setProperty('--c-card-bg', hexToRgb(adjustColor(b, -20)));
+                    r.style.setProperty('--c-card-text', hexToRgb(t));
+                    
+                    r.style.setProperty('--c-dark', hexToRgb(t));
+                    r.style.setProperty('--c-dark-soft', hexToRgb(adjustColor(t, 40)));
+                    r.style.setProperty('--c-accent', hexToRgb(p));
+                    
+                    localStorage.setItem('nz_custom_theme', JSON.stringify(customColors.value));
+                };
+
                 const applyTheme = (key) => {
-                    const theme = THEMES[key]; if (!theme) return; currentTheme.value = key;
+                    currentTheme.value = key;
+                    localStorage.setItem('nz_theme_pref', key);
+                    
+                    if (key === 'custom') {
+                        updateCustomTheme();
+                        return;
+                    }
+
+                    const theme = THEMES[key]; 
+                    if (!theme) return; 
+                    
                     const r = document.documentElement; const c = theme.colors;
                     r.style.setProperty('--c-primary', hexToRgb(c.primary)); r.style.setProperty('--c-primary-dark', hexToRgb(c.primaryDark)); r.style.setProperty('--c-primary-light', hexToRgb(c.primaryLight));
                     r.style.setProperty('--c-cream', hexToRgb(c.cream)); r.style.setProperty('--c-cream-dark', hexToRgb(c.creamDark)); r.style.setProperty('--c-cream-darker', hexToRgb(c.creamDarker));
                     r.style.setProperty('--c-card-bg', hexToRgb(c.cardBg)); r.style.setProperty('--c-card-text', hexToRgb(c.cardText));
                     r.style.setProperty('--c-dark', hexToRgb(c.dark)); r.style.setProperty('--c-dark-soft', hexToRgb(c.darkSoft)); r.style.setProperty('--c-accent', hexToRgb(c.accent));
-                    localStorage.setItem('nz_theme_pref', key);
                 };
                 
                 const formatDate = (dateObj) => (dateObj.getMonth()+1) + '/' + dateObj.getDate();
@@ -797,7 +774,17 @@
                 };
 
                 const initSync = async () => {
-                    const t = localStorage.getItem('nz_theme_pref'); if (t && THEMES[t]) applyTheme(t); else applyTheme('hojicha');
+                    // Try to load custom theme if exists
+                    const savedCustom = localStorage.getItem('nz_custom_theme');
+                    if(savedCustom) {
+                        try { customColors.value = JSON.parse(savedCustom); } catch(e){}
+                    }
+
+                    // Try to load user pref first, otherwise default to MUJI
+                    const t = localStorage.getItem('nz_theme_pref'); 
+                    if (t && (THEMES[t] || t === 'custom')) applyTheme(t); 
+                    else applyTheme('muji'); // Set MUJI as Default
+
                     const savedFont = localStorage.getItem('nz_font_size');
                     if(savedFont) currentFontSize.value = parseInt(savedFont);
                     else { const isDesktop = window.matchMedia("(pointer:fine)").matches; currentFontSize.value = isDesktop ? 17 : 16; }
@@ -1036,7 +1023,9 @@
                     calcNZD, calcTWD, addNZD,
                     editingTodoId, tempTodoText, startEditTodo, saveEditTodo, cancelEditTodo,
                     // New Diary Features
-                    stamps, getWashiTapeClass, getWashiTapeStyle, getCardRotation, getStampStyle
+                    stamps, getWashiTapeClass, getWashiTapeStyle, getCardRotation, getStampStyle,
+                    // V32 Custom Theme
+                    customColors, updateCustomTheme
                 };
             }
         }).mount('#app');
