@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NZ Trip V44 (Sync Fix)</title>
+    <title>NZ Trip V45 (Perfect Sync)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -146,7 +146,6 @@
             position: absolute; z-index: 5; opacity: 0.9; mix-blend-mode: multiply; pointer-events: none;
             animation: stamp-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
-        /* Make icon hollow using text-stroke and transparent color */
         .stamp-mark i {
             color: transparent;
             -webkit-text-stroke: 2.5px rgb(var(--c-primary-dark)); /* Fallback */
@@ -180,7 +179,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2" style="text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">
                     <i class="fa-solid fa-mountain-sun text-primary"></i>
-                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V44 同步修復</span>
+                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V45</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100/80 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider border border-green-200"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100/80 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
                     <span v-else @click="showErrorDetail" class="text-[9px] bg-red-100/80 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all border border-red-200"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE</span>
@@ -251,7 +250,7 @@
                                     </div>
                                     <div class="flex-1 min-w-0 pt-0">
                                         <div class="flex justify-between items-start">
-                                            <!-- FIX: Title wraps when expanded -->
+                                            <!-- Title wraps when expanded -->
                                             <h3 class="font-bold text-dark text-lg leading-tight pr-1 select-text relative inline-block transition-all duration-200" :class="expandedItems.has(item.id) ? 'whitespace-normal break-words' : 'truncate'">
                                                 {{ item.title || item.location }}
                                                 <span class="absolute bottom-0.5 left-0 w-full h-[6px] bg-primary/20 -z-10 rounded-full"></span>
@@ -282,7 +281,6 @@
                                                     <div class="flex items-center gap-2 overflow-hidden">
                                                         <i class="fa-regular fa-circle text-[8px] text-primary/50 shrink-0"></i>
                                                         <div class="min-w-0">
-                                                            <!-- FIX: Sub-items always wrap -->
                                                             <div class="text-sm font-bold text-dark whitespace-normal break-words">{{ sub.location }}</div>
                                                             <div v-if="sub.notes" class="text-[10px] text-gray-400 whitespace-normal break-words">{{ sub.notes }}</div>
                                                         </div>
@@ -302,8 +300,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- ADD BUTTON MOVED UP -->
-                <button @click="openModal('itinerary')" class="fixed bottom-24 right-5 w-14 h-14 bg-dark text-white rounded-full shadow-lg flex items-center justify-center text-xl z-[10001] border-4 border-white/80 active:scale-90"><i class="fa-solid fa-plus"></i></button>
             </div>
 
             <!-- 2. EXPENSES TAB -->
@@ -339,8 +335,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- ADD BUTTON MOVED UP -->
-                <button @click="openModal('expense')" class="fixed bottom-24 right-5 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl z-[10001] border-4 border-white/80 active:scale-90"><i class="fa-solid fa-pen"></i></button>
             </div>
 
             <!-- 3. MAP TAB -->
@@ -416,7 +410,12 @@
 
         </main>
 
-        <!-- Navigation -->
+        <!-- Navigation (Fixed & Centered) - Floating Add Buttons -->
+        <!-- Add Itinerary Button (Moved to Root) -->
+        <button v-if="currentTab === 'itinerary'" @click="openModal('itinerary')" class="fixed bottom-24 right-5 w-14 h-14 bg-dark text-white rounded-full shadow-lg flex items-center justify-center text-xl z-[10001] border-4 border-white/80 active:scale-90 transition-transform"><i class="fa-solid fa-plus"></i></button>
+        <!-- Add Expense Button (Moved to Root) -->
+        <button v-if="currentTab === 'expenses'" @click="openModal('expense')" class="fixed bottom-24 right-5 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl z-[10001] border-4 border-white/80 active:scale-90 transition-transform"><i class="fa-solid fa-pen"></i></button>
+
         <nav class="fixed bottom-5 left-1/2 transform -translate-x-1/2 w-[calc(100%-3rem)] max-w-[20rem] h-16 bg-white/90 backdrop-blur-md shadow-2xl border-2 border-white/50 flex justify-between items-center px-4 z-[9999] transition-all duration-300" style="border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;">
             <button @click="currentTab = 'itinerary'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'itinerary' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-book-open text-xl mb-0.5"></i><span class="text-[9px] font-bold">行程</span></button>
             <button @click="currentTab = 'expenses'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'expenses' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-wallet text-xl mb-0.5"></i><span class="text-[9px] font-bold">記帳</span></button>
@@ -853,13 +852,23 @@
                         if (snap.exists()) {
                             const cData = snap.data();
                             const lData = localStorage.getItem('nz_data_v4') ? JSON.parse(localStorage.getItem('nz_data_v4')) : {};
-                            if ((lData.lastUpdated || 0) > (cData.lastUpdated || 0) + 5000) { setDoc(ref, lData, { merge: true }); return; }
                             
+                            // SYNC LOGIC FIX: Always prefer Cloud data unless local is strictly newer and editing
+                            // But for simple "deletion sync", we should trust Cloud if timestamps are close or Cloud is newer.
+                            // The "Zombie" fix: Don't merge local arrays back into cloud arrays.
+                            
+                            if ((lData.lastUpdated || 0) > (cData.lastUpdated || 0) + 10000) { // Buffer increased
+                                setDoc(ref, lData, { merge: true }); 
+                                return; 
+                            }
+                            
+                            // OVERWRITE MODE: Trust Cloud Data
                             if (cData.itinerary) itinerary.value = cData.itinerary;
-                            if (cData.expenses) { const m = new Map(); cData.expenses.forEach(e => m.set(e.id, e)); expenses.value.forEach(e => { if(!m.has(e.id)) m.set(e.id, e); }); expenses.value = Array.from(m.values()); }
+                            if (cData.expenses) expenses.value = cData.expenses; // No more merging map logic
                             if (cData.dailyMetadata) dailyMetadata.value = cData.dailyMetadata;
                             if (cData.exchangeRate) exchangeRate.value = cData.exchangeRate;
                             if (cData.todos) todos.value = cData.todos;
+                            
                             localStorage.setItem('nz_data_v4', JSON.stringify({ itinerary: itinerary.value, expenses: expenses.value, dailyMetadata: dailyMetadata.value, exchangeRate: exchangeRate.value, todos: todos.value, lastUpdated: cData.lastUpdated || 0 }));
                             updateDailyWeather();
                         } else {
@@ -929,20 +938,19 @@
                 };
                 const editItem = (item) => { 
                     isEditing.value=true; 
-                    // Use spread syntax for safer copy, avoid JSON.stringify issues with proxies
-                    form.value = { ...item, subItems: item.subItems ? [...item.subItems] : [] };
+                    form.value = { ...item, subItems: item.subItems ? [...item.subItems] : [] }; 
                     if(!form.value.time) form.value.time = '09:00';
                     form.value.dayIndex = item.day; 
                     showItineraryModal.value=true; 
                 }; 
                 const saveItinerary = () => {
-                     let newItem = { ...form.value, day: parseInt(form.value.dayIndex) }; // Ensure day is integer
+                     let newItem = { ...form.value, day: parseInt(form.value.dayIndex) }; 
                      if(newItem.lat) newItem.lat = parseFloat(newItem.lat); if(newItem.lng) newItem.lng = parseFloat(newItem.lng);
                      if(newItem.subItems) newItem.subItems.forEach(s => { if(s.lat) s.lat=parseFloat(s.lat); if(s.lng) s.lng=parseFloat(s.lng); });
                      
                      if(isEditing.value) { 
                         const idx=itinerary.value.findIndex(i=>i.id===newItem.id); 
-                        if(idx!==-1) itinerary.value.splice(idx, 1, newItem); // Use splice for reactivity
+                        if(idx!==-1) itinerary.value.splice(idx, 1, newItem); 
                      }
                      else itinerary.value.push(newItem);
                      saveToLocal(); closeModal(); updateDailyWeather();
@@ -1013,110 +1021,39 @@
                 
                 const exportItineraryCSV = () => {
                     if (itinerary.value.length === 0) { alert('目前沒有行程資料可以匯出喔！'); return; }
-                    const BOM = '\uFEFF'; 
-                    let csvContent = BOM + "日期,時間,類別,標題/地點,詳細內容,備註,緯度,經度\n";
-                    
-                    const getFullDate = (dayIndex) => {
-                        const d = new Date(startDate); 
-                        d.setDate(d.getDate() + dayIndex);
-                        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-                    };
-
-                    const sorted = [...itinerary.value].sort((a, b) => {
-                        if (a.day !== b.day) return a.day - b.day;
-                        return a.time.localeCompare(b.time);
-                    });
-
+                    const BOM = '\uFEFF'; let csvContent = BOM + "日期,時間,類別,標題/地點,詳細內容,備註,緯度,經度\n";
+                    const sorted = [...itinerary.value].sort((a, b) => (a.day !== b.day) ? a.day - b.day : a.time.localeCompare(b.time));
                     sorted.forEach(item => {
-                        const dateStr = getFullDate(item.day);
-                        let details = "";
-                        if (item.subItems && item.subItems.length > 0) {
-                            details = item.subItems.map(s => `[${s.location}] ${s.notes || ''}`).join("; ");
-                        }
-                        
+                        const d = new Date(startDate); d.setDate(d.getDate() + item.day); const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                        const details = item.subItems ? item.subItems.map(s => `[${s.location}] ${s.notes || ''}`).join("; ") : "";
                         const escape = (str) => str ? `"${str.toString().replace(/"/g, '""')}"` : "";
-
-                        const row = [
-                            dateStr,
-                            item.time,
-                            item.type,
-                            escape(item.title || item.location),
-                            escape(details),
-                            escape(item.notes),
-                            item.lat || "",
-                            item.lng || ""
-                        ].join(",");
-                        csvContent += row + "\n";
+                        csvContent += [dateStr, item.time, item.type, escape(item.title || item.location), escape(details), escape(item.notes), item.lat||"", item.lng||""].join(",") + "\n";
                     });
-
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const url = URL.createObjectURL(blob);
-                    const link = document.createElement("a");
-                    link.setAttribute("href", url);
-                    link.setAttribute("download", `nz_itinerary_export_${new Date().toISOString().slice(0,10)}.csv`);
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                    const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `nz_itinerary_export_${new Date().toISOString().slice(0,10)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
                 };
 
                 const loadFromFile = (event) => {
-                    const file = event.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        try {
-                            const data = JSON.parse(e.target.result);
-                            if (confirm(`讀取存檔？\n時間: ${data.savedAt || '未知'}`)) {
-                                itinerary.value = data.itinerary || []; expenses.value = data.expenses || []; exchangeRate.value = data.exchangeRate || 19.5; dailyMetadata.value = data.dailyMetadata || {};
-                                saveToLocal(); alert('讀檔成功！'); showSettingsModal.value = false; updateDailyWeather();
-                            }
-                        } catch (err) { alert('檔案格式錯誤'); }
-                    };
-                    reader.readAsText(file);
-                    event.target.value = ''; 
+                    const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
+                    reader.onload = (e) => { try { const data = JSON.parse(e.target.result); if (confirm(`讀取存檔？\n時間: ${data.savedAt || '未知'}`)) { itinerary.value = data.itinerary || []; expenses.value = data.expenses || []; exchangeRate.value = data.exchangeRate || 19.5; dailyMetadata.value = data.dailyMetadata || {}; saveToLocal(); alert('讀檔成功！'); showSettingsModal.value = false; updateDailyWeather(); } } catch (err) { alert('檔案格式錯誤'); } };
+                    reader.readAsText(file); event.target.value = ''; 
                 };
 
                 watch(currentTab, (v) => { if(v==='map') nextTick(initMap); });
                 watch(selectedDayIndex, () => { centerActiveDate(); updateDailyWeather(); if(currentTab.value==='map') initMap(); });
-                onMounted(() => { 
-                    const savedId = localStorage.getItem('nz_trip_id');
-                    if(savedId) tripId.value = savedId;
-                    initSync(); 
-                    setTimeout(() => centerActiveDate(), 800); 
-                });
+                onMounted(() => { const savedId = localStorage.getItem('nz_trip_id'); if(savedId) tripId.value = savedId; initSync(); setTimeout(() => centerActiveDate(), 800); });
 
-                // Calculator logic
                 const addNZD = (amount) => { calcNZD.value += amount; };
                 watch(calcNZD, (newVal) => { calcTWD.value = parseFloat((newVal * exchangeRate.value).toFixed(2)); });
                 watch(calcTWD, (newVal) => { calcNZD.value = parseFloat((newVal / exchangeRate.value).toFixed(2)); });
 
-                // Todo logic
-                const addTodo = () => {
-                    if (!newTodoText.value.trim()) return;
-                    todos.value.push({ id: Date.now(), text: newTodoText.value.trim(), done: false, category: todoCategory.value });
-                    newTodoText.value = '';
-                    saveToLocal();
-                };
+                const addTodo = () => { if (!newTodoText.value.trim()) return; todos.value.push({ id: Date.now(), text: newTodoText.value.trim(), done: false, category: todoCategory.value }); newTodoText.value = ''; saveToLocal(); };
                 const toggleTodo = (todo) => { todo.done = !todo.done; saveToLocal(); };
                 const deleteTodo = (id) => { if(confirm('刪除此項目?')) { todos.value = todos.value.filter(t => t.id !== id); saveToLocal(); } };
-                
-                // Todo Editing logic
-                const startEditTodo = (todo) => {
-                    editingTodoId.value = todo.id;
-                    tempTodoText.value = todo.text;
-                };
-                
-                const saveEditTodo = (todo) => {
-                    if (!tempTodoText.value.trim()) return; // Prevent empty
-                    todo.text = tempTodoText.value.trim();
-                    editingTodoId.value = null;
-                    saveToLocal();
-                };
-                
-                const cancelEditTodo = () => {
-                    editingTodoId.value = null;
-                    tempTodoText.value = '';
-                };
+                const startEditTodo = (todo) => { editingTodoId.value = todo.id; tempTodoText.value = todo.text; };
+                const saveEditTodo = (todo) => { if (!tempTodoText.value.trim()) return; todo.text = tempTodoText.value.trim(); editingTodoId.value = null; saveToLocal(); };
+                const cancelEditTodo = () => { editingTodoId.value = null; tempTodoText.value = ''; };
 
                 return {
                     currentTab, selectedDayIndex, days, itinerary, expenses, filteredItinerary, groupedExpenses, connectionStatus, loadingMessage, errorMessage,
