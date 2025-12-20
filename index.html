@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NZ Trip V43 (Final Fix)</title>
+    <title>NZ Trip V43 (Clean UI Fix)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -146,6 +146,7 @@
             position: absolute; z-index: 5; opacity: 0.9; mix-blend-mode: multiply; pointer-events: none;
             animation: stamp-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
+        /* Make icon hollow using text-stroke and transparent color */
         .stamp-mark i {
             color: transparent;
             -webkit-text-stroke: 2.5px rgb(var(--c-primary-dark)); /* Fallback */
@@ -179,7 +180,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2" style="text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">
                     <i class="fa-solid fa-mountain-sun text-primary"></i>
-                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V43 終極修復</span>
+                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V43 極簡修復</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100/80 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider border border-green-200"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100/80 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
                     <span v-else @click="showErrorDetail" class="text-[9px] bg-red-100/80 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all border border-red-200"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE</span>
@@ -257,7 +258,6 @@
                                             <div class="flex items-center gap-2 shrink-0">
                                                 <button @click.stop="navigateTo(item.address || item.location)" class="w-7 h-7 rounded-full bg-cream text-primary border border-cream-darker flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90 shadow-sm"><i class="fa-solid fa-location-arrow text-[10px]"></i></button>
                                                 <button @click.stop="toggleItem(item.id)" class="w-7 h-7 rounded-full bg-cream text-gray-400 border border-cream-darker flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90 shadow-sm"><i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300" :class="{'rotate-180': expandedItems.has(item.id)}"></i></button>
-                                                <button @click.stop="editItem(item)" class="w-7 h-7 rounded-full bg-cream text-gray-400 border border-cream-darker flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90 shadow-sm"><i class="fa-solid fa-pen text-[10px]"></i></button>
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -290,6 +290,7 @@
                                             </div>
                                         </div>
                                         <div class="flex gap-2 mt-2 pt-2 justify-end">
+                                            <button @click.stop="editItem(item)" class="w-8 h-8 bg-white border border-gray-200 text-gray-400 rounded-lg hover:text-dark hover:border-dark transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-solid fa-pen text-xs"></i></button>
                                             <button @click.stop="copyItem(item)" class="w-8 h-8 bg-white border border-gray-200 text-gray-400 rounded-lg hover:text-primary hover:border-primary transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-regular fa-copy text-xs"></i></button>
                                             <button @click.stop="deleteItem(item.id)" class="w-8 h-8 bg-white border border-gray-200 text-gray-400 rounded-lg hover:text-red-400 hover:border-red-400 transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-regular fa-trash-can text-xs"></i></button>
                                         </div>
@@ -988,73 +989,28 @@
                     if(hasPoints) { map.fitBounds(bounds, {padding:[50,50]}); }
                 };
 
-                // FIXED: Manual reset function to ensure clean state
-                const resetForm = () => {
-                    form.value = {
-                        id: Date.now(),
-                        dayIndex: selectedDayIndex.value,
-                        time: '09:00',
-                        type: '景點',
-                        title: '',
-                        location: '',
-                        address: '',
-                        lat: null,
-                        lng: null,
-                        notes: '',
-                        subItems: [],
-                        stamp: null
-                    };
-                };
-
                 const openModal = (type) => {
                      if(type==='itinerary') { 
                         isEditing.value=false; 
-                        resetForm();
+                        form.value={id:Date.now(), dayIndex:selectedDayIndex.value, time:'09:00', type:'景點', location:'', address: '', lat: null, lng: null, notes:'', subItems:[], stamp: null}; 
                         showItineraryModal.value=true; 
                      }
                      else { const d=new Date(); const t=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; expenseForm.value={amount:'', item:'', category:'餐飲', payer:'Ant', currency:'NZD', date:t}; showExpenseModal.value=true; }
                 };
-
                 const copyItem = (item) => { 
                     isEditing.value=false; 
-                    // FIXED: Explicit copy
-                    form.value = {
-                        id: Date.now(),
-                        dayIndex: item.day,
-                        time: item.time || '09:00',
-                        type: item.type || '景點',
-                        title: item.title || '',
-                        location: item.location || '',
-                        address: item.address || '',
-                        lat: item.lat,
-                        lng: item.lng,
-                        notes: item.notes || '',
-                        subItems: item.subItems ? JSON.parse(JSON.stringify(item.subItems)) : [],
-                        stamp: item.stamp || null
-                    };
+                    form.value = { ...item, id: Date.now(), subItems: item.subItems ? [...item.subItems] : [] }; 
+                    if(!form.value.time) form.value.time = '09:00';
                     showItineraryModal.value=true; 
                 };
-
                 const editItem = (item) => { 
                     isEditing.value=true; 
-                    // FIXED: Explicit copy
-                    form.value = {
-                        id: item.id,
-                        dayIndex: item.day,
-                        time: item.time || '09:00',
-                        type: item.type || '景點',
-                        title: item.title || '',
-                        location: item.location || '',
-                        address: item.address || '',
-                        lat: item.lat,
-                        lng: item.lng,
-                        notes: item.notes || '',
-                        subItems: item.subItems ? JSON.parse(JSON.stringify(item.subItems)) : [],
-                        stamp: item.stamp || null
-                    };
+                    // Use spread syntax for safer copy, avoid JSON.stringify issues with proxies
+                    form.value = { ...item, subItems: item.subItems ? [...item.subItems] : [] };
+                    if(!form.value.time) form.value.time = '09:00';
+                    form.value.dayIndex = item.day; 
                     showItineraryModal.value=true; 
                 }; 
-
                 const saveItinerary = () => {
                      let newItem = { ...form.value, day: parseInt(form.value.dayIndex) }; // Ensure day is integer
                      if(newItem.lat) newItem.lat = parseFloat(newItem.lat); if(newItem.lng) newItem.lng = parseFloat(newItem.lng);
@@ -1257,8 +1213,7 @@
                     // New Diary Features
                     stamps, getWashiTapeClass, getWashiTapeStyle, getCardRotation, getStampStyle,
                     // V32 Custom Theme
-                    customColors, updateCustomTheme,
-                    resetForm // Exporting resetForm just in case
+                    customColors, updateCustomTheme
                 };
             }
         }).mount('#app');
