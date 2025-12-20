@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NZ Trip V34 (MUJI Style)</title>
+    <title>NZ Trip V38 (Oat Beige)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -76,23 +76,27 @@
 
     <style>
         :root {
-            /* Default: MUJI Style */
-            --c-primary: 151 143 133; /* Kraft Paper Grey-Brown */
-            --c-primary-dark: 110 102 94;
-            --c-primary-light: 224 220 214;
-            --c-cream: 247 246 242; /* Unbleached Paper White */
-            --c-cream-dark: 235 231 224;
-            --c-cream-darker: 214 206 195;
-            --c-card-bg: 255 255 255; /* Pure White Card */
-            --c-card-text: 51 51 51;
-            --c-dark: 51 51 51; /* Charcoal Grey (Not Black) */
-            --c-dark-soft: 89 89 89;
-            --c-accent: 127 0 25; /* MUJI Red (Subtle) */
+            /* Default: Oat Milk Beige */
+            --c-primary: 211 198 184; /* #D3C6B8 Oat Beige */
+            --c-primary-dark: 166 153 140; 
+            --c-primary-light: 235 228 220; 
+            
+            --c-cream: 253 251 248; /* #FDFBF8 Very light warm white */
+            --c-cream-dark: 242 238 232;
+            --c-cream-darker: 226 219 210;
+            
+            --c-card-bg: 255 255 255; 
+            --c-card-text: 93 86 80; /* #5D5650 Deep Warm Grey */
+            
+            --c-dark: 93 86 80; 
+            --c-dark-soft: 120 112 105;
+            
+            --c-accent: 211 198 184;
         }
         body { 
             -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; 
             background-color: rgb(var(--c-cream)); 
-            /* Improved Dot Grid Texture - Fainter for MUJI look */
+            /* Improved Dot Grid Texture */
             background-image: radial-gradient(rgb(var(--c-primary-dark)) 0.5px, transparent 0.5px);
             background-size: 24px 24px;
             background-position: 0 0;
@@ -174,7 +178,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2" style="text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">
                     <i class="fa-solid fa-mountain-sun text-primary"></i>
-                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V34 無印良品</span>
+                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V38 燕麥奶</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100/80 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider border border-green-200"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100/80 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
                     <span v-else @click="showErrorDetail" class="text-[9px] bg-red-100/80 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all border border-red-200"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE</span>
@@ -446,7 +450,7 @@
                         <!-- Existing Themes -->
                         <button v-for="(t, key) in THEMES" :key="key" @click="applyTheme(key)" class="relative p-2 rounded-xl border transition-all duration-200 flex flex-col items-center gap-1 group active:scale-95" :class="currentTheme === key ? 'border-primary bg-primary/5' : 'border-gray-100 hover:border-gray-200'">
                             <div class="w-6 h-6 rounded-full shadow-sm border border-white/50 relative" :style="{backgroundColor: t.colors.primary}">
-                                <div v-if="['muji'].includes(key)" class="absolute -top-1 -right-1 bg-red-500 text-white text-[6px] px-1 rounded-full animate-pulse border border-white">NEW</div>
+                                <div v-if="['oat'].includes(key)" class="absolute -top-1 -right-1 bg-red-500 text-white text-[6px] px-1 rounded-full animate-pulse border border-white">NEW</div>
                             </div>
                             <span class="text-[10px] font-bold text-gray-500 group-hover:text-dark truncate w-full text-center">{{ t.name }}</span>
                             <div v-if="currentTheme === key" class="absolute top-2 right-2 w-1.5 h-1.5 bg-primary rounded-full"></div>
@@ -506,7 +510,8 @@
         }
 
         const THEMES = { 
-            muji: { name: '無印良品', colors: { primary: '#978F85', primaryDark: '#6E665E', primaryLight: '#E0DCD6', cream: '#F7F6F2', creamDark: '#EBE7E0', creamDarker: '#D6CEC3', cardBg: '#FFFFFF', cardText: '#4A4A4A', dark: '#333333', darkSoft: '#595959', accent: '#7F0019' } }, // New Default
+            oat: { name: '燕麥奶色', colors: { primary: '#D3C6B8', primaryDark: '#A6998C', primaryLight: '#EBE4DC', cream: '#FDFBF8', creamDark: '#F2EEE8', creamDarker: '#E2D2C3', cardBg: '#FFFFFF', cardText: '#5D5650', dark: '#5D5650', darkSoft: '#787069', accent: '#D3C6B8' } }, // New Beige
+            gogoro: { name: '原色棕', colors: { primary: '#B5A89A', primaryDark: '#8C8073', primaryLight: '#E3DBD3', cream: '#F9F8F4', creamDark: '#EDEBE6', creamDarker: '#DBD8D0', cardBg: '#FFFFFF', cardText: '#2C241E', dark: '#2C241E', darkSoft: '#594A3E', accent: '#B5A89A' } },
             rose: { name: '乾燥玫瑰', colors: { primary: '#BC8F8F', primaryDark: '#8C5A5A', primaryLight: '#DCC3C3', cream: '#FDF8F8', creamDark: '#F5EBEB', creamDarker: '#E6D2D2', cardBg: '#E6D2D2', cardText: '#5E3C3C', dark: '#5E3C3C', darkSoft: '#785050', accent: '#BC8F8F' } },
             hojicha: { name: '焙茶拿鐵', colors: { primary: '#C89F81', primaryDark: '#A47E64', primaryLight: '#E6D2C3', cream: '#FFFCF5', creamDark: '#F5F0E6', creamDarker: '#EBE0D0', cardBg: '#F3E0C0', cardText: '#785A46', dark: '#54433A', darkSoft: '#8D7B72', accent: '#D4A373' } },
             mint: { name: '薄荷巧克', colors: { primary: '#80CBC4', primaryDark: '#00695C', primaryLight: '#B2DFDB', cream: '#F0FDFC', creamDark: '#E0F2F1', creamDarker: '#B2DFDB', cardBg: '#B2DFDB', cardText: '#004D40', dark: '#3E2723', darkSoft: '#4E342E', accent: '#009688' } },
@@ -534,16 +539,16 @@
                 const saveFileInput = ref(null);
                 const dateContainer = ref(null);
                 const isAllExpanded = ref(false); 
-                // Set default to MUJI
-                const currentTheme = ref('muji'); 
+                // Set default to Oat
+                const currentTheme = ref('oat'); 
                 const isSavingSettings = ref(false);
                 const currentFontSize = ref(16);
                 
                 // Custom Color State
                 const customColors = ref({
-                    primary: '#BC8F8F',
-                    cream: '#FDF8F8',
-                    dark: '#5E3C3C'
+                    primary: '#D3C6B8',
+                    cream: '#FDFBF8',
+                    dark: '#5D5650'
                 });
 
                 let storedId = localStorage.getItem('nz_trip_id');
@@ -780,10 +785,10 @@
                         try { customColors.value = JSON.parse(savedCustom); } catch(e){}
                     }
 
-                    // Try to load user pref first, otherwise default to MUJI
+                    // Try to load user pref first, otherwise default to Oat
                     const t = localStorage.getItem('nz_theme_pref'); 
                     if (t && (THEMES[t] || t === 'custom')) applyTheme(t); 
-                    else applyTheme('muji'); // Set MUJI as Default
+                    else applyTheme('oat'); // Set Oat as Default
 
                     const savedFont = localStorage.getItem('nz_font_size');
                     if(savedFont) currentFontSize.value = parseInt(savedFont);
