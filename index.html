@@ -466,28 +466,28 @@
                     
                     <!-- Custom Theme Editor (Only shows when Custom is active) -->
                     <div v-if="currentTheme === 'custom'" class="mt-3 bg-gray-50 p-3 rounded-xl border border-gray-200 animate-fade-in-down">
-                        <h4 class="text-[10px] font-bold text-gray-400 mb-2 uppercase">自訂調色盤</h4>
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-600">主色 (Primary)</span><input type="color" v-model="customColors.primary" @input="updateCustomTheme" class="w-8 h-8 rounded-full overflow-hidden border-none cursor-pointer"></div>
-                            <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-600">背景色 (Bg)</span><input type="color" v-model="customColors.cream" @input="updateCustomTheme" class="w-8 h-8 rounded-full overflow-hidden border-none cursor-pointer"></div>
-                            <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-600">文字色 (Text)</span><input type="color" v-model="customColors.dark" @input="updateCustomTheme" class="w-8 h-8 rounded-full overflow-hidden border-none cursor-pointer"></div>
+                        <div>
+                            <div class="flex justify-between items-center mb-1 px-1"><label class="text-[10px] font-bold text-gray-400">SUB-ITEMS</label><button @click="addSubItem" class="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded-lg font-bold hover:bg-primary hover:text-white transition-colors active:scale-95"><i class="fa-solid fa-plus mr-1"></i>新增</button></div>
+                            <div class="space-y-2">
+                                <div v-for="(sub, idx) in form.subItems" :key="idx" class="bg-white p-2.5 rounded-xl border border-cream-dark relative">
+                                    <button @click="removeSubItem(idx)" class="absolute top-2 right-2 text-gray-300 hover:text-red-400 active:scale-90"><i class="fa-solid fa-xmark text-xs"></i></button>
+                                    <div class="flex gap-2 mb-1.5 pr-6">
+                                        <input type="text" v-model="sub.location" placeholder="子地點" class="flex-1 text-xs font-bold outline-none bg-transparent border-b border-gray-100 focus:border-primary pb-0.5">
+                                        <button @click="searchCoord(sub)" :disabled="isSearchingCoord" class="text-gray-300 hover:text-primary active:scale-90"><i class="fa-solid fa-magnifying-glass text-xs"></i></button>
+                                    </div>
+                                    <input type="number" step="any" v-model.number="sub.lat" placeholder="Lat" class="w-1/2 bg-gray-50 rounded-lg p-1 text-[9px] text-center outline-none hidden">
+                                    <input type="number" step="any" v-model.number="sub.lng" placeholder="Lng" class="w-1/2 bg-gray-50 rounded-lg p-1 text-[9px] text-center outline-none hidden">
+                                    <input type="text" v-model="sub.notes" placeholder="備註..." class="w-full text-xs text-gray-500 bg-transparent outline-none">
+                                </div>
+                            </div>
                         </div>
+                        <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">CATEGORY</label><div class="flex flex-wrap gap-2"><button v-for="t in ['景點','美食','住宿','交通','購物','活動','健行','其他']" @click="form.type = t" class="px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all active:scale-95" :class="form.type === t ? 'bg-dark text-white border-dark' : 'bg-white text-gray-400 border-gray-100 hover:border-gray-300'">{{ t }}</button></div></div>
+                        <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">MEMO</label><textarea v-model="form.notes" rows="3" class="w-full bg-white input-rounded p-3 text-sm outline-none resize-none notebook-lines"></textarea></div>
                     </div>
-                </div>
-                <!-- ... existing buttons ... -->
-                <div class="space-y-3">
-                    <div class="bg-gray-50 p-3 rounded-xl">
-                        <div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold text-gray-400">匯率 (NZD:TWD)</span><button @click="fetchRate" :disabled="isFetchingRate" class="text-[9px] bg-white border border-gray-200 px-2 py-0.5 rounded-full text-primary font-bold active:scale-90"><i class="fa-solid fa-rotate" :class="{'fa-spin': isFetchingRate}"></i></button></div>
-                        <input type="number" v-model.number="exchangeRate" class="w-full bg-transparent text-center text-lg font-bold text-dark outline-none border-b border-gray-200 focus:border-primary pb-0.5">
-                    </div>
-                    <div class="grid grid-cols-2 gap-2"><button @click="saveToFile" class="py-2.5 bg-blue-50 text-blue-500 rounded-lg text-[10px] font-bold hover:bg-blue-100 active:scale-95">備份</button><button @click="$refs.saveFileInput.click()" class="py-2.5 bg-orange-50 text-orange-500 rounded-lg text-[10px] font-bold hover:bg-orange-100 active:scale-95">讀取</button></div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button @click="exportExpensesCSV" class="w-full py-2.5 bg-green-50 text-green-600 rounded-lg text-[10px] font-bold hover:bg-green-100 transition-colors flex items-center justify-center gap-1 active:scale-95"><i class="fa-solid fa-file-csv"></i> 匯出記帳</button>
-                        <button @click="exportItineraryCSV" class="w-full py-2.5 bg-teal-50 text-teal-600 rounded-lg text-[10px] font-bold hover:bg-teal-100 transition-colors flex items-center justify-center gap-1 active:scale-95"><i class="fa-solid fa-file-csv"></i> 匯出行程</button>
-                    </div>
+                    <button @click="saveItinerary" class="w-full py-3.5 bg-primary text-white rounded-2xl font-bold mt-5 shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform">儲存行程</button>
                 </div>
             </div>
-        </div>
+        </transition>
 
         <!-- ... other modals ... -->
         <div v-if="showDaySettingsModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
@@ -743,7 +743,8 @@
                          '住宿': 'bg-indigo-50 text-indigo-500 border-indigo-100',
                          '交通': 'bg-gray-100 text-gray-500 border-gray-200',
                          '購物': 'bg-pink-50 text-pink-500 border-pink-100',
-                         '活動': 'bg-violet-50 text-violet-600 border-violet-100', // Added Activity Style
+                         '活動': 'bg-violet-50 text-violet-600 border-violet-100',
+                         '健行': 'bg-emerald-50 text-emerald-600 border-emerald-100', // Added Hiking Style
                          '其他': 'bg-gray-50 text-gray-500'
                      };
                      return map[type] || 'bg-gray-50 text-gray-500';
