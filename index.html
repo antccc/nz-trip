@@ -143,17 +143,18 @@
         .tape-pattern-stripes { background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.4) 0, rgba(255,255,255,0.4) 3px, transparent 3px, transparent 8px); }
         .tape-pattern-grid { background-image: linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px); background-size: 8px 8px; }
 
-        /* Hollow Stamp Effect */
+        /* Hollow Stamp Effect - UPDATED: Thicker Lines */
         .stamp-mark {
-            position: absolute; z-index: 5; opacity: 0.8; mix-blend-mode: multiply; pointer-events: none;
+            position: absolute; z-index: 5; opacity: 0.9; mix-blend-mode: multiply; pointer-events: none;
             animation: stamp-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         /* Make icon hollow using text-stroke and transparent color */
         .stamp-mark i {
             color: transparent;
-            -webkit-text-stroke: 1.5px rgba(220, 38, 38, 0.65); /* Reddish stroke */
+            -webkit-text-stroke: 2.5px rgba(200, 30, 30, 0.8); /* Thicker and slightly darker red stroke */
+            filter: drop-shadow(0px 1px 0px rgba(220, 38, 38, 0.2)); /* Slight inner depth */
         }
-        @keyframes stamp-pop { 0% { transform: scale(1.5) rotate(0deg); opacity: 0; } 100% { transform: scale(1) rotate(var(--r)); opacity: 0.8; } }
+        @keyframes stamp-pop { 0% { transform: scale(1.5) rotate(0deg); opacity: 0; } 100% { transform: scale(1) rotate(var(--r)); opacity: 0.9; } }
 
         .notebook-lines {
             background-image: linear-gradient(transparent 95%, rgba(var(--c-primary), 0.15) 95%);
