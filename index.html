@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NZ Trip V42.1 (Stamp Fix)</title>
+    <title>NZ Trip V42.2 (Button Fixed)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -146,11 +146,11 @@
             position: absolute; z-index: 5; opacity: 0.9; mix-blend-mode: multiply; pointer-events: none;
             animation: stamp-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
-        /* Make icon hollow using text-stroke and transparent color, using Theme Primary Dark Color with correct syntax */
+        /* Make icon hollow using text-stroke and transparent color */
         .stamp-mark i {
             color: transparent;
-            -webkit-text-stroke: 2.5px rgb(var(--c-primary-dark)); /* Solid stroke first fallback */
-            -webkit-text-stroke: 2.5px rgb(var(--c-primary-dark) / 0.8); /* Modern syntax */
+            -webkit-text-stroke: 2.5px rgb(var(--c-primary-dark)); /* Fallback */
+            -webkit-text-stroke: 2.5px rgb(var(--c-primary-dark) / 0.8);
             filter: drop-shadow(0px 1px 0px rgb(var(--c-primary-dark) / 0.2));
         }
         @keyframes stamp-pop { 0% { transform: scale(1.5) rotate(0deg); opacity: 0; } 100% { transform: scale(1) rotate(var(--r)); opacity: 0.9; } }
@@ -180,7 +180,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2" style="text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">
                     <i class="fa-solid fa-mountain-sun text-primary"></i>
-                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V42.1 修復印章</span>
+                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V42.2 修復版</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100/80 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider border border-green-200"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100/80 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
                     <span v-else @click="showErrorDetail" class="text-[9px] bg-red-100/80 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all border border-red-200"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE</span>
@@ -300,7 +300,8 @@
                         </div>
                     </div>
                 </div>
-                <button @click="openModal('itinerary')" class="fixed bottom-6 right-5 w-14 h-14 bg-dark text-white rounded-full shadow-lg flex items-center justify-center text-xl hover:scale-105 transition-transform z-30 border-4 border-white/80 active:scale-90"><i class="fa-solid fa-plus"></i></button>
+                <!-- ADD BUTTON MOVED UP -->
+                <button @click="openModal('itinerary')" class="fixed bottom-24 right-5 w-14 h-14 bg-dark text-white rounded-full shadow-lg flex items-center justify-center text-xl hover:scale-105 transition-transform z-40 border-4 border-white/80 active:scale-90"><i class="fa-solid fa-plus"></i></button>
             </div>
 
             <!-- 2. EXPENSES TAB -->
@@ -336,7 +337,8 @@
                         </div>
                     </div>
                 </div>
-                <button @click="openModal('expense')" class="fixed bottom-6 right-5 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl z-30 border-4 border-white/80 active:scale-90"><i class="fa-solid fa-pen"></i></button>
+                <!-- ADD BUTTON MOVED UP -->
+                <button @click="openModal('expense')" class="fixed bottom-24 right-5 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl z-40 border-4 border-white/80 active:scale-90"><i class="fa-solid fa-pen"></i></button>
             </div>
 
             <!-- 3. MAP TAB -->
@@ -919,20 +921,24 @@
                 };
                 const copyItem = (item) => { 
                     isEditing.value=false; 
-                    form.value = { ...item, id: Date.now(), subItems: item.subItems ? [...item.subItems] : [] }; 
+                    // Reverted to JSON parse/stringify for safe deep copy
+                    form.value = JSON.parse(JSON.stringify(item));
+                    form.value.id = Date.now(); 
+                    if(!form.value.subItems) form.value.subItems = [];
                     if(!form.value.time) form.value.time = '09:00';
                     showItineraryModal.value=true; 
                 };
                 const editItem = (item) => { 
                     isEditing.value=true; 
-                    // Use spread syntax for safer copy, avoid JSON.stringify issues with proxies
-                    form.value = { ...item, subItems: item.subItems ? [...item.subItems] : [] };
+                    // Reverted to JSON parse/stringify for safe deep copy
+                    form.value = JSON.parse(JSON.stringify(item));
+                    if(!form.value.subItems) form.value.subItems = [];
                     if(!form.value.time) form.value.time = '09:00';
                     form.value.dayIndex = item.day; 
                     showItineraryModal.value=true; 
                 }; 
                 const saveItinerary = () => {
-                     let newItem = { ...form.value, day: form.value.dayIndex };
+                     let newItem = { ...form.value, day: parseInt(form.value.dayIndex) }; // Ensure day is integer
                      if(newItem.lat) newItem.lat = parseFloat(newItem.lat); if(newItem.lng) newItem.lng = parseFloat(newItem.lng);
                      if(newItem.subItems) newItem.subItems.forEach(s => { if(s.lat) s.lat=parseFloat(s.lat); if(s.lng) s.lng=parseFloat(s.lng); });
                      
