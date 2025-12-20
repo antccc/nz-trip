@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NZ Trip V47 (Debugged)</title>
+    <title>NZ Trip V49</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -178,7 +178,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2" style="text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">
                     <i class="fa-solid fa-mountain-sun text-primary"></i>
-                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V47</span>
+                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V49</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100/80 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider border border-green-200"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100/80 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
                     <span v-else @click="showErrorDetail" class="text-[9px] bg-red-100/80 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all border border-red-200"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE</span>
@@ -412,10 +412,11 @@
         </main>
 
         <!-- Navigation (Fixed & Centered) - Floating Add Buttons -->
-        <!-- Add Itinerary Button (Moved to Root, Last in DOM) -->
-        <button v-if="currentTab === 'itinerary'" @click="openModal('itinerary')" class="fixed bottom-24 right-5 w-14 h-14 bg-dark text-white rounded-full shadow-lg flex items-center justify-center text-xl border-4 border-white/80 active:scale-90 transition-transform" style="z-index: 99999;"><i class="fa-solid fa-plus"></i></button>
-        <!-- Add Expense Button (Moved to Root, Last in DOM) -->
-        <button v-if="currentTab === 'expenses'" @click="openModal('expense')" class="fixed bottom-24 right-5 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl border-4 border-white/80 active:scale-90 transition-transform" style="z-index: 99999;"><i class="fa-solid fa-pen"></i></button>
+        <!-- FLOATING ACTION BUTTONS LAYER (Pointer Events None Container, Auto Button) -->
+        <div class="fixed inset-x-0 bottom-0 h-32 pointer-events-none z-[10001] flex justify-end items-end px-5 pb-24">
+            <button v-if="currentTab === 'itinerary'" @click="openModal('itinerary')" class="w-14 h-14 bg-dark text-white rounded-full shadow-lg flex items-center justify-center text-xl border-4 border-white/80 active:scale-90 transition-transform pointer-events-auto"><i class="fa-solid fa-plus"></i></button>
+            <button v-if="currentTab === 'expenses'" @click="openModal('expense')" class="w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl border-4 border-white/80 active:scale-90 transition-transform pointer-events-auto"><i class="fa-solid fa-pen"></i></button>
+        </div>
 
         <nav class="fixed bottom-5 left-1/2 transform -translate-x-1/2 w-[calc(100%-3rem)] max-w-[20rem] h-16 bg-white/90 backdrop-blur-md shadow-2xl border-2 border-white/50 flex justify-between items-center px-4 z-[9999] transition-all duration-300" style="border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;">
             <button @click="currentTab = 'itinerary'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'itinerary' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-book-open text-xl mb-0.5"></i><span class="text-[9px] font-bold">行程</span></button>
@@ -491,7 +492,136 @@
             </div>
         </div>
 
-        <!-- ... other modals ... -->
+        <!-- RESTORED: Itinerary Modal -->
+        <div v-if="showItineraryModal" class="fixed inset-0 z-[20000] flex items-end sm:items-center justify-center bg-black/20 backdrop-blur-sm sm:p-4">
+            <div class="bg-white w-full sm:w-[28rem] sm:rounded-3xl rounded-t-3xl shadow-2xl relative max-h-[90vh] flex flex-col transition-all duration-300">
+                <!-- Header -->
+                <div class="p-4 border-b border-gray-100 flex justify-between items-center shrink-0">
+                     <h3 class="font-bold text-dark text-lg"><i class="fa-solid fa-pen-to-square text-primary mr-2"></i>{{ isEditing ? '編輯行程' : '新增行程' }}</h3>
+                     <button @click="closeModal" class="w-8 h-8 rounded-full bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-gray-100 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <!-- Body -->
+                <div class="p-5 overflow-y-auto modal-scroll space-y-4">
+                     <!-- Time & Type Row -->
+                     <div class="flex gap-3">
+                         <div class="w-1/3">
+                             <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">時間</label>
+                             <div class="flex items-center gap-1 bg-gray-50 rounded-xl p-1 border border-cream-darker">
+                                 <input type="text" v-model="formHour" class="w-full text-center bg-transparent font-bold text-dark outline-none" maxlength="2">
+                                 <span class="text-gray-300">:</span>
+                                 <input type="text" v-model="formMinute" class="w-full text-center bg-transparent font-bold text-dark outline-none" maxlength="2">
+                             </div>
+                         </div>
+                         <div class="flex-1">
+                             <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">類型</label>
+                             <div class="flex overflow-x-auto no-scrollbar gap-2 pb-1">
+                                  <button v-for="t in ['景點','美食','住宿','交通','購物']" @click="form.type=t" class="px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all" :class="form.type===t ? getTypeColorClass(t) : 'bg-gray-50 border-gray-100 text-gray-400'">{{t}}</button>
+                             </div>
+                         </div>
+                     </div>
+        
+                     <!-- Location/Title -->
+                     <div>
+                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">地點 / 標題</label>
+                         <div class="flex gap-2">
+                             <input type="text" v-model="form.location" placeholder="輸入地點名稱..." class="flex-1 bg-gray-50 input-rounded p-3 text-sm font-bold text-dark outline-none">
+                             <button @click="searchCoord(form)" class="w-11 bg-primary/10 text-primary rounded-xl flex items-center justify-center border border-primary/20 active:scale-95" :class="{'animate-pulse': isSearchingCoord}"><i class="fa-solid fa-map-pin"></i></button>
+                         </div>
+                         <input type="text" v-model="form.title" placeholder="自訂標題 (選填)" class="w-full mt-2 bg-transparent border-b border-gray-100 p-1 text-xs text-gray-500 outline-none focus:border-primary">
+                     </div>
+        
+                     <!-- Notes -->
+                     <div>
+                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">筆記</label>
+                         <textarea v-model="form.notes" rows="3" class="w-full bg-yellow-50/50 input-rounded p-3 text-sm text-gray-600 outline-none resize-none notebook-lines" placeholder="寫點什麼..."></textarea>
+                     </div>
+        
+                     <!-- Sub Items -->
+                     <div>
+                          <div class="flex justify-between items-center mb-2">
+                              <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">子行程</label>
+                              <button @click="addSubItem" class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full hover:bg-primary hover:text-white transition-colors"><i class="fa-solid fa-plus mr-1"></i>新增</button>
+                          </div>
+                          <div class="space-y-2">
+                              <div v-for="(sub, idx) in form.subItems" :key="idx" class="flex gap-2 items-start bg-gray-50 p-2 rounded-lg group">
+                                  <div class="flex-1 space-y-1">
+                                      <input type="text" v-model="sub.location" placeholder="子地點" class="w-full bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold">
+                                      <input type="text" v-model="sub.notes" placeholder="備註" class="w-full bg-transparent border-b border-dashed border-gray-200 px-1 py-0.5 text-[10px]">
+                                  </div>
+                                  <button @click="removeSubItem(idx)" class="text-gray-300 hover:text-red-400 p-1"><i class="fa-solid fa-times"></i></button>
+                              </div>
+                          </div>
+                     </div>
+        
+                     <!-- Stamps -->
+                     <div>
+                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">貼紙裝飾</label>
+                         <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
+                             <button @click="form.stamp = null" class="w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0" :class="form.stamp === null ? 'border-primary bg-primary/10 text-primary' : 'border-gray-100 text-gray-300'"><i class="fa-solid fa-ban text-xs"></i></button>
+                             <button v-for="s in stamps" :key="s" @click="form.stamp = s" class="w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0 transition-all" :class="form.stamp === s ? 'border-primary bg-primary/10 text-primary scale-110' : 'border-gray-100 text-gray-300 hover:border-primary/50'"><i :class="['fa-solid', s]" class="text-sm"></i></button>
+                         </div>
+                     </div>
+                </div>
+                <!-- Footer -->
+                <div class="p-4 border-t border-gray-100 shrink-0 pb-safe">
+                    <button @click="saveItinerary" class="w-full bg-dark text-white py-3 rounded-xl font-bold shadow-lg shadow-dark/20 active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-check"></i> 儲存行程
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESTORED: Expense Modal -->
+        <div v-if="showExpenseModal" class="fixed inset-0 z-[20000] flex items-end sm:items-center justify-center bg-black/20 backdrop-blur-sm sm:p-4">
+            <div class="bg-white w-full sm:w-80 sm:rounded-3xl rounded-t-3xl shadow-2xl relative flex flex-col">
+                <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                     <h3 class="font-bold text-dark text-lg"><i class="fa-solid fa-wallet text-primary mr-2"></i>記一筆</h3>
+                     <button @click="closeModal" class="w-8 h-8 rounded-full bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-gray-100 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-5 space-y-4">
+                     <!-- Amount -->
+                     <div class="relative">
+                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">金額</label>
+                         <div class="flex items-center gap-2">
+                             <div class="relative flex-1">
+                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
+                                 <input type="number" v-model.number="expenseForm.amount" class="w-full bg-gray-50 input-rounded pl-7 pr-3 py-3 text-xl font-black text-dark outline-none" placeholder="0.0">
+                             </div>
+                             <select v-model="expenseForm.currency" class="bg-gray-50 input-rounded px-2 py-3 font-bold text-sm outline-none text-dark w-20 text-center appearance-none">
+                                 <option value="NZD">NZD</option>
+                                 <option value="TWD">TWD</option>
+                             </select>
+                         </div>
+                     </div>
+                     <!-- Item -->
+                     <div>
+                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">項目</label>
+                         <input type="text" v-model="expenseForm.item" class="w-full bg-gray-50 input-rounded p-3 text-sm font-bold text-dark outline-none" placeholder="例如: 晚餐, 超市...">
+                     </div>
+                     <!-- Category & Payer -->
+                     <div class="flex gap-3">
+                         <div class="flex-1">
+                             <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">分類</label>
+                             <select v-model="expenseForm.category" class="w-full bg-gray-50 input-rounded p-2.5 text-sm font-bold text-dark outline-none appearance-none">
+                                 <option v-for="c in expenseCategories" :key="c" :value="c">{{c}}</option>
+                             </select>
+                         </div>
+                         <div class="flex-1">
+                             <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">付款人</label>
+                             <select v-model="expenseForm.payer" class="w-full bg-gray-50 input-rounded p-2.5 text-sm font-bold text-dark outline-none appearance-none">
+                                 <option v-for="p in payers" :key="p" :value="p">{{p}}</option>
+                             </select>
+                         </div>
+                     </div>
+                </div>
+                <div class="p-4 border-t border-gray-100 pb-safe">
+                    <button @click="saveExpense" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform">
+                        <i class="fa-solid fa-check mr-1"></i> 記帳
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div v-if="showDaySettingsModal" class="fixed inset-0 z-[20000] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
              <div class="bg-white p-6 rounded-3xl w-72 shadow-2xl relative">
                 <button @click="showDaySettingsModal=false" class="absolute top-4 right-4 text-gray-300 hover:text-gray-500 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
@@ -513,13 +643,14 @@
             return `${r} ${g} ${b}`; 
         };
         
+        // Helper to lighten/darken color for auto-generation
         const adjustColor = (hex, amount) => {
             return '#' + hex.replace(/^#/, '').replace(/../g, c => ('0' + Math.min(255, Math.max(0, parseInt(c, 16) + amount)).toString(16)).substr(-2));
         }
 
         const THEMES = { 
-            gogoro: { name: '原色棕', colors: { primary: '#B5A89A', primaryDark: '#8C8073', primaryLight: '#E3DBD3', cream: '#F9F8F4', creamDark: '#EDEBE6', creamDarker: '#DBD8D0', cardBg: '#FFFFFF', cardText: '#2C241E', dark: '#2C241E', darkSoft: '#594A3E', accent: '#B5A89A' } }, // Clean Gogoro Brown
             oat: { name: '燕麥奶色', colors: { primary: '#D3C6B8', primaryDark: '#A6998C', primaryLight: '#EBE4DC', cream: '#FDFBF8', creamDark: '#F2EEE8', creamDarker: '#E2D2C3', cardBg: '#FFFFFF', cardText: '#5D5650', dark: '#5D5650', darkSoft: '#787069', accent: '#D3C6B8' } }, 
+            gogoro: { name: '原色棕', colors: { primary: '#B5A89A', primaryDark: '#8C8073', primaryLight: '#E3DBD3', cream: '#F9F8F4', creamDark: '#EDEBE6', creamDarker: '#DBD8D0', cardBg: '#FFFFFF', cardText: '#2C241E', dark: '#2C241E', darkSoft: '#594A3E', accent: '#B5A89A' } },
             rose: { name: '乾燥玫瑰', colors: { primary: '#BC8F8F', primaryDark: '#8C5A5A', primaryLight: '#DCC3C3', cream: '#FDF8F8', creamDark: '#F5EBEB', creamDarker: '#E6D2D2', cardBg: '#E6D2D2', cardText: '#5E3C3C', dark: '#5E3C3C', darkSoft: '#785050', accent: '#BC8F8F' } },
             hojicha: { name: '焙茶拿鐵', colors: { primary: '#C89F81', primaryDark: '#A47E64', primaryLight: '#E6D2C3', cream: '#FFFCF5', creamDark: '#F5F0E6', creamDarker: '#EBE0D0', cardBg: '#F3E0C0', cardText: '#785A46', dark: '#54433A', darkSoft: '#8D7B72', accent: '#D4A373' } },
             mint: { name: '薄荷巧克', colors: { primary: '#80CBC4', primaryDark: '#00695C', primaryLight: '#B2DFDB', cream: '#F0FDFC', creamDark: '#E0F2F1', creamDarker: '#B2DFDB', cardBg: '#B2DFDB', cardText: '#004D40', dark: '#3E2723', darkSoft: '#4E342E', accent: '#009688' } },
@@ -547,11 +678,18 @@
                 const saveFileInput = ref(null);
                 const dateContainer = ref(null);
                 const isAllExpanded = ref(false); 
+                // Set default to Gogoro
                 const currentTheme = ref('gogoro'); 
                 const isSavingSettings = ref(false);
                 const currentFontSize = ref(16);
                 
-                const customColors = ref({ primary: '#D3C6B8', cream: '#FDFBF8', dark: '#5D5650' });
+                // Custom Color State
+                const customColors = ref({
+                    primary: '#D3C6B8',
+                    cream: '#FDFBF8',
+                    dark: '#5D5650'
+                });
+
                 let storedId = localStorage.getItem('nz_trip_id');
                 if (!storedId) { storedId = 'nz_' + Math.random().toString(36).substr(2, 6); localStorage.setItem('nz_trip_id', storedId); }
                 const tripId = ref(storedId);
@@ -580,32 +718,42 @@
                 const editingTodoId = ref(null);
                 const tempTodoText = ref('');
 
+                // NEW: Stamp Options
                 const stamps = ['fa-heart', 'fa-star', 'fa-mug-hot', 'fa-camera', 'fa-plane', 'fa-face-laugh-beam', 'fa-paw', 'fa-music', 'fa-check'];
                 
+                // Helper to generate consistent but random-looking properties based on item ID
                 const getPseudoRandom = (id, max) => (id % max);
                 
                 const getWashiTapeClass = (item) => {
-                    const types = ['tape-pattern-dots', 'tape-pattern-stripes', 'tape-pattern-grid', '', ''];
+                    const types = ['tape-pattern-dots', 'tape-pattern-stripes', 'tape-pattern-grid', '', '']; // empty string = solid color (opacity only)
                     const idx = getPseudoRandom(item.id, types.length);
                     return types[idx];
                 }
 
                 const getWashiTapeStyle = (item) => {
-                    const rot = (item.id % 5) - 2;
-                    const hueRotate = (item.id % 40) - 20;
-                    return { transform: `translateX(-50%) rotate(${rot}deg)`, filter: `hue-rotate(${hueRotate}deg)` };
+                    const rot = (item.id % 5) - 2; // -2 to 2 deg
+                    const hueRotate = (item.id % 40) - 20; // Slight color variation
+                    return {
+                        transform: `translateX(-50%) rotate(${rot}deg)`,
+                        filter: `hue-rotate(${hueRotate}deg)`
+                    };
                 }
 
                 const getCardRotation = (index) => {
+                    // Slight rotation for each card to look hand-placed
                     const deg = (index % 2 === 0) ? 0.5 : -0.5;
                     return { transform: `rotate(${deg}deg)` };
                 }
 
                 const getStampStyle = (item) => {
-                    const rot = (item.id % 40) - 20;
-                    const left = 75 + (item.id % 15);
-                    const top = 10 + (item.id % 40);
-                    return { top: `${top}%`, left: `${left}%`, '--r': `${rot}deg` };
+                    const rot = (item.id % 40) - 20; // -20 to 20 deg
+                    const left = 75 + (item.id % 15); // 75% to 90%
+                    const top = 10 + (item.id % 40); // 10% to 50%
+                    return {
+                        top: `${top}%`,
+                        left: `${left}%`,
+                        '--r': `${rot}deg`
+                    };
                 }
 
                 const filteredItinerary = computed(() => itinerary.value.filter(i => i.day === selectedDayIndex.value).sort((a,b) => a.time.localeCompare(b.time)));
@@ -631,7 +779,9 @@
                     const sorted = [...expenses.value].sort((a, b) => new Date(b.date) - new Date(a.date));
                     sorted.forEach(item => {
                         const d = item.date;
-                        if (!groups[d]) { groups[d] = { items: [], total: 0 }; }
+                        if (!groups[d]) {
+                            groups[d] = { items: [], total: 0 };
+                        }
                         groups[d].items.push(item);
                         groups[d].total += (item.baseAmount || item.amount);
                     });
@@ -668,18 +818,41 @@
                 const formMinute = computed({ get: () => form.value.time ? form.value.time.split(':')[1] : '00', set: (v) => { const h = form.value.time ? form.value.time.split(':')[0] : '09'; form.value.time = `${h}:${v}`; } });
 
                 const updateCustomTheme = () => {
-                    const p = customColors.value.primary; const b = customColors.value.cream; const t = customColors.value.dark; const r = document.documentElement;
-                    r.style.setProperty('--c-primary', hexToRgb(p)); r.style.setProperty('--c-primary-dark', hexToRgb(adjustColor(p, -40))); r.style.setProperty('--c-primary-light', hexToRgb(adjustColor(p, 40)));
-                    r.style.setProperty('--c-cream', hexToRgb(b)); r.style.setProperty('--c-cream-dark', hexToRgb(adjustColor(b, -10))); r.style.setProperty('--c-cream-darker', hexToRgb(adjustColor(b, -25)));
-                    r.style.setProperty('--c-card-bg', hexToRgb(adjustColor(b, -20))); r.style.setProperty('--c-card-text', hexToRgb(t));
-                    r.style.setProperty('--c-dark', hexToRgb(t)); r.style.setProperty('--c-dark-soft', hexToRgb(adjustColor(t, 40))); r.style.setProperty('--c-accent', hexToRgb(p));
+                    const p = customColors.value.primary;
+                    const b = customColors.value.cream;
+                    const t = customColors.value.dark;
+                    const r = document.documentElement;
+                    
+                    r.style.setProperty('--c-primary', hexToRgb(p));
+                    r.style.setProperty('--c-primary-dark', hexToRgb(adjustColor(p, -40)));
+                    r.style.setProperty('--c-primary-light', hexToRgb(adjustColor(p, 40)));
+                    
+                    r.style.setProperty('--c-cream', hexToRgb(b));
+                    r.style.setProperty('--c-cream-dark', hexToRgb(adjustColor(b, -10)));
+                    r.style.setProperty('--c-cream-darker', hexToRgb(adjustColor(b, -25)));
+                    
+                    r.style.setProperty('--c-card-bg', hexToRgb(adjustColor(b, -20)));
+                    r.style.setProperty('--c-card-text', hexToRgb(t));
+                    
+                    r.style.setProperty('--c-dark', hexToRgb(t));
+                    r.style.setProperty('--c-dark-soft', hexToRgb(adjustColor(t, 40)));
+                    r.style.setProperty('--c-accent', hexToRgb(p));
+                    
                     localStorage.setItem('nz_custom_theme', JSON.stringify(customColors.value));
                 };
 
                 const applyTheme = (key) => {
-                    currentTheme.value = key; localStorage.setItem('nz_theme_pref', key);
-                    if (key === 'custom') { updateCustomTheme(); return; }
-                    const theme = THEMES[key]; if (!theme) return; 
+                    currentTheme.value = key;
+                    localStorage.setItem('nz_theme_pref', key);
+                    
+                    if (key === 'custom') {
+                        updateCustomTheme();
+                        return;
+                    }
+
+                    const theme = THEMES[key]; 
+                    if (!theme) return; 
+                    
                     const r = document.documentElement; const c = theme.colors;
                     r.style.setProperty('--c-primary', hexToRgb(c.primary)); r.style.setProperty('--c-primary-dark', hexToRgb(c.primaryDark)); r.style.setProperty('--c-primary-light', hexToRgb(c.primaryLight));
                     r.style.setProperty('--c-cream', hexToRgb(c.cream)); r.style.setProperty('--c-cream-dark', hexToRgb(c.creamDark)); r.style.setProperty('--c-cream-darker', hexToRgb(c.creamDarker));
@@ -696,17 +869,17 @@
                 };
 
                 const getTypeColorClass = (type) => {
-                     const map = {
-                         '景點': 'bg-teal-50 text-teal-600 border-teal-100',
-                         '美食': 'bg-orange-50 text-orange-500 border-orange-100',
-                         '住宿': 'bg-indigo-50 text-indigo-500 border-indigo-100',
-                         '交通': 'bg-gray-100 text-gray-500 border-gray-200',
-                         '購物': 'bg-pink-50 text-pink-500 border-pink-100',
-                         '活動': 'bg-violet-50 text-violet-600 border-violet-100',
-                         '健行': 'bg-emerald-50 text-emerald-600 border-emerald-100',
-                         '其他': 'bg-gray-50 text-gray-500'
-                     };
-                     return map[type] || 'bg-gray-50 text-gray-500';
+                      const map = {
+                          '景點': 'bg-teal-50 text-teal-600 border-teal-100',
+                          '美食': 'bg-orange-50 text-orange-500 border-orange-100',
+                          '住宿': 'bg-indigo-50 text-indigo-500 border-indigo-100',
+                          '交通': 'bg-gray-100 text-gray-500 border-gray-200',
+                          '購物': 'bg-pink-50 text-pink-500 border-pink-100',
+                          '活動': 'bg-violet-50 text-violet-600 border-violet-100',
+                          '健行': 'bg-emerald-50 text-emerald-600 border-emerald-100', // Added Hiking Style
+                          '其他': 'bg-gray-50 text-gray-500'
+                      };
+                      return map[type] || 'bg-gray-50 text-gray-500';
                 };
 
                 const changeFontSize = (delta) => {
@@ -754,11 +927,16 @@
                 };
 
                 const initSync = async () => {
+                    // Try to load custom theme if exists
                     const savedCustom = localStorage.getItem('nz_custom_theme');
-                    if(savedCustom) { try { customColors.value = JSON.parse(savedCustom); } catch(e){} }
+                    if(savedCustom) {
+                        try { customColors.value = JSON.parse(savedCustom); } catch(e){}
+                    }
+
+                    // Try to load user pref first, otherwise default to Gogoro
                     const t = localStorage.getItem('nz_theme_pref'); 
                     if (t && (THEMES[t] || t === 'custom')) applyTheme(t); 
-                    else applyTheme('gogoro');
+                    else applyTheme('gogoro'); // Set Gogoro as Default
 
                     const savedFont = localStorage.getItem('nz_font_size');
                     if(savedFont) currentFontSize.value = parseInt(savedFont);
@@ -806,15 +984,18 @@
                             const cData = snap.data();
                             const lData = localStorage.getItem('nz_data_v4') ? JSON.parse(localStorage.getItem('nz_data_v4')) : {};
                             
-                            // SYNC FIX: Priority to Cloud.
-                            // Removed local merge logic to prevent zombies.
-                            if ((lData.lastUpdated || 0) > (cData.lastUpdated || 0) + 10000) { 
+                            // SYNC LOGIC FIX: Always prefer Cloud data unless local is strictly newer and editing
+                            // But for simple "deletion sync", we should trust Cloud if timestamps are close or Cloud is newer.
+                            // The "Zombie" fix: Don't merge local arrays back into cloud arrays.
+                            
+                            if ((lData.lastUpdated || 0) > (cData.lastUpdated || 0) + 10000) { // Buffer increased
                                 setDoc(ref, lData, { merge: true }); 
                                 return; 
                             }
                             
+                            // OVERWRITE MODE: Trust Cloud Data
                             if (cData.itinerary) itinerary.value = cData.itinerary;
-                            if (cData.expenses) expenses.value = cData.expenses;
+                            if (cData.expenses) expenses.value = cData.expenses; // No more merging map logic
                             if (cData.dailyMetadata) dailyMetadata.value = cData.dailyMetadata;
                             if (cData.exchangeRate) exchangeRate.value = cData.exchangeRate;
                             if (cData.todos) todos.value = cData.todos;
@@ -872,18 +1053,39 @@
                     if(hasPoints) { map.fitBounds(bounds, {padding:[50,50]}); }
                 };
 
+                // FIXED: Manual reset function to ensure clean state
                 const resetForm = () => {
-                    form.value = { id: Date.now(), dayIndex: selectedDayIndex.value, time: '09:00', type: '景點', title: '', location: '', address: '', lat: null, lng: null, notes: '', subItems: [], stamp: null };
+                    form.value = {
+                        id: Date.now(),
+                        dayIndex: selectedDayIndex.value,
+                        time: '09:00',
+                        type: '景點',
+                        title: '',
+                        location: '',
+                        address: '',
+                        lat: null,
+                        lng: null,
+                        notes: '',
+                        subItems: [],
+                        stamp: null
+                    };
                 };
 
                 const openModal = (type) => {
-                     if(type==='itinerary') { isEditing.value=false; resetForm(); showItineraryModal.value=true; }
-                     else { const d=new Date(); const t=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; expenseForm.value={amount:'', item:'', category:'餐飲', payer:'Ant', currency:'NZD', date:t}; showExpenseModal.value=true; }
+                      try {
+                          if(type==='itinerary') { 
+                            isEditing.value=false; 
+                            resetForm();
+                            showItineraryModal.value=true; 
+                          }
+                          else { const d=new Date(); const t=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; expenseForm.value={amount:'', item:'', category:'餐飲', payer:'Ant', currency:'NZD', date:t}; showExpenseModal.value=true; }
+                      } catch(e) { console.error(e); alert('開啟視窗失敗'); }
                 };
 
                 const copyItem = (item) => { 
                     try {
                         isEditing.value=false; 
+                        // FIXED: Explicit copy, field by field. Safest way.
                         form.value = {
                             id: Date.now(),
                             dayIndex: item.day,
@@ -905,6 +1107,7 @@
                 const editItem = (item) => { 
                     try {
                         isEditing.value=true; 
+                        // FIXED: Explicit copy
                         form.value = {
                             id: item.id,
                             dayIndex: item.day,
@@ -924,16 +1127,16 @@
                 }; 
 
                 const saveItinerary = () => {
-                     let newItem = { ...form.value, day: parseInt(form.value.dayIndex) }; 
-                     if(newItem.lat) newItem.lat = parseFloat(newItem.lat); if(newItem.lng) newItem.lng = parseFloat(newItem.lng);
-                     if(newItem.subItems) newItem.subItems.forEach(s => { if(s.lat) s.lat=parseFloat(s.lat); if(s.lng) s.lng=parseFloat(s.lng); });
-                     
-                     if(isEditing.value) { 
+                      let newItem = { ...form.value, day: parseInt(form.value.dayIndex) }; // Ensure day is integer
+                      if(newItem.lat) newItem.lat = parseFloat(newItem.lat); if(newItem.lng) newItem.lng = parseFloat(newItem.lng);
+                      if(newItem.subItems) newItem.subItems.forEach(s => { if(s.lat) s.lat=parseFloat(s.lat); if(s.lng) s.lng=parseFloat(s.lng); });
+                      
+                      if(isEditing.value) { 
                         const idx=itinerary.value.findIndex(i=>i.id===newItem.id); 
-                        if(idx!==-1) itinerary.value.splice(idx, 1, newItem); 
-                     }
-                     else itinerary.value.push(newItem);
-                     saveToLocal(); closeModal(); updateDailyWeather();
+                        if(idx!==-1) itinerary.value.splice(idx, 1, newItem); // Use splice for reactivity
+                      }
+                      else itinerary.value.push(newItem);
+                      saveToLocal(); closeModal(); updateDailyWeather();
                 };
 
                 const closeModal = () => { showItineraryModal.value=false; showExpenseModal.value=false; };
