@@ -251,7 +251,8 @@
                                     </div>
                                     <div class="flex-1 min-w-0 pt-0">
                                         <div class="flex justify-between items-start">
-                                            <h3 class="font-bold text-dark text-lg leading-tight truncate pr-1 select-text relative inline-block">
+                                            <!-- FIX: Title wraps when expanded -->
+                                            <h3 class="font-bold text-dark text-lg leading-tight pr-1 select-text relative inline-block transition-all duration-200" :class="expandedItems.has(item.id) ? 'whitespace-normal break-words' : 'truncate'">
                                                 {{ item.title || item.location }}
                                                 <span class="absolute bottom-0.5 left-0 w-full h-[6px] bg-primary/20 -z-10 rounded-full"></span>
                                             </h3>
@@ -281,8 +282,9 @@
                                                     <div class="flex items-center gap-2 overflow-hidden">
                                                         <i class="fa-regular fa-circle text-[8px] text-primary/50 shrink-0"></i>
                                                         <div class="min-w-0">
-                                                            <div class="text-sm font-bold text-dark truncate">{{ sub.location }}</div>
-                                                            <div v-if="sub.notes" class="text-[10px] text-gray-400 truncate">{{ sub.notes }}</div>
+                                                            <!-- FIX: Sub-items always wrap -->
+                                                            <div class="text-sm font-bold text-dark whitespace-normal break-words">{{ sub.location }}</div>
+                                                            <div v-if="sub.notes" class="text-[10px] text-gray-400 whitespace-normal break-words">{{ sub.notes }}</div>
                                                         </div>
                                                     </div>
                                                     <button @click.stop="navigateTo(sub.location)" class="w-7 h-7 rounded-full bg-gray-50 text-gray-400 border border-gray-100 flex items-center justify-center hover:bg-primary hover:text-white transition-colors active:scale-90"><i class="fa-solid fa-location-arrow text-[10px]"></i></button>
