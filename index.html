@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NZ Trip V45 (Perfect Sync)</title>
+    <title>NZ Trip V47 (Debugged)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -141,16 +141,15 @@
         .tape-pattern-stripes { background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.4) 0, rgba(255,255,255,0.4) 3px, transparent 3px, transparent 8px); }
         .tape-pattern-grid { background-image: linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px); background-size: 8px 8px; }
 
-        /* Hollow Stamp Effect - FIXED COLOR SYNTAX */
+        /* Hollow Stamp Effect - FIXED */
         .stamp-mark {
             position: absolute; z-index: 5; opacity: 0.9; mix-blend-mode: multiply; pointer-events: none;
             animation: stamp-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         .stamp-mark i {
             color: transparent;
-            -webkit-text-stroke: 2.5px rgb(var(--c-primary-dark)); /* Fallback */
-            -webkit-text-stroke: 2.5px rgb(var(--c-primary-dark) / 0.8);
-            filter: drop-shadow(0px 1px 0px rgb(var(--c-primary-dark) / 0.2));
+            -webkit-text-stroke: 2.5px rgb(var(--c-primary-dark)); 
+            filter: drop-shadow(0px 1px 0px rgba(0,0,0,0.1));
         }
         @keyframes stamp-pop { 0% { transform: scale(1.5) rotate(0deg); opacity: 0; } 100% { transform: scale(1) rotate(var(--r)); opacity: 0.9; } }
 
@@ -179,7 +178,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2" style="text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">
                     <i class="fa-solid fa-mountain-sun text-primary"></i>
-                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V45</span>
+                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V47</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100/80 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider border border-green-200"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100/80 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
                     <span v-else @click="showErrorDetail" class="text-[9px] bg-red-100/80 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all border border-red-200"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE</span>
@@ -250,7 +249,7 @@
                                     </div>
                                     <div class="flex-1 min-w-0 pt-0">
                                         <div class="flex justify-between items-start">
-                                            <!-- Title wraps when expanded -->
+                                            <!-- FIX: Title wraps when expanded -->
                                             <h3 class="font-bold text-dark text-lg leading-tight pr-1 select-text relative inline-block transition-all duration-200" :class="expandedItems.has(item.id) ? 'whitespace-normal break-words' : 'truncate'">
                                                 {{ item.title || item.location }}
                                                 <span class="absolute bottom-0.5 left-0 w-full h-[6px] bg-primary/20 -z-10 rounded-full"></span>
@@ -281,6 +280,7 @@
                                                     <div class="flex items-center gap-2 overflow-hidden">
                                                         <i class="fa-regular fa-circle text-[8px] text-primary/50 shrink-0"></i>
                                                         <div class="min-w-0">
+                                                            <!-- FIX: Sub-items always wrap -->
                                                             <div class="text-sm font-bold text-dark whitespace-normal break-words">{{ sub.location }}</div>
                                                             <div v-if="sub.notes" class="text-[10px] text-gray-400 whitespace-normal break-words">{{ sub.notes }}</div>
                                                         </div>
@@ -289,6 +289,7 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <!-- Edit Controls Only Show When Expanded -->
                                         <div class="flex gap-2 mt-2 pt-2 justify-end">
                                             <button @click.stop="editItem(item)" class="w-8 h-8 bg-white border border-gray-200 text-gray-400 rounded-lg hover:text-dark hover:border-dark transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-solid fa-pen text-xs"></i></button>
                                             <button @click.stop="copyItem(item)" class="w-8 h-8 bg-white border border-gray-200 text-gray-400 rounded-lg hover:text-primary hover:border-primary transition-colors flex items-center justify-center shadow-sm active:scale-90"><i class="fa-regular fa-copy text-xs"></i></button>
@@ -411,10 +412,10 @@
         </main>
 
         <!-- Navigation (Fixed & Centered) - Floating Add Buttons -->
-        <!-- Add Itinerary Button (Moved to Root) -->
-        <button v-if="currentTab === 'itinerary'" @click="openModal('itinerary')" class="fixed bottom-24 right-5 w-14 h-14 bg-dark text-white rounded-full shadow-lg flex items-center justify-center text-xl z-[10001] border-4 border-white/80 active:scale-90 transition-transform"><i class="fa-solid fa-plus"></i></button>
-        <!-- Add Expense Button (Moved to Root) -->
-        <button v-if="currentTab === 'expenses'" @click="openModal('expense')" class="fixed bottom-24 right-5 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl z-[10001] border-4 border-white/80 active:scale-90 transition-transform"><i class="fa-solid fa-pen"></i></button>
+        <!-- Add Itinerary Button (Moved to Root, Last in DOM) -->
+        <button v-if="currentTab === 'itinerary'" @click="openModal('itinerary')" class="fixed bottom-24 right-5 w-14 h-14 bg-dark text-white rounded-full shadow-lg flex items-center justify-center text-xl border-4 border-white/80 active:scale-90 transition-transform" style="z-index: 99999;"><i class="fa-solid fa-plus"></i></button>
+        <!-- Add Expense Button (Moved to Root, Last in DOM) -->
+        <button v-if="currentTab === 'expenses'" @click="openModal('expense')" class="fixed bottom-24 right-5 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-xl border-4 border-white/80 active:scale-90 transition-transform" style="z-index: 99999;"><i class="fa-solid fa-pen"></i></button>
 
         <nav class="fixed bottom-5 left-1/2 transform -translate-x-1/2 w-[calc(100%-3rem)] max-w-[20rem] h-16 bg-white/90 backdrop-blur-md shadow-2xl border-2 border-white/50 flex justify-between items-center px-4 z-[9999] transition-all duration-300" style="border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;">
             <button @click="currentTab = 'itinerary'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'itinerary' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-book-open text-xl mb-0.5"></i><span class="text-[9px] font-bold">行程</span></button>
@@ -512,14 +513,13 @@
             return `${r} ${g} ${b}`; 
         };
         
-        // Helper to lighten/darken color for auto-generation
         const adjustColor = (hex, amount) => {
             return '#' + hex.replace(/^#/, '').replace(/../g, c => ('0' + Math.min(255, Math.max(0, parseInt(c, 16) + amount)).toString(16)).substr(-2));
         }
 
         const THEMES = { 
+            gogoro: { name: '原色棕', colors: { primary: '#B5A89A', primaryDark: '#8C8073', primaryLight: '#E3DBD3', cream: '#F9F8F4', creamDark: '#EDEBE6', creamDarker: '#DBD8D0', cardBg: '#FFFFFF', cardText: '#2C241E', dark: '#2C241E', darkSoft: '#594A3E', accent: '#B5A89A' } }, // Clean Gogoro Brown
             oat: { name: '燕麥奶色', colors: { primary: '#D3C6B8', primaryDark: '#A6998C', primaryLight: '#EBE4DC', cream: '#FDFBF8', creamDark: '#F2EEE8', creamDarker: '#E2D2C3', cardBg: '#FFFFFF', cardText: '#5D5650', dark: '#5D5650', darkSoft: '#787069', accent: '#D3C6B8' } }, 
-            gogoro: { name: '原色棕', colors: { primary: '#B5A89A', primaryDark: '#8C8073', primaryLight: '#E3DBD3', cream: '#F9F8F4', creamDark: '#EDEBE6', creamDarker: '#DBD8D0', cardBg: '#FFFFFF', cardText: '#2C241E', dark: '#2C241E', darkSoft: '#594A3E', accent: '#B5A89A' } },
             rose: { name: '乾燥玫瑰', colors: { primary: '#BC8F8F', primaryDark: '#8C5A5A', primaryLight: '#DCC3C3', cream: '#FDF8F8', creamDark: '#F5EBEB', creamDarker: '#E6D2D2', cardBg: '#E6D2D2', cardText: '#5E3C3C', dark: '#5E3C3C', darkSoft: '#785050', accent: '#BC8F8F' } },
             hojicha: { name: '焙茶拿鐵', colors: { primary: '#C89F81', primaryDark: '#A47E64', primaryLight: '#E6D2C3', cream: '#FFFCF5', creamDark: '#F5F0E6', creamDarker: '#EBE0D0', cardBg: '#F3E0C0', cardText: '#785A46', dark: '#54433A', darkSoft: '#8D7B72', accent: '#D4A373' } },
             mint: { name: '薄荷巧克', colors: { primary: '#80CBC4', primaryDark: '#00695C', primaryLight: '#B2DFDB', cream: '#F0FDFC', creamDark: '#E0F2F1', creamDarker: '#B2DFDB', cardBg: '#B2DFDB', cardText: '#004D40', dark: '#3E2723', darkSoft: '#4E342E', accent: '#009688' } },
@@ -547,18 +547,11 @@
                 const saveFileInput = ref(null);
                 const dateContainer = ref(null);
                 const isAllExpanded = ref(false); 
-                // Set default to Gogoro
                 const currentTheme = ref('gogoro'); 
                 const isSavingSettings = ref(false);
                 const currentFontSize = ref(16);
                 
-                // Custom Color State
-                const customColors = ref({
-                    primary: '#D3C6B8',
-                    cream: '#FDFBF8',
-                    dark: '#5D5650'
-                });
-
+                const customColors = ref({ primary: '#D3C6B8', cream: '#FDFBF8', dark: '#5D5650' });
                 let storedId = localStorage.getItem('nz_trip_id');
                 if (!storedId) { storedId = 'nz_' + Math.random().toString(36).substr(2, 6); localStorage.setItem('nz_trip_id', storedId); }
                 const tripId = ref(storedId);
@@ -587,42 +580,32 @@
                 const editingTodoId = ref(null);
                 const tempTodoText = ref('');
 
-                // NEW: Stamp Options
                 const stamps = ['fa-heart', 'fa-star', 'fa-mug-hot', 'fa-camera', 'fa-plane', 'fa-face-laugh-beam', 'fa-paw', 'fa-music', 'fa-check'];
                 
-                // Helper to generate consistent but random-looking properties based on item ID
                 const getPseudoRandom = (id, max) => (id % max);
                 
                 const getWashiTapeClass = (item) => {
-                    const types = ['tape-pattern-dots', 'tape-pattern-stripes', 'tape-pattern-grid', '', '']; // empty string = solid color (opacity only)
+                    const types = ['tape-pattern-dots', 'tape-pattern-stripes', 'tape-pattern-grid', '', ''];
                     const idx = getPseudoRandom(item.id, types.length);
                     return types[idx];
                 }
 
                 const getWashiTapeStyle = (item) => {
-                    const rot = (item.id % 5) - 2; // -2 to 2 deg
-                    const hueRotate = (item.id % 40) - 20; // Slight color variation
-                    return {
-                        transform: `translateX(-50%) rotate(${rot}deg)`,
-                        filter: `hue-rotate(${hueRotate}deg)`
-                    };
+                    const rot = (item.id % 5) - 2;
+                    const hueRotate = (item.id % 40) - 20;
+                    return { transform: `translateX(-50%) rotate(${rot}deg)`, filter: `hue-rotate(${hueRotate}deg)` };
                 }
 
                 const getCardRotation = (index) => {
-                    // Slight rotation for each card to look hand-placed
                     const deg = (index % 2 === 0) ? 0.5 : -0.5;
                     return { transform: `rotate(${deg}deg)` };
                 }
 
                 const getStampStyle = (item) => {
-                    const rot = (item.id % 40) - 20; // -20 to 20 deg
-                    const left = 75 + (item.id % 15); // 75% to 90%
-                    const top = 10 + (item.id % 40); // 10% to 50%
-                    return {
-                        top: `${top}%`,
-                        left: `${left}%`,
-                        '--r': `${rot}deg`
-                    };
+                    const rot = (item.id % 40) - 20;
+                    const left = 75 + (item.id % 15);
+                    const top = 10 + (item.id % 40);
+                    return { top: `${top}%`, left: `${left}%`, '--r': `${rot}deg` };
                 }
 
                 const filteredItinerary = computed(() => itinerary.value.filter(i => i.day === selectedDayIndex.value).sort((a,b) => a.time.localeCompare(b.time)));
@@ -648,9 +631,7 @@
                     const sorted = [...expenses.value].sort((a, b) => new Date(b.date) - new Date(a.date));
                     sorted.forEach(item => {
                         const d = item.date;
-                        if (!groups[d]) {
-                            groups[d] = { items: [], total: 0 };
-                        }
+                        if (!groups[d]) { groups[d] = { items: [], total: 0 }; }
                         groups[d].items.push(item);
                         groups[d].total += (item.baseAmount || item.amount);
                     });
@@ -687,41 +668,18 @@
                 const formMinute = computed({ get: () => form.value.time ? form.value.time.split(':')[1] : '00', set: (v) => { const h = form.value.time ? form.value.time.split(':')[0] : '09'; form.value.time = `${h}:${v}`; } });
 
                 const updateCustomTheme = () => {
-                    const p = customColors.value.primary;
-                    const b = customColors.value.cream;
-                    const t = customColors.value.dark;
-                    const r = document.documentElement;
-                    
-                    r.style.setProperty('--c-primary', hexToRgb(p));
-                    r.style.setProperty('--c-primary-dark', hexToRgb(adjustColor(p, -40)));
-                    r.style.setProperty('--c-primary-light', hexToRgb(adjustColor(p, 40)));
-                    
-                    r.style.setProperty('--c-cream', hexToRgb(b));
-                    r.style.setProperty('--c-cream-dark', hexToRgb(adjustColor(b, -10)));
-                    r.style.setProperty('--c-cream-darker', hexToRgb(adjustColor(b, -25)));
-                    
-                    r.style.setProperty('--c-card-bg', hexToRgb(adjustColor(b, -20)));
-                    r.style.setProperty('--c-card-text', hexToRgb(t));
-                    
-                    r.style.setProperty('--c-dark', hexToRgb(t));
-                    r.style.setProperty('--c-dark-soft', hexToRgb(adjustColor(t, 40)));
-                    r.style.setProperty('--c-accent', hexToRgb(p));
-                    
+                    const p = customColors.value.primary; const b = customColors.value.cream; const t = customColors.value.dark; const r = document.documentElement;
+                    r.style.setProperty('--c-primary', hexToRgb(p)); r.style.setProperty('--c-primary-dark', hexToRgb(adjustColor(p, -40))); r.style.setProperty('--c-primary-light', hexToRgb(adjustColor(p, 40)));
+                    r.style.setProperty('--c-cream', hexToRgb(b)); r.style.setProperty('--c-cream-dark', hexToRgb(adjustColor(b, -10))); r.style.setProperty('--c-cream-darker', hexToRgb(adjustColor(b, -25)));
+                    r.style.setProperty('--c-card-bg', hexToRgb(adjustColor(b, -20))); r.style.setProperty('--c-card-text', hexToRgb(t));
+                    r.style.setProperty('--c-dark', hexToRgb(t)); r.style.setProperty('--c-dark-soft', hexToRgb(adjustColor(t, 40))); r.style.setProperty('--c-accent', hexToRgb(p));
                     localStorage.setItem('nz_custom_theme', JSON.stringify(customColors.value));
                 };
 
                 const applyTheme = (key) => {
-                    currentTheme.value = key;
-                    localStorage.setItem('nz_theme_pref', key);
-                    
-                    if (key === 'custom') {
-                        updateCustomTheme();
-                        return;
-                    }
-
-                    const theme = THEMES[key]; 
-                    if (!theme) return; 
-                    
+                    currentTheme.value = key; localStorage.setItem('nz_theme_pref', key);
+                    if (key === 'custom') { updateCustomTheme(); return; }
+                    const theme = THEMES[key]; if (!theme) return; 
                     const r = document.documentElement; const c = theme.colors;
                     r.style.setProperty('--c-primary', hexToRgb(c.primary)); r.style.setProperty('--c-primary-dark', hexToRgb(c.primaryDark)); r.style.setProperty('--c-primary-light', hexToRgb(c.primaryLight));
                     r.style.setProperty('--c-cream', hexToRgb(c.cream)); r.style.setProperty('--c-cream-dark', hexToRgb(c.creamDark)); r.style.setProperty('--c-cream-darker', hexToRgb(c.creamDarker));
@@ -745,7 +703,7 @@
                          '交通': 'bg-gray-100 text-gray-500 border-gray-200',
                          '購物': 'bg-pink-50 text-pink-500 border-pink-100',
                          '活動': 'bg-violet-50 text-violet-600 border-violet-100',
-                         '健行': 'bg-emerald-50 text-emerald-600 border-emerald-100', // Added Hiking Style
+                         '健行': 'bg-emerald-50 text-emerald-600 border-emerald-100',
                          '其他': 'bg-gray-50 text-gray-500'
                      };
                      return map[type] || 'bg-gray-50 text-gray-500';
@@ -796,16 +754,11 @@
                 };
 
                 const initSync = async () => {
-                    // Try to load custom theme if exists
                     const savedCustom = localStorage.getItem('nz_custom_theme');
-                    if(savedCustom) {
-                        try { customColors.value = JSON.parse(savedCustom); } catch(e){}
-                    }
-
-                    // Try to load user pref first, otherwise default to Gogoro
+                    if(savedCustom) { try { customColors.value = JSON.parse(savedCustom); } catch(e){} }
                     const t = localStorage.getItem('nz_theme_pref'); 
                     if (t && (THEMES[t] || t === 'custom')) applyTheme(t); 
-                    else applyTheme('gogoro'); // Set Gogoro as Default
+                    else applyTheme('gogoro');
 
                     const savedFont = localStorage.getItem('nz_font_size');
                     if(savedFont) currentFontSize.value = parseInt(savedFont);
@@ -853,18 +806,15 @@
                             const cData = snap.data();
                             const lData = localStorage.getItem('nz_data_v4') ? JSON.parse(localStorage.getItem('nz_data_v4')) : {};
                             
-                            // SYNC LOGIC FIX: Always prefer Cloud data unless local is strictly newer and editing
-                            // But for simple "deletion sync", we should trust Cloud if timestamps are close or Cloud is newer.
-                            // The "Zombie" fix: Don't merge local arrays back into cloud arrays.
-                            
-                            if ((lData.lastUpdated || 0) > (cData.lastUpdated || 0) + 10000) { // Buffer increased
+                            // SYNC FIX: Priority to Cloud.
+                            // Removed local merge logic to prevent zombies.
+                            if ((lData.lastUpdated || 0) > (cData.lastUpdated || 0) + 10000) { 
                                 setDoc(ref, lData, { merge: true }); 
                                 return; 
                             }
                             
-                            // OVERWRITE MODE: Trust Cloud Data
                             if (cData.itinerary) itinerary.value = cData.itinerary;
-                            if (cData.expenses) expenses.value = cData.expenses; // No more merging map logic
+                            if (cData.expenses) expenses.value = cData.expenses;
                             if (cData.dailyMetadata) dailyMetadata.value = cData.dailyMetadata;
                             if (cData.exchangeRate) exchangeRate.value = cData.exchangeRate;
                             if (cData.todos) todos.value = cData.todos;
@@ -922,27 +872,57 @@
                     if(hasPoints) { map.fitBounds(bounds, {padding:[50,50]}); }
                 };
 
+                const resetForm = () => {
+                    form.value = { id: Date.now(), dayIndex: selectedDayIndex.value, time: '09:00', type: '景點', title: '', location: '', address: '', lat: null, lng: null, notes: '', subItems: [], stamp: null };
+                };
+
                 const openModal = (type) => {
-                     if(type==='itinerary') { 
-                        isEditing.value=false; 
-                        form.value={id:Date.now(), dayIndex:selectedDayIndex.value, time:'09:00', type:'景點', location:'', address: '', lat: null, lng: null, notes:'', subItems:[], stamp: null}; 
-                        showItineraryModal.value=true; 
-                     }
+                     if(type==='itinerary') { isEditing.value=false; resetForm(); showItineraryModal.value=true; }
                      else { const d=new Date(); const t=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; expenseForm.value={amount:'', item:'', category:'餐飲', payer:'Ant', currency:'NZD', date:t}; showExpenseModal.value=true; }
                 };
+
                 const copyItem = (item) => { 
-                    isEditing.value=false; 
-                    form.value = { ...item, id: Date.now(), subItems: item.subItems ? [...item.subItems] : [] }; 
-                    if(!form.value.time) form.value.time = '09:00';
-                    showItineraryModal.value=true; 
+                    try {
+                        isEditing.value=false; 
+                        form.value = {
+                            id: Date.now(),
+                            dayIndex: item.day,
+                            time: item.time || '09:00',
+                            type: item.type || '景點',
+                            title: item.title || '',
+                            location: item.location || '',
+                            address: item.address || '',
+                            lat: item.lat,
+                            lng: item.lng,
+                            notes: item.notes || '',
+                            subItems: item.subItems ? JSON.parse(JSON.stringify(item.subItems)) : [],
+                            stamp: item.stamp || null
+                        };
+                        showItineraryModal.value=true; 
+                    } catch(e) { console.error(e); alert('複製失敗，資料格式有誤'); }
                 };
+
                 const editItem = (item) => { 
-                    isEditing.value=true; 
-                    form.value = { ...item, subItems: item.subItems ? [...item.subItems] : [] }; 
-                    if(!form.value.time) form.value.time = '09:00';
-                    form.value.dayIndex = item.day; 
-                    showItineraryModal.value=true; 
+                    try {
+                        isEditing.value=true; 
+                        form.value = {
+                            id: item.id,
+                            dayIndex: item.day,
+                            time: item.time || '09:00',
+                            type: item.type || '景點',
+                            title: item.title || '',
+                            location: item.location || '',
+                            address: item.address || '',
+                            lat: item.lat,
+                            lng: item.lng,
+                            notes: item.notes || '',
+                            subItems: item.subItems ? JSON.parse(JSON.stringify(item.subItems)) : [],
+                            stamp: item.stamp || null
+                        };
+                        showItineraryModal.value=true; 
+                    } catch(e) { console.error(e); alert('編輯失敗，資料格式有誤'); }
                 }; 
+
                 const saveItinerary = () => {
                      let newItem = { ...form.value, day: parseInt(form.value.dayIndex) }; 
                      if(newItem.lat) newItem.lat = parseFloat(newItem.lat); if(newItem.lng) newItem.lng = parseFloat(newItem.lng);
@@ -1021,39 +1001,110 @@
                 
                 const exportItineraryCSV = () => {
                     if (itinerary.value.length === 0) { alert('目前沒有行程資料可以匯出喔！'); return; }
-                    const BOM = '\uFEFF'; let csvContent = BOM + "日期,時間,類別,標題/地點,詳細內容,備註,緯度,經度\n";
-                    const sorted = [...itinerary.value].sort((a, b) => (a.day !== b.day) ? a.day - b.day : a.time.localeCompare(b.time));
-                    sorted.forEach(item => {
-                        const d = new Date(startDate); d.setDate(d.getDate() + item.day); const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-                        const details = item.subItems ? item.subItems.map(s => `[${s.location}] ${s.notes || ''}`).join("; ") : "";
-                        const escape = (str) => str ? `"${str.toString().replace(/"/g, '""')}"` : "";
-                        csvContent += [dateStr, item.time, item.type, escape(item.title || item.location), escape(details), escape(item.notes), item.lat||"", item.lng||""].join(",") + "\n";
+                    const BOM = '\uFEFF'; 
+                    let csvContent = BOM + "日期,時間,類別,標題/地點,詳細內容,備註,緯度,經度\n";
+                    
+                    const getFullDate = (dayIndex) => {
+                        const d = new Date(startDate); 
+                        d.setDate(d.getDate() + dayIndex);
+                        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                    };
+
+                    const sorted = [...itinerary.value].sort((a, b) => {
+                        if (a.day !== b.day) return a.day - b.day;
+                        return a.time.localeCompare(b.time);
                     });
+
+                    sorted.forEach(item => {
+                        const dateStr = getFullDate(item.day);
+                        let details = "";
+                        if (item.subItems && item.subItems.length > 0) {
+                            details = item.subItems.map(s => `[${s.location}] ${s.notes || ''}`).join("; ");
+                        }
+                        
+                        const escape = (str) => str ? `"${str.toString().replace(/"/g, '""')}"` : "";
+
+                        const row = [
+                            dateStr,
+                            item.time,
+                            item.type,
+                            escape(item.title || item.location),
+                            escape(details),
+                            escape(item.notes),
+                            item.lat || "",
+                            item.lng || ""
+                        ].join(",");
+                        csvContent += row + "\n";
+                    });
+
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const url = URL.createObjectURL(blob);
-                    const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `nz_itinerary_export_${new Date().toISOString().slice(0,10)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", `nz_itinerary_export_${new Date().toISOString().slice(0,10)}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
                 };
 
                 const loadFromFile = (event) => {
-                    const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
-                    reader.onload = (e) => { try { const data = JSON.parse(e.target.result); if (confirm(`讀取存檔？\n時間: ${data.savedAt || '未知'}`)) { itinerary.value = data.itinerary || []; expenses.value = data.expenses || []; exchangeRate.value = data.exchangeRate || 19.5; dailyMetadata.value = data.dailyMetadata || {}; saveToLocal(); alert('讀檔成功！'); showSettingsModal.value = false; updateDailyWeather(); } } catch (err) { alert('檔案格式錯誤'); } };
-                    reader.readAsText(file); event.target.value = ''; 
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            if (confirm(`讀取存檔？\n時間: ${data.savedAt || '未知'}`)) {
+                                itinerary.value = data.itinerary || []; expenses.value = data.expenses || []; exchangeRate.value = data.exchangeRate || 19.5; dailyMetadata.value = data.dailyMetadata || {};
+                                saveToLocal(); alert('讀檔成功！'); showSettingsModal.value = false; updateDailyWeather();
+                            }
+                        } catch (err) { alert('檔案格式錯誤'); }
+                    };
+                    reader.readAsText(file);
+                    event.target.value = ''; 
                 };
 
                 watch(currentTab, (v) => { if(v==='map') nextTick(initMap); });
                 watch(selectedDayIndex, () => { centerActiveDate(); updateDailyWeather(); if(currentTab.value==='map') initMap(); });
-                onMounted(() => { const savedId = localStorage.getItem('nz_trip_id'); if(savedId) tripId.value = savedId; initSync(); setTimeout(() => centerActiveDate(), 800); });
+                onMounted(() => { 
+                    const savedId = localStorage.getItem('nz_trip_id');
+                    if(savedId) tripId.value = savedId;
+                    initSync(); 
+                    setTimeout(() => centerActiveDate(), 800); 
+                });
 
+                // Calculator logic
                 const addNZD = (amount) => { calcNZD.value += amount; };
                 watch(calcNZD, (newVal) => { calcTWD.value = parseFloat((newVal * exchangeRate.value).toFixed(2)); });
                 watch(calcTWD, (newVal) => { calcNZD.value = parseFloat((newVal / exchangeRate.value).toFixed(2)); });
 
-                const addTodo = () => { if (!newTodoText.value.trim()) return; todos.value.push({ id: Date.now(), text: newTodoText.value.trim(), done: false, category: todoCategory.value }); newTodoText.value = ''; saveToLocal(); };
+                // Todo logic
+                const addTodo = () => {
+                    if (!newTodoText.value.trim()) return;
+                    todos.value.push({ id: Date.now(), text: newTodoText.value.trim(), done: false, category: todoCategory.value });
+                    newTodoText.value = '';
+                    saveToLocal();
+                };
                 const toggleTodo = (todo) => { todo.done = !todo.done; saveToLocal(); };
                 const deleteTodo = (id) => { if(confirm('刪除此項目?')) { todos.value = todos.value.filter(t => t.id !== id); saveToLocal(); } };
-                const startEditTodo = (todo) => { editingTodoId.value = todo.id; tempTodoText.value = todo.text; };
-                const saveEditTodo = (todo) => { if (!tempTodoText.value.trim()) return; todo.text = tempTodoText.value.trim(); editingTodoId.value = null; saveToLocal(); };
-                const cancelEditTodo = () => { editingTodoId.value = null; tempTodoText.value = ''; };
+                
+                // Todo Editing logic
+                const startEditTodo = (todo) => {
+                    editingTodoId.value = todo.id;
+                    tempTodoText.value = todo.text;
+                };
+                
+                const saveEditTodo = (todo) => {
+                    if (!tempTodoText.value.trim()) return; // Prevent empty
+                    todo.text = tempTodoText.value.trim();
+                    editingTodoId.value = null;
+                    saveToLocal();
+                };
+                
+                const cancelEditTodo = () => {
+                    editingTodoId.value = null;
+                    tempTodoText.value = '';
+                };
 
                 return {
                     currentTab, selectedDayIndex, days, itinerary, expenses, filteredItinerary, groupedExpenses, connectionStatus, loadingMessage, errorMessage,
@@ -1074,7 +1125,8 @@
                     // New Diary Features
                     stamps, getWashiTapeClass, getWashiTapeStyle, getCardRotation, getStampStyle,
                     // V32 Custom Theme
-                    customColors, updateCustomTheme
+                    customColors, updateCustomTheme,
+                    resetForm // Exporting resetForm just in case
                 };
             }
         }).mount('#app');
