@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NZ Trip V43 (Clean UI Fix)</title>
+    <title>NZ Trip V44 (Sync Fix)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -180,7 +180,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2" style="text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">
                     <i class="fa-solid fa-mountain-sun text-primary"></i>
-                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V43 極簡修復</span>
+                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V44 同步修復</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100/80 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider border border-green-200"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100/80 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
                     <span v-else @click="showErrorDetail" class="text-[9px] bg-red-100/80 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all border border-red-200"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE</span>
@@ -424,84 +424,6 @@
             <button @click="currentTab = 'calculator'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'calculator' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-calculator text-xl mb-0.5"></i><span class="text-[9px] font-bold">換算</span></button>
             <button @click="currentTab = 'todo'" class="w-12 h-12 flex flex-col items-center justify-center rounded-full transition-all duration-300 active:scale-90 gap-0.5" :class="currentTab === 'todo' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'"><i class="fa-solid fa-list-check text-xl mb-0.5"></i><span class="text-[9px] font-bold">清單</span></button>
         </nav>
-
-        <!-- Itinerary Modal -->
-        <transition name="slide-up">
-            <div v-if="showItineraryModal" class="fixed inset-0 z-[20000] flex items-end justify-center sm:items-center">
-                <div class="absolute inset-0 bg-dark/20 backdrop-blur-[2px]" @click="closeModal"></div>
-                <div class="bg-cream w-full sm:w-96 p-6 shadow-2xl relative z-10 max-h-[90vh] overflow-y-auto modal-scroll pb-10" style="border-radius: 25px 25px 0 0;">
-                    <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4 opacity-50"></div>
-                    <h3 class="text-xl font-bold text-dark mb-6 text-center">{{ isEditing ? '編輯行程' : '新增行程' }}</h3>
-                    <div class="space-y-3">
-                        <div class="grid grid-cols-5 gap-3">
-                            <div class="col-span-2"><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">DAY</label><select v-model="form.dayIndex" class="w-full bg-white input-rounded p-2.5 text-sm font-bold text-center appearance-none outline-none"><option v-for="(d, i) in days" :value="i">Day {{ i }}</option></select></div>
-                            <div class="col-span-3"><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">TIME</label><div class="flex gap-2"><select v-model="formHour" class="flex-1 bg-white input-rounded p-2.5 text-sm font-bold text-center appearance-none outline-none"><option v-for="h in 24" :value="(h-1).toString().padStart(2,'0')">{{ (h-1).toString().padStart(2,'0') }}</option></select><span class="self-center font-bold text-gray-300">:</span><select v-model="formMinute" class="flex-1 bg-white input-rounded p-2.5 text-sm font-bold text-center appearance-none outline-none"><option v-for="m in 60" :value="(m-1).toString().padStart(2,'0')">{{ (m-1).toString().padStart(2,'0') }}</option></select></div></div>
-                        </div>
-                        <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">TITLE</label><input type="text" v-model="form.title" placeholder="例如：前往餐廳吃晚餐" class="w-full bg-white input-rounded p-3 text-sm font-bold outline-none"></div>
-                        <div class="bg-white p-2.5 rounded-2xl border border-dashed border-gray-200">
-                             <div class="flex justify-between items-center mb-1 px-1"><label class="text-[10px] font-bold text-gray-400">LOCATION</label><span v-if="form.lat" class="text-[9px] text-green-500 font-mono"><i class="fa-solid fa-check"></i> {{ form.lat.toFixed(3) }},{{ form.lng.toFixed(3) }}</span></div>
-                             <div class="flex gap-2"><input type="text" v-model="form.location" placeholder="地點名稱" class="flex-1 bg-gray-50 rounded-xl p-2 text-sm font-bold outline-none"><button @click="searchCoord(form)" :disabled="isSearchingCoord" class="w-9 h-9 rounded-xl bg-gray-100 text-gray-400 hover:bg-primary hover:text-white transition-colors flex items-center justify-center shrink-0 active:scale-90"><i class="fa-solid" :class="isSearchingCoord ? 'fa-circle-notch fa-spin' : 'fa-magnifying-glass'"></i></button></div>
-                             <div class="flex gap-2 mt-2">
-                                <input type="number" step="any" v-model.number="form.lat" placeholder="Lat" class="w-1/2 bg-gray-50 rounded-lg p-1.5 text-[9px] text-center outline-none border border-transparent focus:border-primary">
-                                <input type="number" step="any" v-model.number="form.lng" placeholder="Lng" class="w-1/2 bg-gray-50 rounded-lg p-1.5 text-[9px] text-center outline-none border border-transparent focus:border-primary">
-                             </div>
-                        </div>
-                        <div class="bg-white p-2.5 rounded-2xl border border-dashed border-gray-200">
-                            <label class="text-[10px] font-bold text-gray-400 mb-1 block pl-1">MOOD STAMP (心情印章)</label>
-                            <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
-                                <button v-for="icon in stamps" :key="icon" @click="form.stamp === icon ? form.stamp = null : form.stamp = icon" class="w-10 h-10 rounded-xl border-2 flex items-center justify-center text-xl transition-all active:scale-90 shrink-0" :class="form.stamp === icon ? 'border-red-400 bg-red-50 text-red-500 shadow-sm' : 'border-gray-100 text-gray-300 hover:border-gray-200'"><i :class="['fa-solid', icon]"></i></button>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between items-center mb-1 px-1"><label class="text-[10px] font-bold text-gray-400">SUB-ITEMS</label><button @click="addSubItem" class="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded-lg font-bold hover:bg-primary hover:text-white transition-colors active:scale-95"><i class="fa-solid fa-plus mr-1"></i>新增</button></div>
-                            <div class="space-y-2">
-                                <div v-for="(sub, idx) in form.subItems" :key="idx" class="bg-white p-2.5 rounded-xl border border-cream-dark relative">
-                                    <button @click="removeSubItem(idx)" class="absolute top-2 right-2 text-gray-300 hover:text-red-400 active:scale-90"><i class="fa-solid fa-xmark text-xs"></i></button>
-                                    <div class="flex gap-2 mb-1.5 pr-6">
-                                        <input type="text" v-model="sub.location" placeholder="子地點" class="flex-1 text-xs font-bold outline-none bg-transparent border-b border-gray-100 focus:border-primary pb-0.5">
-                                        <button @click="searchCoord(sub)" :disabled="isSearchingCoord" class="text-gray-300 hover:text-primary active:scale-90"><i class="fa-solid fa-magnifying-glass text-xs"></i></button>
-                                    </div>
-                                    <input type="number" step="any" v-model.number="sub.lat" placeholder="Lat" class="w-1/2 bg-gray-50 rounded-lg p-1 text-[9px] text-center outline-none hidden">
-                                    <input type="number" step="any" v-model.number="sub.lng" placeholder="Lng" class="w-1/2 bg-gray-50 rounded-lg p-1 text-[9px] text-center outline-none hidden">
-                                    <input type="text" v-model="sub.notes" placeholder="備註..." class="w-full text-xs text-gray-500 bg-transparent outline-none">
-                                </div>
-                            </div>
-                        </div>
-                        <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">CATEGORY</label><div class="flex flex-wrap gap-2"><button v-for="t in ['景點','美食','住宿','交通','購物','活動','健行','其他']" @click="form.type = t" class="px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all active:scale-95" :class="form.type === t ? 'bg-dark text-white border-dark' : 'bg-white text-gray-400 border-gray-100 hover:border-gray-300'">{{ t }}</button></div></div>
-                        <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">MEMO</label><textarea v-model="form.notes" rows="3" class="w-full bg-white input-rounded p-3 text-sm outline-none resize-none notebook-lines"></textarea></div>
-                    </div>
-                    <button @click="saveItinerary" class="w-full py-3.5 bg-primary text-white rounded-2xl font-bold mt-5 shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform">儲存行程</button>
-                </div>
-            </div>
-        </transition>
-
-        <!-- ... other modals ... -->
-        <transition name="slide-up">
-            <div v-if="showExpenseModal" class="fixed inset-0 z-[20000] flex items-end justify-center sm:items-center">
-                <div class="absolute inset-0 bg-dark/30 backdrop-blur-sm" @click="closeModal"></div>
-                <div class="bg-[#FDFBF7] w-full sm:w-[400px] rounded-t-3xl p-6 shadow-2xl relative z-10">
-                    <button @click="closeModal" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-400 hover:bg-gray-200 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
-                    <h3 class="text-lg font-bold text-dark mb-5 pl-1">新增支出</h3>
-                    <div class="space-y-4">
-                        <div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">項目名稱</label><input type="text" v-model="expenseForm.item" placeholder="例如：午餐" class="w-full bg-white h-12 rounded-xl px-4 text-sm font-bold text-dark shadow-sm border border-transparent focus:border-primary outline-none"></div>
-                        <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-50"><div class="flex bg-gray-50 rounded-lg p-1 mb-2"><button @click="expenseForm.currency = 'NZD'" class="flex-1 py-1.5 rounded-md text-xs font-bold transition-all active:scale-95" :class="expenseForm.currency === 'NZD' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'">NZD $</button><button @click="expenseForm.currency = 'TWD'" class="flex-1 py-1.5 rounded-md text-xs font-bold transition-all active:scale-95" :class="expenseForm.currency === 'TWD' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'">TWD $</button></div><div class="px-2 pb-1 relative"><input type="number" v-model.number="expenseForm.amount" placeholder="0" class="w-full text-2xl font-bold text-dark bg-transparent outline-none placeholder-gray-200 pl-1"></div></div>
-                        <div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">分類</label><div class="relative"><select v-model="expenseForm.category" class="w-full bg-white h-10 rounded-xl pl-3 pr-8 text-xs font-bold text-dark appearance-none shadow-sm border border-transparent outline-none"><option v-for="c in expenseCategories" :value="c">{{ c }}</option></select><i class="fa-solid fa-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i></div></div><div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">付款人</label><div class="relative"><select v-model="expenseForm.payer" class="w-full bg-white h-10 rounded-xl pl-3 pr-8 text-xs font-bold text-dark appearance-none shadow-sm border border-transparent outline-none"><option v-for="p in payers" :value="p">{{ p }}</option></select><i class="fa-solid fa-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i></div></div></div>
-                        <div><label class="text-[10px] font-bold text-gray-400 mb-1 block pl-2">日期</label><div class="relative"><input type="date" v-model="expenseForm.date" class="w-full bg-white h-10 rounded-xl px-3 text-xs font-bold text-gray-600 appearance-none shadow-sm border border-transparent outline-none"><i class="fa-regular fa-calendar absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none text-xs"></i></div></div>
-                    </div>
-                    <button @click="saveExpense" class="w-full py-3.5 bg-dark text-white rounded-xl font-bold mt-6 shadow-lg shadow-dark/20 active:scale-[0.98] transition-transform">儲存紀錄</button>
-                </div>
-            </div>
-        </transition>
-
-        <div v-if="showStatsModal" class="fixed inset-0 z-[20000] flex items-center justify-center bg-dark/30 backdrop-blur-sm p-4">
-            <div class="bg-cream w-full sm:w-[400px] rounded-3xl p-6 shadow-2xl relative max-h-[85vh] overflow-y-auto modal-scroll">
-                <button @click="showStatsModal=false" class="absolute top-4 right-4 text-gray-400 hover:text-dark transition-colors active:scale-90"><i class="fa-solid fa-xmark text-lg"></i></button>
-                <h3 class="text-lg font-bold text-dark mb-4 flex items-center gap-2"><span class="bg-yellow-card p-1 rounded-lg text-yellow-text"><i class="fa-solid fa-chart-pie"></i></span>消費統計</h3>
-                <div class="mb-4"><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">依付款人 (By Payer)</h4><div class="space-y-2"><div v-for="payer in payers" :key="payer" class="bg-white p-3 rounded-xl shadow-card border border-cream-dark flex justify-between items-center"><div class="flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">{{ payer.charAt(0) }}</div><span class="font-bold text-dark text-xs">{{ payer }}</span></div><div class="text-right flex flex-col gap-0.5"><span v-if="expenseStats.payers[payer].NZD > 0" class="text-[10px] font-bold text-dark bg-gray-50 px-1.5 py-0.5 rounded">NZD {{ expenseStats.payers[payer].NZD.toLocaleString() }}</span><span v-if="expenseStats.payers[payer].TWD > 0" class="text-[10px] font-bold text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded">TWD {{ expenseStats.payers[payer].TWD.toLocaleString() }}</span><span v-if="expenseStats.payers[payer].NZD === 0 && expenseStats.payers[payer].TWD === 0" class="text-[9px] text-gray-300">-</span></div></div></div></div>
-                <div><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">依分類 (By Category)</h4><div class="space-y-1"><div v-for="cat in expenseCategories" :key="cat" class="flex justify-between items-center py-1.5 px-2 border-b border-dashed border-gray-200 last:border-0"><div class="flex items-center gap-2"><i :class="getCategoryIcon(cat)" class="text-gray-300 text-[10px] w-4 text-center"></i><span class="text-[10px] font-bold text-gray-600">{{ cat }}</span></div><div class="flex gap-2 text-right"><span v-if="expenseStats.categories[cat].NZD > 0" class="text-[10px] font-bold text-dark">NZD {{ expenseStats.categories[cat].NZD.toLocaleString() }}</span><span v-if="expenseStats.categories[cat].TWD > 0" class="text-[10px] font-bold text-gray-400">TWD {{ expenseStats.categories[cat].TWD.toLocaleString() }}</span><span v-if="expenseStats.categories[cat].NZD === 0 && expenseStats.categories[cat].TWD === 0" class="text-[10px] text-gray-300">-</span></div></div></div></div>
-                <button @click="showStatsModal=false" class="w-full mt-4 py-3 bg-primary text-white rounded-xl font-bold shadow-soft hover:bg-primary-dark transition-colors active:scale-95">關閉</button>
-            </div>
-        </div>
 
         <div v-if="showSettingsModal" class="fixed inset-0 z-[20000] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
             <div class="bg-white p-6 rounded-3xl w-72 shadow-2xl text-center relative max-h-[90vh] overflow-y-auto modal-scroll">
