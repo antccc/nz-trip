@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NZ Trip V39 (Fix Edit)</title>
+    <title>NZ Trip V40 (Activity & Hollow Stamp)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -143,11 +143,17 @@
         .tape-pattern-stripes { background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.4) 0, rgba(255,255,255,0.4) 3px, transparent 3px, transparent 8px); }
         .tape-pattern-grid { background-image: linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px); background-size: 8px 8px; }
 
+        /* Hollow Stamp Effect */
         .stamp-mark {
-            position: absolute; z-index: 5; opacity: 0.7; mix-blend-mode: multiply; filter: contrast(120%) brightness(95%); pointer-events: none;
+            position: absolute; z-index: 5; opacity: 0.8; mix-blend-mode: multiply; pointer-events: none;
             animation: stamp-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
-        @keyframes stamp-pop { 0% { transform: scale(1.5) rotate(0deg); opacity: 0; } 100% { transform: scale(1) rotate(var(--r)); opacity: 0.7; } }
+        /* Make icon hollow using text-stroke and transparent color */
+        .stamp-mark i {
+            color: transparent;
+            -webkit-text-stroke: 1.5px rgba(220, 38, 38, 0.65); /* Reddish stroke */
+        }
+        @keyframes stamp-pop { 0% { transform: scale(1.5) rotate(0deg); opacity: 0; } 100% { transform: scale(1) rotate(var(--r)); opacity: 0.8; } }
 
         .notebook-lines {
             background-image: linear-gradient(transparent 95%, rgba(var(--c-primary), 0.15) 95%);
@@ -174,7 +180,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2" style="text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">
                     <i class="fa-solid fa-mountain-sun text-primary"></i>
-                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V39 修復版</span>
+                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V40 鏤空版</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100/80 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider border border-green-200"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100/80 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
                     <span v-else @click="showErrorDetail" class="text-[9px] bg-red-100/80 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all border border-red-200"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE</span>
@@ -233,7 +239,11 @@
                             
                             <div class="hand-drawn-box relative flex flex-col z-10 overflow-hidden" :style="getCardRotation(index)">
                                 <div class="washi-tape" :class="getWashiTapeClass(item)" :style="getWashiTapeStyle(item)"></div>
-                                <div v-if="item.stamp" class="stamp-mark" :style="getStampStyle(item)"><i :class="['fa-solid', item.stamp]" class="text-4xl text-red-500/60"></i></div>
+                                
+                                <!-- Updated Stamp to be Hollow -->
+                                <div v-if="item.stamp" class="stamp-mark" :style="getStampStyle(item)">
+                                    <i :class="['fa-solid', item.stamp]" class="text-4xl"></i>
+                                </div>
 
                                 <div class="p-3 flex gap-3 items-start relative z-10" @click="toggleItem(item.id)">
                                     <div class="flex flex-col items-center min-w-[3rem] shrink-0 pt-0.5">
@@ -454,7 +464,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">CATEGORY</label><div class="flex flex-wrap gap-2"><button v-for="t in ['景點','美食','住宿','交通','購物','其他']" @click="form.type = t" class="px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all active:scale-95" :class="form.type === t ? 'bg-dark text-white border-dark' : 'bg-white text-gray-400 border-gray-100 hover:border-gray-300'">{{ t }}</button></div></div>
+                        <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">CATEGORY</label><div class="flex flex-wrap gap-2"><button v-for="t in ['景點','美食','住宿','交通','購物','活動','其他']" @click="form.type = t" class="px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all active:scale-95" :class="form.type === t ? 'bg-dark text-white border-dark' : 'bg-white text-gray-400 border-gray-100 hover:border-gray-300'">{{ t }}</button></div></div>
                         <div><label class="text-[10px] font-bold text-gray-400 mb-0.5 block pl-2">MEMO</label><textarea v-model="form.notes" rows="3" class="w-full bg-white input-rounded p-3 text-sm outline-none resize-none notebook-lines"></textarea></div>
                     </div>
                     <button @click="saveItinerary" class="w-full py-3.5 bg-primary text-white rounded-2xl font-bold mt-5 shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform">儲存行程</button>
@@ -556,6 +566,7 @@
             </div>
         </div>
 
+        <!-- ... other modals ... -->
         <div v-if="showDaySettingsModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
              <div class="bg-white p-6 rounded-3xl w-72 shadow-2xl relative">
                 <button @click="showDaySettingsModal=false" class="absolute top-4 right-4 text-gray-300 hover:text-gray-500 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
@@ -803,7 +814,15 @@
                 };
 
                 const getTypeColorClass = (type) => {
-                     const map = {'景點': 'bg-teal-50 text-teal-600 border-teal-100', '美食': 'bg-orange-50 text-orange-500 border-orange-100', '住宿': 'bg-indigo-50 text-indigo-500 border-indigo-100', '交通': 'bg-gray-100 text-gray-500 border-gray-200', '購物': 'bg-pink-50 text-pink-500 border-pink-100', '其他': 'bg-gray-50 text-gray-500'};
+                     const map = {
+                         '景點': 'bg-teal-50 text-teal-600 border-teal-100',
+                         '美食': 'bg-orange-50 text-orange-500 border-orange-100',
+                         '住宿': 'bg-indigo-50 text-indigo-500 border-indigo-100',
+                         '交通': 'bg-gray-100 text-gray-500 border-gray-200',
+                         '購物': 'bg-pink-50 text-pink-500 border-pink-100',
+                         '活動': 'bg-violet-50 text-violet-600 border-violet-100', // Added Activity Style
+                         '其他': 'bg-gray-50 text-gray-500'
+                     };
                      return map[type] || 'bg-gray-50 text-gray-500';
                 };
 
