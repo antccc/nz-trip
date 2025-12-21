@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NZ Trip V49</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>NZ Trip V50</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -44,6 +46,17 @@
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
+            
+            // V50 NEW: Enable Offline Persistence
+            // This allows the app to work seamlessly when internet drops
+            enableIndexedDbPersistence(db).catch((err) => {
+                if (err.code == 'failed-precondition') {
+                    console.log('Multiple tabs open, persistence can only be enabled in one tab at a a time.');
+                } else if (err.code == 'unimplemented') {
+                    console.log('The current browser does not support all of the features required to enable persistence');
+                }
+            });
+
             window.firestoreDB = db;
             window.firebaseAuth = auth;
             window.firestoreMethods = { doc, onSnapshot, setDoc, deleteDoc, signInAnonymously, onAuthStateChanged };
@@ -178,10 +191,11 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2" style="text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">
                     <i class="fa-solid fa-mountain-sun text-primary"></i>
-                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V49</span>
+                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V50</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100/80 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider border border-green-200"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100/80 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
-                    <span v-else @click="showErrorDetail" class="text-[9px] bg-red-100/80 text-red-500 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-red-200 active:scale-95 transition-all border border-red-200"><i class="fa-solid fa-circle-exclamation"></i> OFFLINE</span>
+                    <!-- Improved Offline Indicator -->
+                    <span v-else @click="showErrorDetail" class="text-[9px] bg-gray-200/90 text-gray-600 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-gray-300 active:scale-95 transition-all border border-gray-300 flex items-center gap-1"><i class="fa-solid fa-floppy-disk"></i> 離線模式 (已存本機)</span>
                 </h1>
             </div>
             <div class="flex gap-2">
