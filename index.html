@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>NZ Trip V55</title>
+    <title>NZ Trip V56</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -189,7 +189,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2" style="text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">
                     <i class="fa-solid fa-mountain-sun text-primary"></i>
-                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V55</span>
+                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V56</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100/80 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider border border-green-200"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100/80 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
                     <!-- Improved Offline Indicator -->
@@ -540,12 +540,12 @@
                          <div class="flex-1">
                              <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">類型</label>
                              <div class="flex overflow-x-auto no-scrollbar gap-2 pb-1">
-                                  <button v-for="t in ['景點','美食','住宿','交通','購物']" @click="form.type=t" class="px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all" :class="form.type===t ? getTypeColorClass(t) : 'bg-gray-50 border-gray-100 text-gray-400'">{{t}}</button>
+                                  <button v-for="t in ['景點','美食','住宿','交通','購物','活動','健行','其他']" @click="form.type=t" class="px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all" :class="form.type===t ? getTypeColorClass(t) : 'bg-gray-50 border-gray-100 text-gray-400'">{{t}}</button>
                              </div>
                          </div>
                      </div>
         
-                     <!-- Title & Location Swapped (V51) -->
+                     <!-- Title & Location Swapped (V51) & Coords (V56) -->
                      <div>
                          <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">標題</label>
                          <input type="text" v-model="form.title" placeholder="輸入行程標題..." class="w-full bg-gray-50 input-rounded p-3 text-sm font-bold text-dark outline-none">
@@ -553,7 +553,14 @@
                          <div class="flex gap-2 mt-2 items-center">
                              <i class="fa-solid fa-location-dot text-gray-300 text-xs pl-1"></i>
                              <input type="text" v-model="form.location" placeholder="地點 (選填)" class="flex-1 bg-transparent border-b border-gray-100 p-1 text-xs text-gray-600 outline-none focus:border-primary">
-                             <button @click="searchCoord(form)" class="w-6 h-6 bg-gray-100 text-gray-400 rounded-md flex items-center justify-center hover:text-primary active:scale-95" :class="{'animate-pulse': isSearchingCoord}"><i class="fa-solid fa-map-pin text-[10px]"></i></button>
+                             <button @click="searchCoord(form)" class="w-6 h-6 bg-gray-100 text-gray-400 rounded-md flex items-center justify-center hover:text-primary active:scale-95" :class="{'animate-pulse': isSearchingCoord}"><i class="fa-solid fa-magnifying-glass text-[10px]"></i></button>
+                         </div>
+                         
+                         <!-- V56 New: Main Item Coords Input -->
+                         <div class="flex gap-2 mt-2 bg-gray-50 p-2 rounded-lg border border-gray-100 items-center">
+                             <span class="text-[10px] font-bold text-gray-400">經緯度</span>
+                             <input type="number" v-model="form.lat" placeholder="緯度 (Lat)" class="flex-1 bg-white border border-gray-200 rounded px-2 py-1 text-xs outline-none">
+                             <input type="number" v-model="form.lng" placeholder="經度 (Lng)" class="flex-1 bg-white border border-gray-200 rounded px-2 py-1 text-xs outline-none">
                          </div>
                      </div>
         
@@ -563,7 +570,7 @@
                          <textarea v-model="form.notes" rows="3" class="w-full bg-yellow-50/50 input-rounded p-3 text-sm text-gray-600 outline-none resize-none notebook-lines" placeholder="寫點什麼..."></textarea>
                      </div>
         
-                     <!-- Sub Items (V54 Enhanced) -->
+                     <!-- Sub Items (V54 Enhanced + V56 Coords Toggle) -->
                      <div>
                           <div class="flex justify-between items-center mb-2">
                               <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">子行程</label>
@@ -576,11 +583,19 @@
                                            <input type="text" v-model="sub.location" placeholder="子地點" class="w-full bg-white border border-gray-200 rounded px-2 py-1.5 text-xs font-bold outline-none focus:border-primary pr-7">
                                            <!-- Search Button Inside Input -->
                                            <button @click="searchCoord(sub)" class="absolute right-1 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 hover:text-primary active:scale-95 flex items-center justify-center">
-                                               <i class="fa-solid fa-map-pin text-[10px]" :class="{'fa-bounce': isSearchingCoord}"></i>
+                                               <i class="fa-solid fa-magnifying-glass text-[10px]" :class="{'fa-bounce': isSearchingCoord}"></i>
                                            </button>
                                       </div>
+                                      <button @click="sub.showCoords = !sub.showCoords" class="w-6 h-6 text-gray-400 hover:text-primary flex items-center justify-center bg-white rounded border border-gray-100 shadow-sm" :class="{'text-primary border-primary/50': sub.showCoords}"><i class="fa-solid fa-location-crosshairs text-xs"></i></button>
                                       <button @click="removeSubItem(idx)" class="w-6 h-6 text-gray-300 hover:text-red-400 flex items-center justify-center bg-white rounded border border-gray-100 shadow-sm"><i class="fa-solid fa-xmark text-xs"></i></button>
                                   </div>
+                                  
+                                  <!-- V56 New: Sub Item Coords Input (Collapsible) -->
+                                  <div v-if="sub.showCoords" class="flex gap-1 mb-1 animate-fade-in-down">
+                                      <input type="number" v-model="sub.lat" placeholder="緯度" class="flex-1 bg-white border border-primary/30 rounded px-2 py-1 text-[10px] outline-none">
+                                      <input type="number" v-model="sub.lng" placeholder="經度" class="flex-1 bg-white border border-primary/30 rounded px-2 py-1 text-[10px] outline-none">
+                                  </div>
+
                                   <div class="flex gap-1 items-center">
                                       <input type="text" v-model="sub.notes" placeholder="備註..." class="flex-1 bg-transparent border-b border-dashed border-gray-200 px-1 py-0.5 text-[10px] text-gray-500 outline-none focus:border-primary/30">
                                       <span v-if="sub.lat" class="text-[9px] text-green-600 bg-green-50 px-1 rounded flex items-center gap-0.5"><i class="fa-solid fa-check"></i>已定位</span>
