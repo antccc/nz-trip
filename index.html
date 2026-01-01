@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>NZ Trip V56</title>
+    <title>NZ Trip V58</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -189,7 +189,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2" style="text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">
                     <i class="fa-solid fa-mountain-sun text-primary"></i>
-                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V56</span>
+                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V58</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100/80 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider border border-green-200"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100/80 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
                     <!-- Improved Offline Indicator -->
@@ -329,7 +329,7 @@
                             <span class="text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{{ date }}</span>
                             <span class="text-[11px] font-bold text-dark">小計: ${{ group.total.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) }}</span>
                         </div>
-                        <div v-for="expense in group.items" :key="expense.id" class="bg-white rounded-xl p-3 mb-2 border-2 border-transparent hover:border-primary/20 transition-all flex justify-between items-center group relative shadow-card active:scale-[0.995]">
+                        <div v-for="expense in group.items" :key="expense.id" @click="editExpense(expense)" class="bg-white rounded-xl p-3 mb-2 border-2 border-transparent hover:border-primary/20 transition-all flex justify-between items-center group relative shadow-card active:scale-[0.995] cursor-pointer">
                             <div class="flex items-center gap-3 flex-1 min-w-0">
                                 <div class="w-10 h-10 rounded-full bg-cream flex items-center justify-center text-sm shrink-0 text-gray-500 border border-cream-dark transition-colors duration-300"><i :class="getCategoryIcon(expense.category)"></i></div>
                                 <div class="min-w-0">
@@ -344,7 +344,7 @@
                                 <div class="font-bold text-dark text-sm">{{ expense.currency }} {{ expense.originalAmount }}</div>
                                 <div class="text-[10px] text-gray-400">≈ NT$ {{ Math.round(expense.baseAmount * exchangeRate) }}</div>
                             </div>
-                            <button @click="deleteExpense(expense.id)" class="absolute -right-2 -top-2 bg-white text-red-400 w-6 h-6 rounded-full shadow-md border border-gray-100 items-center justify-center hidden group-hover:flex hover:bg-red-50 active:scale-90"><i class="fa-solid fa-xmark text-[10px]"></i></button>
+                            <button @click.stop="deleteExpense(expense.id)" class="absolute -right-2 -top-2 bg-white text-red-400 w-6 h-6 rounded-full shadow-md border border-gray-100 flex items-center justify-center hover:bg-red-50 active:scale-90"><i class="fa-solid fa-xmark text-[10px]"></i></button>
                         </div>
                     </div>
                 </div>
@@ -626,10 +626,16 @@
         <div v-if="showExpenseModal" class="fixed inset-0 z-[20000] flex items-end sm:items-center justify-center bg-black/20 backdrop-blur-sm sm:p-4">
             <div class="bg-white w-full sm:w-80 sm:rounded-3xl rounded-t-3xl shadow-2xl relative flex flex-col">
                 <div class="p-4 border-b border-gray-100 flex justify-between items-center">
-                     <h3 class="font-bold text-dark text-lg"><i class="fa-solid fa-wallet text-primary mr-2"></i>記一筆</h3>
+                     <h3 class="font-bold text-dark text-lg"><i class="fa-solid fa-wallet text-primary mr-2"></i>{{ expenseForm.id ? '編輯支出' : '記一筆' }}</h3>
                      <button @click="closeModal" class="w-8 h-8 rounded-full bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-gray-100 active:scale-90"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="p-5 space-y-4">
+                     <!-- Date (V57 New) -->
+                     <div>
+                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">日期</label>
+                         <input type="date" v-model="expenseForm.date" class="w-full bg-gray-50 input-rounded p-3 text-sm font-bold text-dark outline-none">
+                     </div>
+
                      <!-- Amount -->
                      <div class="relative">
                          <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">金額</label>
@@ -665,9 +671,13 @@
                          </div>
                      </div>
                 </div>
-                <div class="p-4 border-t border-gray-100 pb-safe">
-                    <button @click="saveExpense" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform">
-                        <i class="fa-solid fa-check mr-1"></i> 記帳
+                <div class="p-4 border-t border-gray-100 pb-safe flex gap-2">
+                    <!-- V58 New: Delete Button in Modal -->
+                    <button v-if="expenseForm.id" @click="deleteExpense(expenseForm.id); closeModal()" class="w-12 bg-red-50 text-red-400 py-3 rounded-xl font-bold active:scale-[0.98] transition-transform flex items-center justify-center border border-red-100">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                    <button @click="saveExpense" class="flex-1 bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform">
+                        <i class="fa-solid fa-check mr-1"></i> {{ expenseForm.id ? '更新' : '記帳' }}
                     </button>
                 </div>
             </div>
@@ -898,7 +908,7 @@
                 });
 
                 const form = ref({ id: null, dayIndex: 0, time: '09:00', type: '景點', title: '', location: '', address: '', lat: null, lng: null, notes: '', subItems: [], stamp: null });
-                const expenseForm = ref({ amount: '', item: '', category: '餐飲', payer: 'Ant', currency: 'NZD', date: new Date().toISOString().split('T')[0] });
+                const expenseForm = ref({ id: null, amount: '', item: '', category: '餐飲', payer: 'Ant', currency: 'NZD', date: new Date().toISOString().split('T')[0] });
                 const payers = ref(['Ant', 'Fish', '公費']);
                 const expenseCategories = ['餐飲', '交通', '住宿', '購物', '活動', '其他'];
                 
@@ -1185,7 +1195,7 @@
                             resetForm();
                             showItineraryModal.value=true; 
                           }
-                          else { const d=new Date(); const t=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; expenseForm.value={amount:'', item:'', category:'餐飲', payer:'Ant', currency:'NZD', date:t}; showExpenseModal.value=true; }
+                          else { const d=new Date(); const t=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; expenseForm.value={id: null, amount:'', item:'', category:'餐飲', payer:'Ant', currency:'NZD', date:t}; showExpenseModal.value=true; }
                       } catch(e) { console.error(e); alert('開啟視窗失敗'); }
                 };
 
@@ -1233,6 +1243,12 @@
                     } catch(e) { console.error(e); alert('編輯失敗，資料格式有誤'); }
                 }; 
 
+                // NEW: Edit Expense function
+                const editExpense = (item) => {
+                    expenseForm.value = { ...item }; 
+                    showExpenseModal.value = true;
+                }
+
                 const saveItinerary = () => {
                       let newItem = { ...form.value, day: parseInt(form.value.dayIndex) }; // Ensure day is integer
                       if(newItem.lat) newItem.lat = parseFloat(newItem.lat); if(newItem.lng) newItem.lng = parseFloat(newItem.lng);
@@ -1248,7 +1264,26 @@
 
                 const closeModal = () => { showItineraryModal.value=false; showExpenseModal.value=false; };
                 const deleteItem = (id) => { if(confirm('Delete?')) { itinerary.value = itinerary.value.filter(i=>i.id!==id); saveToLocal(); }};
-                const saveExpense = () => { if(!expenseForm.value.amount) return; const b = expenseForm.value.currency==='TWD'?expenseForm.value.amount/exchangeRate.value:expenseForm.value.amount; expenses.value.push({id:Date.now(), ...expenseForm.value, baseAmount:b, originalAmount:expenseForm.value.amount}); saveToLocal(); closeModal(); };
+                
+                // UPDATED: saveExpense to handle edits
+                const saveExpense = () => { 
+                    if(!expenseForm.value.amount) return; 
+                    const b = expenseForm.value.currency==='TWD'?expenseForm.value.amount/exchangeRate.value:expenseForm.value.amount; 
+                    
+                    if(expenseForm.value.id) {
+                        // Update existing
+                        const idx = expenses.value.findIndex(e => e.id === expenseForm.value.id);
+                        if(idx !== -1) {
+                            expenses.value[idx] = { ...expenseForm.value, baseAmount: b, originalAmount: expenseForm.value.amount };
+                        }
+                    } else {
+                        // Create new
+                        expenses.value.push({id:Date.now(), ...expenseForm.value, baseAmount:b, originalAmount:expenseForm.value.amount}); 
+                    }
+                    saveToLocal(); 
+                    closeModal(); 
+                };
+
                 const deleteExpense = (id) => { if(confirm('Delete?')) { expenses.value = expenses.value.filter(e=>e.id!==id); saveToLocal(); }};
                 const navigateTo = (loc) => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc + ', New Zealand')}`, '_blank');
                 const locateUser = () => { if(navigator.geolocation && map) navigator.geolocation.getCurrentPosition(p=>{ map.setView([p.coords.latitude, p.coords.longitude], 14); if(window.userMarker) window.userMarker.setLatLng([p.coords.latitude, p.coords.longitude]); else window.userMarker = L.marker([p.coords.latitude, p.coords.longitude], {icon: L.divIcon({className:'custom-div-icon', html:`<div style="width:16px;height:16px;background:#3B82F6;border:3px solid white;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,0.3);"></div>`})}).addTo(map); }); };
@@ -1436,7 +1471,8 @@
                     stamps, getWashiTapeClass, getWashiTapeStyle, getCardRotation, getStampStyle,
                     // V32 Custom Theme
                     customColors, updateCustomTheme,
-                    resetForm // Exporting resetForm just in case
+                    resetForm, // Exporting resetForm just in case
+                    editExpense // Export editExpense
                 };
             }
         }).mount('#app');
