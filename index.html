@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>NZ Trip V58</title>
+    <title>NZ Trip V63</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -189,7 +189,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2" style="text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">
                     <i class="fa-solid fa-mountain-sun text-primary"></i>
-                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V58</span>
+                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V63</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100/80 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider border border-green-200"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100/80 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
                     <!-- Improved Offline Indicator -->
@@ -531,11 +531,8 @@
                      <div class="flex gap-3">
                          <div class="w-1/3">
                              <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">時間</label>
-                             <div class="flex items-center gap-1 bg-gray-50 rounded-xl p-1 border border-cream-darker">
-                                 <input type="text" v-model="formHour" class="w-full text-center bg-transparent font-bold text-dark outline-none" maxlength="2">
-                                 <span class="text-gray-300">:</span>
-                                 <input type="text" v-model="formMinute" class="w-full text-center bg-transparent font-bold text-dark outline-none" maxlength="2">
-                             </div>
+                             <!-- V59: Reverted to native time picker -->
+                             <input type="time" v-model="form.time" class="w-full bg-gray-50 input-rounded p-3 text-sm font-bold text-dark outline-none text-center">
                          </div>
                          <div class="flex-1">
                              <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">類型</label>
@@ -913,8 +910,7 @@
                 const expenseCategories = ['餐飲', '交通', '住宿', '購物', '活動', '其他'];
                 
                 let map = null;
-                const formHour = computed({ get: () => form.value.time ? form.value.time.split(':')[0] : '09', set: (v) => { const m = form.value.time ? form.value.time.split(':')[1] : '00'; form.value.time = `${v}:${m}`; } });
-                const formMinute = computed({ get: () => form.value.time ? form.value.time.split(':')[1] : '00', set: (v) => { const h = form.value.time ? form.value.time.split(':')[0] : '09'; form.value.time = `${h}:${v}`; } });
+                // V59 Removed complex computed formHour/formMinute
 
                 const updateCustomTheme = () => {
                     const p = customColors.value.primary;
@@ -1456,7 +1452,7 @@
                     showItineraryModal, showExpenseModal, showSettingsModal, showDaySettingsModal, showStatsModal, isEditing, form, expenseForm, exchangeRate, isFetchingRate, saveFileInput, dateContainer,
                     dailyWeatherList, expandedItems, getDaySummary, toggleGlobalFold, toggleItem, isAllExpanded,
                     openModal, closeModal, saveItinerary, deleteItem, editItem, deleteExpense, saveExpense, fetchRate, saveToFile, loadFromFile, selectDate,
-                    formatDate, getCategoryIcon, navigateTo, locateUser, formHour, formMinute, 
+                    formatDate, getCategoryIcon, navigateTo, locateUser, 
                     openDaySettings, tempDaySettings, saveDaySettings, currentDayItems, tempWeatherLocs, isSavingSettings,
                     searchCoord, isSearchingCoord, hasCoordinatesForDay, copyItem, addSubItem, removeSubItem,
                     payers, expenseCategories, getTypeColorClass,
