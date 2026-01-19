@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>NZ Trip V63</title>
+    <title>NZ Trip V64 (Fix)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -189,7 +189,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2" style="text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">
                     <i class="fa-solid fa-mountain-sun text-primary"></i>
-                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V63</span>
+                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V64</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100/80 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider border border-green-200"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100/80 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
                     <!-- Improved Offline Indicator -->
@@ -910,8 +910,7 @@
                 const expenseCategories = ['餐飲', '交通', '住宿', '購物', '活動', '其他'];
                 
                 let map = null;
-                // V59 Removed complex computed formHour/formMinute
-
+                
                 const updateCustomTheme = () => {
                     const p = customColors.value.primary;
                     const b = customColors.value.cream;
@@ -1006,9 +1005,32 @@
                     dailyWeatherList.value = results.filter(w => w !== null);
                 }
 
+                // V64: Data Sanitizer to fix missing IDs
+                const ensureIds = (list) => {
+                    if(!Array.isArray(list)) return [];
+                    let maxId = 0;
+                    list.forEach(i => { if(i.id && typeof i.id === 'number' && i.id > maxId) maxId = i.id; });
+                    if(maxId === 0) maxId = Date.now();
+                    
+                    return list.map(item => {
+                        if(!item.id) {
+                            maxId++;
+                            return { ...item, id: maxId };
+                        }
+                        return item;
+                    });
+                };
+
                 const loadLocalData = () => {
                     const s = localStorage.getItem('nz_data_v4');
-                    if (s) { const d = JSON.parse(s); itinerary.value = d.itinerary||[]; expenses.value = d.expenses||[]; exchangeRate.value = d.exchangeRate||19.5; dailyMetadata.value = d.dailyMetadata||{}; todos.value = d.todos || []; }
+                    if (s) { 
+                        const d = JSON.parse(s); 
+                        itinerary.value = ensureIds(d.itinerary||[]); 
+                        expenses.value = ensureIds(d.expenses||[]); 
+                        exchangeRate.value = d.exchangeRate||19.5; 
+                        dailyMetadata.value = d.dailyMetadata||{}; 
+                        todos.value = ensureIds(d.todos || []); 
+                    }
                     updateDailyWeather();
                 };
 
@@ -1089,11 +1111,12 @@
                             }
                             
                             // OVERWRITE MODE: Trust Cloud Data
-                            if (cData.itinerary) itinerary.value = cData.itinerary;
-                            if (cData.expenses) expenses.value = cData.expenses; // No more merging map logic
+                            // V64: Ensure IDs on sync
+                            if (cData.itinerary) itinerary.value = ensureIds(cData.itinerary);
+                            if (cData.expenses) expenses.value = ensureIds(cData.expenses); // No more merging map logic
                             if (cData.dailyMetadata) dailyMetadata.value = cData.dailyMetadata;
                             if (cData.exchangeRate) exchangeRate.value = cData.exchangeRate;
-                            if (cData.todos) todos.value = cData.todos;
+                            if (cData.todos) todos.value = ensureIds(cData.todos);
                             
                             localStorage.setItem('nz_data_v4', JSON.stringify({ itinerary: itinerary.value, expenses: expenses.value, dailyMetadata: dailyMetadata.value, exchangeRate: exchangeRate.value, todos: todos.value, lastUpdated: cData.lastUpdated || 0 }));
                             updateDailyWeather();
