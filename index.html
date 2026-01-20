@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>NZ Trip V64 (Fix)</title>
+    <title>NZ Trip V65</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -189,7 +189,7 @@
             <div class="h-10 pb-1 flex flex-col justify-end">
                 <h1 class="text-xl font-bold tracking-tight text-primary font-sans flex items-center gap-2" style="text-shadow: 1px 1px 0px rgba(255,255,255,0.8);">
                     <i class="fa-solid fa-mountain-sun text-primary"></i>
-                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V64</span>
+                    NZ Trip <span class="text-[10px] bg-primary/10 px-1.5 rounded text-primary/70 font-bold mt-1">V65</span>
                     <span v-if="connectionStatus === 'cloud'" class="text-[9px] bg-green-100/80 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse font-mono tracking-wider border border-green-200"><i class="fa-solid fa-cloud"></i> {{ tripId }}</span>
                     <span v-else-if="connectionStatus === 'connecting'" class="text-[9px] bg-yellow-100/80 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse border border-yellow-200"><i class="fa-solid fa-circle-notch fa-spin"></i> {{ loadingMessage }}</span>
                     <!-- Improved Offline Indicator -->
@@ -209,13 +209,14 @@
             <div v-if="currentTab === 'itinerary'" class="h-full flex flex-col">
                 <div class="pt-1 pb-2 shrink-0 z-20 bg-cream/80 backdrop-blur-sm relative border-b border-cream-darker/30">
                     <div ref="dateContainer" class="flex overflow-x-auto no-scrollbar px-4 space-x-2 scroll-smooth py-1">
-                        <button v-for="(date, index) in days" :key="index" @click="selectDate(index)" class="flex-shrink-0 flex flex-col items-center justify-center w-[3.5rem] h-[4rem] transition-all duration-300 relative group active:scale-95" :class="selectedDayIndex === index ? 'z-10' : 'opacity-70 hover:opacity-100'">
+                        <button v-for="(date, index) in days" :key="index" @click="selectDate(index)" class="flex-shrink-0 flex flex-col items-center justify-center w-[3.5rem] h-[4.2rem] transition-all duration-300 relative group active:scale-95" :class="selectedDayIndex === index ? 'z-10' : 'opacity-70 hover:opacity-100'">
                              <div class="absolute inset-0 border-2 bg-white transition-colors duration-300" :class="selectedDayIndex === index ? 'bg-white border-primary rotate-[-2deg] shadow-sticker' : 'border-transparent bg-white/50 hover:border-cream-darker'" style="border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;"></div>
                              <div v-if="selectedDayIndex === index" class="absolute -top-1.5 w-8 h-3 bg-primary/30 rotate-2" style="mask-image: radial-gradient(circle at 2px, transparent 2px, black 2.5px); mask-position: -2px;"></div>
                              <div class="relative z-10 flex flex-col items-center" :class="selectedDayIndex === index ? 'text-primary' : 'text-gray-500'">
-                                <span class="text-[9px] font-bold tracking-wide uppercase">Day</span>
-                                <span class="text-xl font-black font-sans -my-1">{{ index }}</span>
+                                <span class="text-[8px] font-bold tracking-wide uppercase opacity-60">Day</span>
+                                <span class="text-lg font-black font-sans leading-none my-0.5">{{ index }}</span>
                                 <span class="text-[9px] font-bold">{{ date.getMonth()+1 }}/{{ date.getDate() }}</span>
+                                <span class="text-[8px] opacity-80 font-bold uppercase">{{ getWeekDay(date) }}</span>
                              </div>
                         </button>
                     </div>
@@ -910,7 +911,8 @@
                 const expenseCategories = ['餐飲', '交通', '住宿', '購物', '活動', '其他'];
                 
                 let map = null;
-                
+                // V59 Removed complex computed formHour/formMinute
+
                 const updateCustomTheme = () => {
                     const p = customColors.value.primary;
                     const b = customColors.value.cream;
